@@ -64,7 +64,7 @@ CodePulse uses a shared reference library to ensure all skills generate reports 
     │       ├── report-template.html
     │       ├── grading-model.md
     │       └── severity-ratings.md
-    │
+    │   └── reports/
     ├── codepulse-full/
     │   └── SKILL.md
     ├── codepulse-loc/
@@ -142,7 +142,7 @@ git clone https://github.com/Todd-Caron_Taylor/CodePulse.git
 
 Copy codepulse into your project .agent/skills folder:
 ```shell
-Copy-Item -Recurse CodePulse/.agents/skills/codepulse ./.agents/skills
+Copy-Item -Recurse CodePulse/.agents/skills/ ./.agents/skills
 ```
 
 ## Install Individual Skills
@@ -159,6 +159,7 @@ Individual skills can be installed separately; however, the shared `codepulse` r
     │       ├── report-template.html
     │       ├── grading-model.md
     │       └── severity-ratings.md
+    │   └── reports/
     │
     └── codepulse-vuln/
         └── SKILL.md
