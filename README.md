@@ -140,8 +140,7 @@ Clone the Repository
 git clone https://github.com/Todd-Caron_Taylor/CodePulse.git
 ```
 
-Copy codepulse into your project .agent/skills folder
-_powershell_
+Copy codepulse into your project .agent/skills folder:
 ```shell
 Copy-Item -Recurse CodePulse/.agents/skills/codepulse ./.agents/skills
 ```
