@@ -1,5 +1,5 @@
 ---
-name: healthcheck-deadcode
+name: codepulse-deadcode
 description: Performs only the dead code and unused variable portion of the health check. Use this when the user asks for unused code, dead code, obsolete methods, unused variables, unused imports, or cleanup opportunities.
 ---
 
