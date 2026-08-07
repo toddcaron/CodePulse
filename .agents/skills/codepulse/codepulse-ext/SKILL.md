@@ -60,6 +60,8 @@ Requirements:
 ## Output
 
 Create a focused HTML external access report.
+Filename =  {skill_name}_{currentDate}-report.html
+File output path =  .agents/skills/codepulse/reports/
 
 Include:
 

@@ -1,50 +1,279 @@
 ---
 name: codepulse-full
-description: Performs the complete 7-part codebase health check, including lines of code, MFA, security vulnerabilities, code quality, dead code, outdated frameworks/libraries, and external access risk. Use this when the user asks for a full health check, complete codebase review, application health report, or overall application risk assessment.
+description: Performs the complete CodePulse application assessment across security, authentication, code quality, dead code, dependency lifecycle health, external exposure, and maintainability metrics. Use when the user requests a full application health review, technical due diligence assessment, modernization readiness review, security posture assessment, portfolio evaluation, or comprehensive codebase analysis.
 ---
 
-# Full Codebase Health Check
+# CodePulse Full Assessment
+
+## Purpose
+
+CodePulse Full Assessment performs a comprehensive evaluation of application health, security posture, maintainability, technical debt, dependency lifecycle health, authentication maturity, and external exposure risk.
+
+This assessment is intended to provide engineering teams, architects, security teams, and technology leaders with an overall understanding of the application's condition and prioritized recommendations for improvement.
+
+The assessment should identify:
+
+- Security risks
+- Authentication weaknesses
+- Technical debt
+- Maintainability concerns
+- Obsolete technologies
+- External exposure risks
+- Modernization opportunities
+
+and provide a unified CodePulse score and grade.
+
+---
 
 ## Input
 
-Use the entire codebase as the context for this skill. Exclude `.md` files, `.gitignore` files, generated files, build output, package caches, binaries, images, and other non-code files from the analysis unless they are directly needed to evaluate dependencies, authentication, or external access.
+Use the entire codebase as the assessment scope.
 
-## Steps
+Exclude:
 
-1. Count the total number of lines of code in the codebase.
-2. Check for the implementation of Multi-Factor Authentication (MFA) in the codebase.
-3. Analyze the code for security vulnerabilities using static code analysis techniques. Match identified vulnerabilities with known CVEs where possible, provide a CVE database link for each matched vulnerability, and assign a risk level of low, medium, or high.
-4. Evaluate code quality by checking for code smells, complexity, maintainability issues, and adherence to coding standards.
-5. Identify potential dead code and unused variables in the codebase.
-6. Check for outdated frameworks and libraries to determine whether dependencies are current and supportable.
-7. Determine whether the codebase allows external access and evaluate the security implications.
+- `.md` files
+- `.gitignore`
+- documentation
+- images
+- binaries
+- generated files
+- build output
+- package caches
+- third-party vendor content
+
+unless these files are required to evaluate:
+
+- dependencies
+- authentication
+- infrastructure
+- external access
+- deployment configurations
+
+If dependency manifests, package files, lock files, infrastructure definitions, or configuration files exist, include them in the assessment.
+
+---
 
 ## Shared References
 
-Use the following shared CodePulse resources when generating the assessment:
+Review the following resources before beginning the assessment:
 
 - `.agents/skills/codepulse/references/report-template.html`
 - `.agents/skills/codepulse/references/grading-model.md`
 - `.agents/skills/codepulse/references/severity-ratings.md`
 - `.agents/skills/codepulse/references/recommendations-library.md`
 
-Review these files before generating the final report.
+Requirements:
 
-Use:
+- Use `report-template.html` for report structure and formatting.
+- Use `grading-model.md` for all scoring decisions.
+- Use `severity-ratings.md` when assigning vulnerability severity levels.
+- Use `recommendations-library.md` whenever a matching remediation recommendation exists.
 
-- `report-template.html` for report layout and visual structure.
-- `grading-model.md` to assign section grades and calculate the overall CodePulse score.
-- `severity-ratings.md` to classify vulnerabilities and security findings.
-- `recommendations-library.md` when generating remediation guidance.
+Reuse standardized recommendations whenever possible.
 
-If a finding matches a recommendation in the recommendations library, reuse the standardized recommendation rather than generating new wording.
+---
+
+## Assessment Areas
+
+### 1. Codebase Size & Maintainability Indicators
+
+Evaluate:
+
+- Total lines of code
+- Language distribution
+- Solution organization
+- Large files or modules
+- Maintainability indicators
+
+Assign a grade using the CodePulse grading model.
+
+---
+
+### 2. Authentication & MFA Review
+
+Evaluate:
+
+- MFA implementation
+- Authentication flows
+- Identity provider integration
+- Authentication bypass risks
+- Administrative account protections
+
+Assign a grade using the CodePulse grading model.
+
+---
+
+### 3. Security Vulnerability Assessment
+
+Evaluate:
+
+- SQL Injection
+- XSS
+- Command Injection
+- Sensitive data exposure
+- Hardcoded credentials
+- Weak authentication patterns
+- Authorization weaknesses
+- Dependency vulnerabilities
+- Known CVEs
+
+Requirements:
+
+- Use severity-ratings.md
+- Include CVE references when identified
+- Include NIST NVD references when applicable
+- Classify findings as Critical, High, Medium, Low, or Informational
+
+Assign a grade using the CodePulse grading model.
+
+---
+
+### 4. Code Quality Review
+
+Evaluate:
+
+- Complexity
+- Code smells
+- Duplication
+- Architecture consistency
+- Error handling
+- Naming conventions
+- Maintainability
+
+Assign a grade using the CodePulse grading model.
+
+---
+
+### 5. Dead Code Assessment
+
+Evaluate:
+
+- Unused methods
+- Unused classes
+- Unused variables
+- Obsolete features
+- Commented-out code
+
+Clearly distinguish:
+
+- Confirmed dead code
+- Potential dead code
+- Requires validation
+
+Assign a grade using the CodePulse grading model.
+
+---
+
+### 6. Dependency & Framework Lifecycle Assessment
+
+Evaluate:
+
+- Outdated dependencies
+- Deprecated libraries
+- Unsupported frameworks
+- Runtime versions
+- Modernization risk
+
+Assign a grade using the CodePulse grading model.
+
+---
+
+### 7. External Exposure & Attack Surface Review
+
+Evaluate:
+
+- Public endpoints
+- Anonymous access
+- API exposure
+- Webhooks
+- CORS configuration
+- External integrations
+
+Assign a grade using the CodePulse grading model.
+
+---
+
+## Report Requirements
+
+Generate a complete HTML report using the CodePulse reporting template.
+
+The report must contain:
+
+1. Executive Summary
+2. Assessment Dashboard
+3. Overall Grade
+4. Assessment Methodology
+5. Security Assessment
+6. MFA Assessment
+7. Code Quality Assessment
+8. Dead Code Assessment
+9. Dependency & Framework Assessment
+10. External Exposure Assessment
+11. Codebase Metrics
+12. Top Risks
+13. Recommendations
+14. Modernization Opportunities
+15. Conclusion
+
+---
+
+## Scoring Requirements
+
+Every assessment category must receive:
+
+- Numerical score (0-100)
+- Letter grade (A-D)
+
+Calculate the overall CodePulse score using the weighting defined in:
+
+
+.agents/skills/codepulse/references/grading-model.md
+
+
+The final report must include:
+
+Overall Score
+Overall Grade
+
+along with a brief explanation of the overall rating.
+
+---
+
+## Recommendation Requirements
+
+When generating recommendations:
+
+- Prioritize Critical findings first
+- Prioritize High findings second
+- Use recommendations-library.md whenever possible
+- Avoid duplicate recommendations
+- Group related recommendations together
+
+Include:
+
+- Finding
+- Business Impact
+- Recommended Action
+- Priority
+- Estimated Complexity
+
+---
+
+## Success Criteria
+
+A successful CodePulse assessment should allow stakeholders to answer:
+
+1. Is this application healthy?
+2. Is the application secure?
+3. What are the highest risks?
+4. What should be remediated first?
+5. Is modernization required?
+6. What investment should be prioritized?
+
+The final assessment should serve as both an engineering review and a portfolio-level application health report.
 
 ## Output
 
-Create a comprehensive health check report with one section for each step above. Include actionable findings, recommendations, evidence from the codebase, and suggested best practices.
-
-The report should be an HTML document with a structure, look, and feel that follows this example:
-
-`.agents/skills/healthcheck-full/healthcheck-report-example.html`
-
-Provide a letter grade from D to A for each section, where A is excellent and D is poor. The final overall grade should be the average of the individual section grades.
+Output a single HTML report file containing the complete assessment.
+Filename =  {skill_name}_{currentDate}-report.html
+File output path =  .agents/skills/codepulse/reports/

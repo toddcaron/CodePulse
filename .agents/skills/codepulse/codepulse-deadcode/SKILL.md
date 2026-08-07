@@ -53,6 +53,8 @@ Requirements:
 ## Output
 
 Create a focused HTML dead code report.
+Filename =  {skill_name}_{currentDate}-report.html
+File output path =  .agents/skills/codepulse/reports/
 
 Include:
 
@@ -63,3 +65,4 @@ Include:
 - Areas requiring manual validation.
 - A letter grade from D to A.
 - Suggested safe-removal strategy.
+
