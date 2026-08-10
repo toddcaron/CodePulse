@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodePulse Executive Summary</title>
+
+<style>
+:root {
+    color-scheme: light;
+    --ink: #19211d;
+    --muted: #5d6962;
+    --paper: #f5f7f2;
+    --surface: #ffffff;
+    --line: #d9dfd8;
+    --green: #176b4d;
+    --amber: #a65d00;
+    --red: #a52f2f;
+    --blue: #245a7a;
+
+    --primary: var(--ink);
+    --primary-light: #eef1ed;
+    --success: var(--green);
+    --warning: var(--amber);
+    --danger: var(--red);
+    --neutral: var(--muted);
+
+    --grade-a: var(--green);
+    --grade-b: var(--blue);
+    --grade-c: var(--amber);
+    --grade-d: var(--red);
+
+    --bg: var(--paper);
+    --card: var(--surface);
+    --text: var(--ink);
+    --border: var(--line);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 48px 0 72px;
+    background: linear-gradient(135deg, #eef4ee 0, var(--paper) 42%, #eef2f6 100%);
+    color: var(--ink);
+    font-family: Georgia, "Times New Roman", serif;
+    line-height: 1.55;
+}
+
+.container {
+    width: min(1120px, calc(100% - 32px));
+    margin: 0 auto;
+}
+
+.header {
+    background: transparent;
+    color: var(--ink);
+    border-radius: 0;
+    border-top: 8px solid var(--ink);
+    padding: 24px 0 30px;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    max-width: 760px;
+    margin: 8px 0 12px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(2.2rem, 6vw, 4.8rem);
+    line-height: .98;
+    font-weight: 500;
+}
+
+.header p {
+    max-width: 760px;
+    margin: 0;
+    color: var(--muted);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.12rem;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 18px;
+    margin: 20px 0 30px;
+}
+
+.score-card {
+    background: rgba(255,255,255,.92);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary);
+    padding: 18px;
+}
+
+.score-card h3 {
+    margin: 0 0 8px;
+    color: var(--muted);
+    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.score-value {
+    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.grade-a { color: var(--grade-a); }
+.grade-b { color: var(--grade-b); }
+.grade-c { color: var(--grade-c); }
+.grade-d { color: var(--grade-d); }
+
+.section {
+    background: rgba(255,255,255,.92);
+    border: 1px solid var(--line);
+    padding: 22px;
+    border-radius: 8px;
+    margin-top: 18px;
+}
+
+.section h2 {
+    margin: 0 0 14px;
+    color: var(--ink);
+    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-size: 1.35rem;
+}
+
+.snapshot {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.risk-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.risk-card {
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--danger);
+    background: rgba(255,255,255,.72);
+}
+
+.risk-card h4 {
+    margin-top: 0;
+    font-family: "Trebuchet MS", Verdana, sans-serif;
+}
+
+.priority {
+    font-weight: bold;
+}
+
+.high {
+    color: var(--danger);
+}
+
+.medium {
+    color: var(--warning);
+}
+
+.low {
+    color: var(--success);
+}
+
+.strength-card {
+    background: rgba(238,244,238,.7);
+    border-left: 4px solid var(--success);
+    border-radius: 0;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.investment-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.investment-table th {
+    background: var(--primary-light);
+    color: var(--muted);
+    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-size: .78rem;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 12px;
+}
+
+.investment-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 12px;
+}
+
+.modernization-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(238,244,238,.7);
+    border: 1px solid var(--line);
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.complexity {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.recommendation {
+    text-align: center;
+    padding: 24px;
+    border-radius: 8px;
+    background: var(--ink);
+    color: white;
+}
+
+.recommendation h2 {
+    font-family: "Trebuchet MS", Verdana, sans-serif;
+    color: white;
+    border: none;
+    margin-bottom: 12px;
+}
+
+.footer {
+    text-align: center;
+    color: var(--muted);
+    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-size: 12px;
+    margin-top: 20px;
+}
+
+@media print {
+    body {
+        background: white;
+        padding: 0;
+    }
+
+    .section,
+    .score-card { box-shadow: none; }
+}
+
+@media (max-width: 900px) {
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .risk-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 760px) {
+    body { padding-top: 24px; }
+    .container { width: min(100% - 22px, 1120px); }
+    .summary-grid { grid-template-columns: 1fr; }
+    .section { padding: 17px; }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+
+    <div class="header">
+        <h1>CodePulse Executive Summary</h1>
+        <p>
+            Executive Application Health Assessment
+        </p>
+    </div>
+
+    <!-- EXECUTIVE DASHBOARD -->
+
+    <div class="summary-grid">
+
+        <div class="score-card">
+            <h3>Overall Grade</h3>
+            <div class="score-value grade-b">
+                B
+            </div>
+        </div>
+
+        <div class="score-card">
+            <h3>Security Posture</h3>
+            <div class="score-value">
+                Needs Attention
+            </div>
+        </div>
+
+        <div class="score-card">
+            <h3>Technology Health</h3>
+            <div class="score-value">
+                Aging
+            </div>
+        </div>
+
+        <div class="score-card">
+            <h3>Operational Risk</h3>
+            <div class="score-value">
+                Moderate
+            </div>
+        </div>
+
+        <div class="score-card">
+            <h3>Modernization Readiness</h3>
+            <div class="score-value">
+                Requires Planning
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SNAPSHOT -->
+
+    <div class="section">
+
+        <h2>Application Snapshot</h2>
+
+        <div class="snapshot">
+
+            <p>
+                This application is currently in stable operational condition and remains capable of supporting current business functions. The overall CodePulse assessment indicates manageable risk levels, with no immediate concerns requiring emergency remediation.
+            </p>
+
+            <p>
+                The primary areas of concern involve aging technologies, growing technical debt, and several security-related improvements that should be prioritized over the next planning cycles. While modernization is not urgent, proactive investment is recommended to reduce future support costs and maintain long-term platform sustainability.
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- RISKS -->
+
+    <div class="section">
+
+        <h2>Top Risks</h2>
+
+        <div class="risk-grid">
+
+            <div class="risk-card">
+                <h4>Legacy Framework Dependencies</h4>
+
+                <p>
+                    Continued reliance on aging technology may increase security, support, and enhancement costs over time.
+                </p>
+
+                <p class="priority high">
+                    Priority: High
+                </p>
+            </div>
+
+            <div class="risk-card">
+                <h4>Security Remediation Backlog</h4>
+
+                <p>
+                    Multiple security findings increase overall risk exposure and should be addressed during upcoming development cycles.
+                </p>
+
+                <p class="priority high">
+                    Priority: High
+                </p>
+            </div>
+
+            <div class="risk-card">
+                <h4>Growing Technical Debt</h4>
+
+                <p>
+                    Maintainability challenges may slow future feature delivery and increase support effort.
+                </p>
+
+                <p class="priority medium">
+                    Priority: Medium
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- STRENGTHS -->
+
+    <div class="section">
+
+        <h2>Key Strengths</h2>
+
+        <div class="strength-card">
+            Strong application stability and operational maturity.
+        </div>
+
+        <div class="strength-card">
+            Established architecture supporting current business demand.
+        </div>
+
+        <div class="strength-card">
+            Limited immediate
