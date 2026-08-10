@@ -58,11 +58,11 @@ Assume the detailed report already contains the authoritative findings.
 
 Review the following resources before generating the executive assessment:
 
-- `.agents/skills/codepulse/references/report-template.html`
-- `.agents/skills/codepulse/references/grading-model.md`
-- `.agents/skills/codepulse/references/severity-ratings.md`
-- `.agents/skills/codepulse/references/recommendations-library.md`
-- `.agents/skills/codepulse/references/executive-scorecard-template.html`
+- `references/report-template.html`
+- `references/grading-model.md`
+- `references/severity-ratings.md`
+- `references/recommendations-library.md`
+- `references/executive-scorecard-template.html`
 
 Requirements:
 
@@ -374,10 +374,10 @@ The recommendation should clearly communicate the level of management attention 
 ## Output Format
 
 Generate a concise executive HTML report that matches the CodePulse executive scorecard template:
-.agents/skills/codepulse/references/executive-scorecard-template.html
+references/executive-scorecard-template.html
 
 Filename =  {skill_name}_{currentDate}-report.html
-File output path =  .agents/skills/codepulse/reports/
+File output path =  reports/
 
 The report should be suitable for:
 

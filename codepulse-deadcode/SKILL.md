@@ -39,9 +39,9 @@ Distinguish between confirmed dead code and suspected dead code. If usage cannot
 
 Before generating the assessment, review:
 
-- `.agents/skills/codepulse/references/report-template.html`
-- `.agents/skills/codepulse/references/grading-model.md`
-- `.agents/skills/codepulse/references/recommendations-library.md`
+- `references/report-template.html`
+- `references/grading-model.md`
+- `references/recommendations-library.md`
 
 Requirements:
 
@@ -54,7 +54,7 @@ Requirements:
 
 Create a focused HTML dead code report.
 Filename =  {skill_name}_{currentDate}-report.html
-File output path =  .agents/skills/codepulse/reports/
+File output path =  reports/
 
 Include:
 

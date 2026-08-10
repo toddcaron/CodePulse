@@ -18,15 +18,15 @@ CodePulse provides a collection of focused GitHub Copilot skills that can be run
 | **codepulse-quality**  | Evaluates maintainability and code quality            | Complexity, code smells, standards compliance, duplication, architecture consistency | `Run codepulse-quality and identify refactoring opportunities.`            |
 | **codepulse-deadcode** | Identifies cleanup opportunities                      | Unused code, unused variables, obsolete classes, dead endpoints, commented-out code  | `Run codepulse-deadcode and identify code safe for removal.`               |
 | **codepulse-plm**      | Reviews technology lifecycle health                   | Outdated frameworks, package versions, deprecated libraries, upgrade risk            | `Run codepulse-plm and identify unsupported technologies.`                 |
-| **codepulse-external** | Reviews external accessibility and exposure risks     | Public endpoints, APIs, webhooks, CORS, anonymous access, attack surface             | `Run codepulse-external and analyze the application's external exposure.`  |
+| **codepulse-ext**      | Reviews external accessibility and exposure risks     | Public endpoints, APIs, webhooks, CORS, anonymous access, attack surface             | `Run codepulse-ext and analyze the application's external exposure.`       |
 
 ## Common Assessment Scenarios
 | Scenario                        | Recommended Skills                                         |
 | ------------------------------- | ---------------------------------------------------------- |
-| Security Review                 | `codepulse-vuln`, `codepulse-mfa`, `codepulse-external`    |
+| Security Review                 | `codepulse-vuln`, `codepulse-mfa`, `codepulse-ext`         |
 | Modernization Planning          | `codepulse-plm`, `codepulse-quality`                       |
 | Technical Debt Assessment       | `codepulse-quality`, `codepulse-deadcode`                  |
-| Architecture Review             | `codepulse-external`, `codepulse-mfa`                      |
+| Architecture Review             | `codepulse-ext`, `codepulse-mfa`                           |
 | Executive Health Report         | `codepulse-full`                                           |
 | Pre-Acquisition Due Diligence   | `codepulse-full`                                           |
 | Pre-Production Readiness Review | `codepulse-full`, `codepulse-vuln`                         |
@@ -43,44 +43,60 @@ CodePulse is distributed as a collection of GitHub Copilot custom skills. Each s
 
 ## Directory Structure
 
-CodePulse uses a shared reference library to ensure all skills generate reports with a consistent look, feel, grading model, and scoring methodology.
+Each CodePulse skill is self-contained so it can be installed and run independently. Its local `references/` folder contains the templates and guidance needed by that skill, and its local `reports/` folder is the default output location.
 
 ```text
-├── codepulse/
-│   └── references/
-│       ├── report-template.html
-│       ├── grading-model.md
-│       └── severity-ratings.md
-│   └── reports/
 ├── codepulse-full/
-│   └── SKILL.md
+│   ├── SKILL.md
+│   ├── references/
+│   └── reports/
 ├── codepulse-loc/
-│   └── SKILL.md
+│   ├── SKILL.md
+│   ├── references/
+│   └── reports/
 ├── codepulse-mfa/
-│   └── SKILL.md
+│   ├── SKILL.md
+│   ├── references/
+│   └── reports/
 ├── codepulse-vuln/
-│   └── SKILL.md
+│   ├── SKILL.md
+│   ├── references/
+│   └── reports/
 ├── codepulse-quality/
-│   └── SKILL.md
+│   ├── SKILL.md
+│   ├── references/
+│   └── reports/
 ├── codepulse-deadcode/
-│   └── SKILL.md
+│   ├── SKILL.md
+│   ├── references/
+│   └── reports/
 ├── codepulse-plm/
-│   └── SKILL.md
-└── codepulse-external/
-        └── SKILL.md
+│   ├── SKILL.md
+│   ├── references/
+│   └── reports/
+├── codepulse-ext/
+│   ├── SKILL.md
+│   ├── references/
+│   └── reports/
+└── codepulse-exec/
+        ├── SKILL.md
+        ├── references/
+        └── reports/
 ```
 
-### Shared References
+### Local References
 
-The `codepulse/references` folder serves as the central source of truth for all shared assets used across CodePulse skills.
+Every skill owns the assets it needs in its local `references/` folder.
 
 | File | Purpose |
 |--------|----------|
 | `report-template.html` | Standard HTML layout, styling, executive summary format, and report structure |
 | `grading-model.md` | Defines grading criteria and score calculations |
-| `severity-ratings.md` | Defines Low, Medium, High, and Critical risk ratings |
+| `severity-ratings.md` | Defines Low, Medium, High, and Critical risk ratings where the skill evaluates risk |
+| `recommendations-library.md` | Standard remediation guidance where the skill produces recommendations |
+| `executive-scorecard-template.html` | Executive report layout used by `codepulse-exec` |
 
-All CodePulse skills should reference these files when generating reports and assessments. This is included by default in all SKILL.md instructions.
+Each `SKILL.md` lists the local references required for that skill. Skills use their local `reports/` folder for generated output.
 
 This approach ensures:
 
@@ -88,15 +104,24 @@ This approach ensures:
 - Consistent grading across skills
 - Consistent severity classifications
 - Easier maintenance and future enhancements
-- No duplication of shared assets across skills
+- Skills can be installed without a separate shared package
 
-## Install the Full Suite
+## Installation Methods
 
-For the best experience, install the entire CodePulse skill collection. The installers copy the skill folders directly into your target directory, so they work whether the directory is empty or already contains other skills.
+Choose one of the following installation methods.
+
+### Method 1 (Recommended): Install with npx
+
+The easiest way to install CodePulse is with the Skills CLI:
+
+```shell
+npx skills add Todd-Caron_Taylor/CodePulse
+```
+
+This installs the self-contained CodePulse skills with their local references and report folders.
 
 This includes:
 
-- codepulse
 - codepulse-full
 - codepulse-loc
 - codepulse-mfa
@@ -104,96 +129,49 @@ This includes:
 - codepulse-quality
 - codepulse-deadcode
 - codepulse-plm
-- codepulse-exec
 - codepulse-ext
+- codepulse-exec
 
-The `codepulse` folder contains shared report templates, grading rules, and severity definitions used by all assessment skills.
+### Method 2: Clone the repository
 
-Some common target directories, depending on the harness you use, are:
+Clone the repository, then copy the CodePulse skill folders into your skills directory:
 
-```text
-.agents/skills/
-.github/skills
-.claude/skills
-```
-
-### PowerShell
-
-Download [install.ps1](install.ps1) from this repository, then run it from PowerShell:
-
-```powershell
-.\install.ps1
-```
-
-By default, this installs CodePulse into `$HOME\.agents\skills`. To install into the current project instead:
-
-```powershell
-.\install.ps1 -TargetDirectory ".\.agents\skills"
-```
-
-The script requires Git and an internet connection. If Windows blocks a downloaded script, unblock it before running:
-
-```powershell
-Unblock-File .\install.ps1
-```
-
-### Shell
-
-Download [install.sh](install.sh), make it executable, and run it:
-
-```shell
-chmod +x install.sh
-./install.sh
-```
-
-To install into a project-local skills directory:
-
-```shell
-./install.sh ./.agents/skills
-```
-
-### Direct Git Clone
-
-For a new or empty skills directory, you can clone directly into the target directory. The destination argument is important because a bare clone command creates an extra `CodePulse` folder:
-
-```shell
-git clone https://github.com/Todd-Caron_Taylor/CodePulse.git "$HOME/.agents/skills"
-```
-
-Do not use this method when the target directory already contains other skills; use an installer instead.
 ```shell
 git clone https://github.com/Todd-Caron_Taylor/CodePulse.git
 ```
 
-## Install Individual Skills
+Common skills directories include:
 
-Individual skills can be installed separately; however, the shared `codepulse` reference library must also be installed.
+```text
+.agents/skills/
+.github/skills/
+.claude/skills/
+```
+
+Copy all CodePulse skill folders into the skills directory used by your harness.
+
+### Method 3: Install an individual skill
+
+Every skill can be installed separately because its references and report output folder are included in the skill directory.
 
 ### Minimum Installation Example
 
 ```text
 .agents/
 └── skills/
-    ├── codepulse/
-    │   └── references/
-    │       ├── report-template.html
-    │       ├── grading-model.md
-    │       └── severity-ratings.md
-    │   └── reports/
-    │
     └── codepulse-vuln/
-        └── SKILL.md
+        ├── SKILL.md
+        ├── references/
+        │   ├── report-template.html
+        │   ├── grading-model.md
+        │   ├── severity-ratings.md
+        │   └── recommendations-library.md
+        └── reports/
 ```
 
 ### Important
 
-All CodePulse assessment skills depend on assets located in:
-
-```text
-.agents/skills/codepulse/references/
-```
-
-Failure to install the shared `codepulse` folder may result in inconsistent report formatting, grading, or assessment outputs.
+Install the complete skill folder, including its `references/` and `reports/` subfolders. Omitting the local references may prevent the skill from generating a correctly formatted or graded report.
 
 # Verify Installation
 After installation, open GitHub Copilot and run:
@@ -209,26 +187,26 @@ Or test a focused assessment:
 ```
 If the assessment executes successfully, CodePulse has been installed correctly.
 
-# Shared Reporting Framework
+# Reporting Framework
 
-All CodePulse skills use the same reporting framework to ensure a consistent experience across assessments.
+CodePulse skills use the same reporting conventions while keeping their required assets locally available.
 
 When generating reports, skills should reference:
 
 ```text
-.agents/skills/codepulse/references/report-template.html
+references/report-template.html
 ```
 
 When assigning grades, skills should reference:
 
 ```text
-.agents/skills/codepulse/references/grading-model.md
+references/grading-model.md
 ```
 
 When assigning severity levels, skills should reference:
 
 ```text
-.agents/skills/codepulse/references/severity-ratings.md
+references/severity-ratings.md
 ```
 
 This ensures that whether an engineer runs:
@@ -243,7 +221,7 @@ or
 codepulse-full
 ```
 
-the output follows the same standards, visual design, grading methodology, and risk classification system.
+the output follows the same standards, visual design, grading methodology, and risk classification system without requiring another skill package.
 
 # Scoring Model
 
@@ -270,5 +248,5 @@ The `codepulse-full` skill can generate a complete HTML assessment report suitab
 | MFA Review            | `/codepulse-mfa identify authentication weaknesses.`            |
 | Technology Health     | `/codepulse-plm` |
 | Technical Debt Review | `Run codepulse-quality and codepulse-deadcode.`                        |
-| Exposure Analysis     | `/codepulse-external review the application's attack surface.`  |
+| Exposure Analysis     | `/codepulse-ext review the application's attack surface.`       |
 | Application Sizing    | `/codepulse-loc provide a codebase summary.`                    |

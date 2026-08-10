@@ -45,10 +45,10 @@ Classify exposure as:
 
 Before generating the assessment, review:
 
-- `.agents/skills/codepulse/references/report-template.html`
-- `.agents/skills/codepulse/references/grading-model.md`
-- `.agents/skills/codepulse/references/severity-ratings.md`
-- `.agents/skills/codepulse/references/recommendations-library.md`
+- `references/report-template.html`
+- `references/grading-model.md`
+- `references/severity-ratings.md`
+- `references/recommendations-library.md`
 
 Requirements:
 
@@ -61,7 +61,7 @@ Requirements:
 
 Create a focused HTML external access report.
 Filename =  {skill_name}_{currentDate}-report.html
-File output path =  .agents/skills/codepulse/reports/
+File output path =  reports/
 
 Include:
 

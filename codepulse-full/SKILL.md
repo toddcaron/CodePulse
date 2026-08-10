@@ -57,10 +57,10 @@ If dependency manifests, package files, lock files, infrastructure definitions, 
 
 Review the following resources before beginning the assessment:
 
-- `.agents/skills/codepulse/references/report-template.html`
-- `.agents/skills/codepulse/references/grading-model.md`
-- `.agents/skills/codepulse/references/severity-ratings.md`
-- `.agents/skills/codepulse/references/recommendations-library.md`
+- `references/report-template.html`
+- `references/grading-model.md`
+- `references/severity-ratings.md`
+- `references/recommendations-library.md`
 
 Requirements:
 
@@ -227,7 +227,7 @@ Every assessment category must receive:
 Calculate the overall CodePulse score using the weighting defined in:
 
 
-.agents/skills/codepulse/references/grading-model.md
+references/grading-model.md
 
 
 The final report must include:
@@ -276,4 +276,4 @@ The final assessment should serve as both an engineering review and a portfolio-
 
 Output a single HTML report file containing the complete assessment.
 Filename =  {skill_name}_{currentDate}-report.html
-File output path =  .agents/skills/codepulse/reports/
+File output path =  reports/

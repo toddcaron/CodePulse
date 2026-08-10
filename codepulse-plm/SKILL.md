@@ -43,10 +43,10 @@ When possible, categorize each item as:
 
 Before generating the assessment, review:
 
-- `.agents/skills/codepulse/references/report-template.html`
-- `.agents/skills/codepulse/references/grading-model.md`
-- `.agents/skills/codepulse/references/severity-ratings.md`
-- `.agents/skills/codepulse/references/recommendations-library.md`
+- `references/report-template.html`
+- `references/grading-model.md`
+- `references/severity-ratings.md`
+- `references/recommendations-library.md`
 
 Requirements:
 

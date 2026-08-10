@@ -36,9 +36,9 @@ If MFA cannot be confirmed from the codebase, clearly state that MFA was not fou
 
 Before performing the assessment, review:
 
-- `.agents/skills/codepulse/references/report-template.html`
-- `.agents/skills/codepulse/references/grading-model.md`
-- `.agents/skills/codepulse/references/recommendations-library.md`
+- `references/report-template.html`
+- `references/grading-model.md`
+- `references/recommendations-library.md`
 
 Requirements:
 
