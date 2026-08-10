@@ -7,17 +7,6 @@ CodePulse provides a collection of focused GitHub Copilot skills that can be run
 - Token usage will vary depending on the skill chosen, context and size of codebase.
 - Highly recommended to install and use Caveman along with Codepulse to minimize token usage: https://github.com/juliusbrussee/caveman
 
-## Quick Start
-| Goal                  | Example Prompt                                                                 |
-| --------------------- | ---------------------------------------------------------------------- |
-| Full Assessment       | `/codepulse-full on this repository.`                               |
-| Security Audit        | `/codepulse-vuln summarize the top risks.`                      |
-| MFA Review            | `/codepulse-mfa identify authentication weaknesses.`            |
-| Technology Health     | `/codepulse-plm` |
-| Technical Debt Review | `Run codepulse-quality and codepulse-deadcode.`                        |
-| Exposure Analysis     | `/codepulse-external review the application's attack surface.`  |
-| Application Sizing    | `/codepulse-loc provide a codebase summary.`                    |
-
 ## CodePulse Skills
 
 | Skill                  | Purpose                                               | Key Areas Reviewed                                                                   | Example Prompt                                                             |
@@ -57,29 +46,27 @@ CodePulse is distributed as a collection of GitHub Copilot custom skills. Each s
 CodePulse uses a shared reference library to ensure all skills generate reports with a consistent look, feel, grading model, and scoring methodology.
 
 ```text
-.agents/
-└── skills/
-    ├── codepulse/
-    │   └── references/
-    │       ├── report-template.html
-    │       ├── grading-model.md
-    │       └── severity-ratings.md
-    │   └── reports/
-    ├── codepulse-full/
-    │   └── SKILL.md
-    ├── codepulse-loc/
-    │   └── SKILL.md
-    ├── codepulse-mfa/
-    │   └── SKILL.md
-    ├── codepulse-vuln/
-    │   └── SKILL.md
-    ├── codepulse-quality/
-    │   └── SKILL.md
-    ├── codepulse-deadcode/
-    │   └── SKILL.md
-    ├── codepulse-plm/
-    │   └── SKILL.md
-    └── codepulse-external/
+├── codepulse/
+│   └── references/
+│       ├── report-template.html
+│       ├── grading-model.md
+│       └── severity-ratings.md
+│   └── reports/
+├── codepulse-full/
+│   └── SKILL.md
+├── codepulse-loc/
+│   └── SKILL.md
+├── codepulse-mfa/
+│   └── SKILL.md
+├── codepulse-vuln/
+│   └── SKILL.md
+├── codepulse-quality/
+│   └── SKILL.md
+├── codepulse-deadcode/
+│   └── SKILL.md
+├── codepulse-plm/
+│   └── SKILL.md
+└── codepulse-external/
         └── SKILL.md
 ```
 
@@ -93,7 +80,7 @@ The `codepulse/references` folder serves as the central source of truth for all 
 | `grading-model.md` | Defines grading criteria and score calculations |
 | `severity-ratings.md` | Defines Low, Medium, High, and Critical risk ratings |
 
-All CodePulse skills should reference these files when generating reports and assessments.
+All CodePulse skills should reference these files when generating reports and assessments. This is included by default in all SKILL.md instructions.
 
 This approach ensures:
 
@@ -105,13 +92,7 @@ This approach ensures:
 
 ## Install the Full Suite
 
-For the best experience, install the entire CodePulse skill collection.
-
-```text
-.agents/skills/codepulse
-```
-
-***Note*** - If you do not already have a /skill folder created, create one first or copy this repo from the /skills directory level.
+For the best experience, install the entire CodePulse skill collection. The installers copy the skill folders directly into your target directory, so they work whether the directory is empty or already contains other skills.
 
 This includes:
 
@@ -123,26 +104,65 @@ This includes:
 - codepulse-quality
 - codepulse-deadcode
 - codepulse-plm
-- codepulse-external
+- codepulse-exec
+- codepulse-ext
 
 The `codepulse` folder contains shared report templates, grading rules, and severity definitions used by all assessment skills.
 
-Copy the CodePulse folder into your repository:
+Some common target directories, depending on the harness you use, are:
 
 ```text
 .agents/skills/
+.github/skills
+.claude/skills
 ```
 
-Example:
+### PowerShell
 
-Clone the Repository
+Download [install.ps1](install.ps1) from this repository, then run it from PowerShell:
+
+```powershell
+.\install.ps1
+```
+
+By default, this installs CodePulse into `$HOME\.agents\skills`. To install into the current project instead:
+
+```powershell
+.\install.ps1 -TargetDirectory ".\.agents\skills"
+```
+
+The script requires Git and an internet connection. If Windows blocks a downloaded script, unblock it before running:
+
+```powershell
+Unblock-File .\install.ps1
+```
+
+### Shell
+
+Download [install.sh](install.sh), make it executable, and run it:
+
+```shell
+chmod +x install.sh
+./install.sh
+```
+
+To install into a project-local skills directory:
+
+```shell
+./install.sh ./.agents/skills
+```
+
+### Direct Git Clone
+
+For a new or empty skills directory, you can clone directly into the target directory. The destination argument is important because a bare clone command creates an extra `CodePulse` folder:
+
+```shell
+git clone https://github.com/Todd-Caron_Taylor/CodePulse.git "$HOME/.agents/skills"
+```
+
+Do not use this method when the target directory already contains other skills; use an installer instead.
 ```shell
 git clone https://github.com/Todd-Caron_Taylor/CodePulse.git
-```
-
-Copy codepulse into your project .agent/skills folder:
-```shell
-Copy-Item -Recurse CodePulse/.agents/skills/* ./.agents/skills/
 ```
 
 ## Install Individual Skills
@@ -241,3 +261,14 @@ The `codepulse-full` assessment calculates an overall grade based on all assessm
 
 The `codepulse-full` skill can generate a complete HTML assessment report suitable for engineering leadership and architecture reviews.
 ---
+
+## Quick Start Promps
+| Goal                  | Example Prompt                                                                 |
+| --------------------- | ---------------------------------------------------------------------- |
+| Full Assessment       | `/codepulse-full on this repository.`                               |
+| Security Audit        | `/codepulse-vuln summarize the top risks.`                      |
+| MFA Review            | `/codepulse-mfa identify authentication weaknesses.`            |
+| Technology Health     | `/codepulse-plm` |
+| Technical Debt Review | `Run codepulse-quality and codepulse-deadcode.`                        |
+| Exposure Analysis     | `/codepulse-external review the application's attack surface.`  |
+| Application Sizing    | `/codepulse-loc provide a codebase summary.`                    |
