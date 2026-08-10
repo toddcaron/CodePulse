@@ -54,7 +54,7 @@ Requirements:
 
 Create a focused HTML dead code report.
 Filename =  {skill_name}_{currentDate}-report.html
-File output path =  reports/
+File output path =  codepulse-deadcode/reports/
 
 Include:
 

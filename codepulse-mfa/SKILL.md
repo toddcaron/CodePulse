@@ -49,6 +49,7 @@ Requirements:
 ## Output
 
 Create a focused HTML report section for MFA only.
+File output path =  codepulse-mfa/reports/
 
 Include:
 

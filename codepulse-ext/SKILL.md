@@ -61,7 +61,7 @@ Requirements:
 
 Create a focused HTML external access report.
 Filename =  {skill_name}_{currentDate}-report.html
-File output path =  reports/
+File output path =  codepulse-ext/reports/
 
 Include:
 

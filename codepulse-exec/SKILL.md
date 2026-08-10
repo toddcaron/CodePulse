@@ -377,7 +377,7 @@ Generate a concise executive HTML report that matches the CodePulse executive sc
 references/executive-scorecard-template.html
 
 Filename =  {skill_name}_{currentDate}-report.html
-File output path =  reports/
+File output path =  codepulse-exec/reports/
 
 The report should be suitable for:
 

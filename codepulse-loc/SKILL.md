@@ -40,6 +40,7 @@ Requirements:
 ## Output
 
 Create a focused HTML report section for lines of code only.
+File output path =  codepulse-loc/reports/
 
 Include:
 

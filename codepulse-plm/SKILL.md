@@ -58,6 +58,7 @@ Requirements:
 ## Output
 
 Create a focused HTML dependency lifecycle report.
+File output path =  codepulse-plm/reports/
 
 Include:
 

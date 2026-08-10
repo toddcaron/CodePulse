@@ -53,6 +53,7 @@ Requirements:
 ## Output
 
 Create a focused HTML code quality report.
+File output path =  codepulse-quality/reports/
 
 Include:
 

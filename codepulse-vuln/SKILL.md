@@ -75,6 +75,7 @@ Requirements:
 ## Output
 
 Create a focused HTML security vulnerability report.
+File output path =  codepulse-vuln/reports/
 
 Include:
 
