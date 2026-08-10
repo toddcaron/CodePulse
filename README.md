@@ -19,6 +19,7 @@ CodePulse provides a collection of focused GitHub Copilot skills that can be run
 | **codepulse-deadcode** | Identifies cleanup opportunities                      | Unused code, unused variables, obsolete classes, dead endpoints, commented-out code  | `Run codepulse-deadcode and identify code safe for removal.`               |
 | **codepulse-plm**      | Reviews technology lifecycle health                   | Outdated frameworks, package versions, deprecated libraries, upgrade risk            | `Run codepulse-plm and identify unsupported technologies.`                 |
 | **codepulse-ext**      | Reviews external accessibility and exposure risks     | Public endpoints, APIs, webhooks, CORS, anonymous access, attack surface             | `Run codepulse-ext and analyze the application's external exposure.`       |
+| **codepulse-exec**      | Converts a report into an executive-level summary.     | Per provided report. Attempts to answer leadership questions and provide investment and strength analysis.             | `/codepulse-exec <report-filepath>`       |
 
 ## Common Assessment Scenarios
 | Scenario                        | Recommended Skills                                         |
