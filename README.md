@@ -15,6 +15,7 @@ CodePulse provides a collection of focused GitHub Copilot skills that can be run
 | **codepulse-loc**      | Measures application size and composition             | Total LOC, language breakdown, large files/modules                                   | `Run codepulse-loc and provide a language breakdown.`                      |
 | **codepulse-mfa**      | Reviews authentication and MFA implementation         | MFA enforcement, authentication flows, identity provider integration, bypass risks   | `Run codepulse-mfa and determine whether MFA is implemented correctly.`    |
 | **codepulse-vuln**     | Performs security and vulnerability analysis          | OWASP risks, dependency vulnerabilities, CVEs, secrets, injection vulnerabilities    | `Run codepulse-vuln and identify any high-risk findings.`                  |
+| **codepulse-vuln-verbose** | Performs exhaustive vulnerability analysis with line-level evidence | Every finding instance, source-to-sink evidence, file and line citations, CVEs | `/codepulse-vuln-verbose on this repo.` |
 | **codepulse-quality**  | Evaluates maintainability and code quality            | Complexity, code smells, standards compliance, duplication, architecture consistency | `Run codepulse-quality and identify refactoring opportunities.`            |
 | **codepulse-deadcode** | Identifies cleanup opportunities                      | Unused code, unused variables, obsolete classes, dead endpoints, commented-out code  | `Run codepulse-deadcode and identify code safe for removal.`               |
 | **codepulse-plm**      | Reviews technology lifecycle health                   | Outdated frameworks, package versions, deprecated libraries, upgrade risk            | `Run codepulse-plm and identify unsupported technologies.`                 |
@@ -25,6 +26,7 @@ CodePulse provides a collection of focused GitHub Copilot skills that can be run
 | Scenario                        | Recommended Skills                                         |
 | ------------------------------- | ---------------------------------------------------------- |
 | Security Review                 | `codepulse-vuln`, `codepulse-mfa`, `codepulse-ext`         |
+| Detailed Security Review        | `codepulse-vuln-verbose`                                   |
 | Modernization Planning          | `codepulse-plm`, `codepulse-quality`                       |
 | Technical Debt Assessment       | `codepulse-quality`, `codepulse-deadcode`                  |
 | Architecture Review             | `codepulse-ext`, `codepulse-mfa`                           |
@@ -60,6 +62,10 @@ Each CodePulse skill is self-contained so it can be installed and run independen
 │   ├── references/
 │   └── reports/
 ├── codepulse-vuln/
+│   ├── SKILL.md
+│   ├── references/
+│   └── reports/
+├── codepulse-vuln-verbose/
 │   ├── SKILL.md
 │   ├── references/
 │   └── reports/
@@ -127,6 +133,7 @@ This includes:
 - codepulse-loc
 - codepulse-mfa
 - codepulse-vuln
+- codepulse-vuln-verbose
 - codepulse-quality
 - codepulse-deadcode
 - codepulse-plm
@@ -219,6 +226,12 @@ codepulse-vuln
 or
 
 ```text
+codepulse-vuln-verbose
+```
+
+or
+
+```text
 codepulse-full
 ```
 
@@ -246,6 +259,7 @@ The `codepulse-full` skill can generate a complete HTML assessment report suitab
 | --------------------- | ---------------------------------------------------------------------- |
 | Full Assessment       | `/codepulse-full on this repository.`                               |
 | Security Audit        | `/codepulse-vuln summarize the top risks.`                      |
+| Verbose Security Audit | `/codepulse-vuln-verbose list every vulnerability with file and line references.` |
 | MFA Review            | `/codepulse-mfa identify authentication weaknesses.`            |
 | Technology Health     | `/codepulse-plm` |
 | Technical Debt Review | `Run codepulse-quality and codepulse-deadcode.`                        |
