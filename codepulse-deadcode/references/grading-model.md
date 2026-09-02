@@ -25,9 +25,9 @@ The CodePulse Full Assessment evaluates the following categories:
 
 | Category | Weight |
 |----------|----------|
-| Security Vulnerabilities | 25% |
-| MFA Implementation | 15% |
-| Code Quality | 20% |
+| Security Vulnerabilities | 30% |
+| MFA Implementation | 5% |
+| Code Quality | 25% |
 | Dead Code | 10% |
 | Dependency & Framework Health | 15% |
 | External Exposure | 10% |
