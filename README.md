@@ -122,7 +122,7 @@ Choose one of the following installation methods.
 The easiest way to install CodePulse is with the Skills CLI:
 
 ```shell
-npx skills add Todd-Caron_Taylor/CodePulse
+npx skills add toddcaron/CodePulse
 ```
 
 This installs the self-contained CodePulse skills with their local references and report folders.
