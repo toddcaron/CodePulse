@@ -35,6 +35,8 @@ Look for:
 
 Distinguish between confirmed dead code and suspected dead code. If usage cannot be verified statically, mark it as “Needs confirmation.”
 
+Distinguish between valid comments and commented-out code that may indicate dead code. Mark commented-out code as “Needs confirmation” unless it is clearly obsolete. Make sure to look for comments via the comment syntax appropriate for the language (e.g., `//` for JavaScript, `#` for Python, '///' for XML, `/* */` for block comments).
+
 ## Shared References
 
 Before generating the assessment, review:
