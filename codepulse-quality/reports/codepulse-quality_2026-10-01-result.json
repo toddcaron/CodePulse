@@ -1,0 +1,176 @@
+{
+  "schemaVersion": "2.0",
+  "reportType": "detailed",
+  "skillName": "codepulse-quality",
+  "application": "CodePulse",
+  "repository": "C:/Users/tcaron/repos/CodePulse",
+  "assessmentDate": "2026-10-01",
+  "executiveSummary": [
+    "The only executable source in this repository is validate-codepulse.ps1, a 185-line PowerShell validation script. It is readable, flat, and fails fast with specific error messages; every top-level statement is within acceptable cyclomatic and cognitive thresholds.",
+    "Maintainability cost comes from repetition rather than difficulty: the same contains-or-throw guard is hand-written in 18 places, string comparisons are inconsistent, and the script stops at the first failure. A small data-driven helper would remove most of this accidental complexity."
+  ],
+  "overall": {
+    "score": 87,
+    "grade": "B",
+    "complete": true,
+    "note": "Weighted per complexity-model.md: Cyclomatic 98 x 10%, Cognitive 95 x 15%, Accidental 82 x 15%, Other quality signals 85 x 60% = 87.35."
+  },
+  "scope": {
+    "included": ["validate-codepulse.ps1 (185 lines, 52 top-level statements, 0 functions)"],
+    "excluded": ["Markdown skill and reference files (instructions, not code)", "JSON schemas (data definitions)", "Generated HTML reports"]
+  },
+  "methodology": {
+    "executedChecks": [
+      "[System.Management.Automation.Language.Parser]::ParseFile('validate-codepulse.ps1') AST decision-point count per top-level statement",
+      "Select-String validate-codepulse.ps1 -Pattern '\\.IndexOf\\('",
+      "Manual review of validate-codepulse.ps1 lines 1-185"
+    ],
+    "tools": ["PowerShell 7.6.4 language parser"],
+    "notes": [
+      "No functions are defined, so each top-level statement (30 non-trivial units) is treated as the measured unit.",
+      "Cyclomatic = 1 + if/elseif clauses + loops + -and/-or operators. Cognitive is a SonarSource-style estimate from the same AST (+1 per flow break, + nesting level)."
+    ]
+  },
+  "assessments": [
+    {
+      "schemaVersion": "2.0",
+      "assessmentName": "codepulse-quality",
+      "category": "Code Quality",
+      "repository": "C:/Users/tcaron/repos/CodePulse",
+      "assessmentDate": "2026-10-01",
+      "score": 87,
+      "grade": "B",
+      "status": "complete",
+      "summary": "Readable, flat validation script with no complexity threshold breaches. Deductions come from duplicated guard logic, hardcoded skill inventory, inconsistent string comparison, and fail-fast reporting.",
+      "metrics": {
+        "complexity": {
+          "measures": [
+            { "measure": "Cyclomatic", "source": "PowerShell 7.6.4 AST count", "functions": 30, "median": 3, "p90": 3, "max": 8, "aboveThreshold": "0%", "score": 98 },
+            { "measure": "Cognitive", "source": "manual-estimate (AST-assisted)", "functions": 30, "median": 3, "p90": 3, "max": 14, "aboveThreshold": "0%", "score": 95 },
+            { "measure": "Accidental", "source": "Manual review", "note": "Duplicated contains-or-throw guards; hardcoded skill counts and names", "score": 82 }
+          ],
+          "hotspots": [
+            { "function": "per-skill SKILL.md checks (foreach $skill)", "location": "validate-codepulse.ps1:47", "cyclomatic": 8, "cognitive": 14, "note": "Highest in file; within thresholds. Five independent checks share one loop body." },
+            { "function": "generated instruction checks (foreach $file)", "location": "validate-codepulse.ps1:164", "cyclomatic": 5, "cognitive": 6 },
+            { "function": "assessmentName enum check", "location": "validate-codepulse.ps1:112", "cyclomatic": 5, "cognitive": 5, "findingId": "QUAL-ACC-002" }
+          ]
+        }
+      },
+      "findings": [
+        {
+          "id": "QUAL-ACC-001",
+          "category": "Code Quality",
+          "severity": "Low",
+          "title": "Contains-or-throw guard duplicated 18 times",
+          "evidence": [
+            { "path": "validate-codepulse.ps1", "line": 67, "endLine": 72, "snippet": "foreach ($weight in @(...)) {\n    if ($full.IndexOf($weight) -lt 0) { throw \"codepulse-full is missing weight: $weight\" }\n}" },
+            { "path": "validate-codepulse.ps1", "line": 124, "endLine": 130, "note": "Same pattern for both renderers" },
+            { "path": "validate-codepulse.ps1", "line": 136, "endLine": 183, "note": "Same pattern for runtime contract, token efficiency, orchestration, setup doc, and benchmark plan" },
+            { "command": "Select-String validate-codepulse.ps1 -Pattern '\\.IndexOf\\('", "output": "18 matches" }
+          ],
+          "impact": "Each new contract rule requires copying a loop, guard, and message. Inconsistencies (see QUAL-001) creep in because each copy is written independently.",
+          "recommendation": "Inherent-vs-accidental test: the same behavior can be expressed more simply. Replace with one helper, e.g. Assert-Contains -Path <file> -Items <string[]> -Label <text> [-IgnoreCase], driven by a table of file-to-required-text entries.",
+          "verificationStatus": "verified-original",
+          "sourceRepresentation": "original",
+          "evidenceRecoveryRequired": false,
+          "evidenceLimitations": [],
+          "estimatedComplexity": "Low",
+          "remediationPriority": "Low"
+        },
+        {
+          "id": "QUAL-ACC-002",
+          "category": "Code Quality",
+          "severity": "Low",
+          "title": "Skill inventory hardcoded in three places",
+          "evidence": [
+            { "path": "validate-codepulse.ps1", "line": 32, "snippet": "if ($allSkills.Count -ne 10) { throw ... }" },
+            { "path": "validate-codepulse.ps1", "line": 35, "snippet": "if ($skills.Count -ne 9) { throw ... }" },
+            { "path": "validate-codepulse.ps1", "line": 112, "snippet": "Where-Object { $_.Name -ne 'codepulse-shared' -and $_.Name -ne 'codepulse-full' -and $_.Name -ne 'codepulse-exec' }" }
+          ],
+          "impact": "Adding or removing a skill requires editing magic numbers and an exclusion list that duplicate the skillName enum in codepulse-report-schema.json.",
+          "recommendation": "Derive the expected skill list from the skillName enum in codepulse-shared/schemas/codepulse-report-schema.json and compare sets, instead of hardcoding counts and names.",
+          "verificationStatus": "verified-original",
+          "sourceRepresentation": "original",
+          "evidenceRecoveryRequired": false,
+          "evidenceLimitations": [],
+          "estimatedComplexity": "Low",
+          "remediationPriority": "Low"
+        },
+        {
+          "id": "QUAL-001",
+          "category": "Code Quality",
+          "severity": "Low",
+          "title": "Inconsistent string comparison semantics",
+          "evidence": [
+            { "path": "validate-codepulse.ps1", "line": 50, "note": "IndexOf without StringComparison (culture-sensitive, case-sensitive) also at lines 55, 61, 68, 71, 76, 82, 125, 129, 131, 137, 141" },
+            { "path": "validate-codepulse.ps1", "line": 144, "note": "IndexOf with OrdinalIgnoreCase also at lines 151, 167, 168, 175, 180" },
+            { "path": "validate-codepulse.ps1", "line": 58, "snippet": "if ($text -match 'report-template\\.html|...')", "note": "-match is case-insensitive" }
+          ],
+          "impact": "Readers must check each call to know whether a rule is case-sensitive. Culture-sensitive IndexOf can behave differently across locales.",
+          "recommendation": "Use one comparison policy: StringComparison.Ordinal for exact contract text, OrdinalIgnoreCase only where intentional. Centralize it in the QUAL-ACC-001 helper.",
+          "verificationStatus": "verified-tool-output",
+          "sourceRepresentation": "original",
+          "evidenceRecoveryRequired": false,
+          "evidenceLimitations": [],
+          "estimatedComplexity": "Low",
+          "remediationPriority": "Low"
+        },
+        {
+          "id": "QUAL-002",
+          "category": "Code Quality",
+          "severity": "Low",
+          "title": "Validation stops at the first failure",
+          "evidence": [
+            { "path": "validate-codepulse.ps1", "line": 1, "snippet": "$ErrorActionPreference = 'Stop'" },
+            { "command": "Select-String validate-codepulse.ps1 -Pattern '\\bthrow\\b'", "output": "33 matches" }
+          ],
+          "impact": "Contributors fixing a broad change (such as this report migration) must rerun the script once per defect.",
+          "recommendation": "Collect failures into a list, print all of them, and exit 1 when any exist.",
+          "verificationStatus": "verified-original",
+          "sourceRepresentation": "original",
+          "evidenceRecoveryRequired": false,
+          "evidenceLimitations": [],
+          "estimatedComplexity": "Low",
+          "remediationPriority": "Low"
+        },
+        {
+          "id": "QUAL-003",
+          "category": "Code Quality",
+          "title": "Flat, readable structure with specific failure messages",
+          "status": "positive",
+          "evidence": [
+            { "path": "validate-codepulse.ps1", "line": 1, "snippet": "$ErrorActionPreference = 'Stop'" },
+            { "path": "validate-codepulse.ps1", "line": 85, "endLine": 121, "note": "Schema checks parse JSON with ConvertFrom-Json rather than text matching" }
+          ],
+          "impact": "Every rule reads top to bottom with at most two nesting levels, and each failure names the file and missing item.",
+          "recommendation": "Preserve this property when introducing the QUAL-ACC-001 helper.",
+          "verificationStatus": "verified-original",
+          "sourceRepresentation": "original",
+          "evidenceRecoveryRequired": false,
+          "evidenceLimitations": []
+        }
+      ],
+      "limitations": [
+        "No PowerShell complexity analyzer (PSScriptAnalyzer) was installed; cognitive values are estimates and lizard does not support PowerShell.",
+        "Change frequency and test coverage were not assessed; the repository has no automated tests for the validator itself."
+      ],
+      "verificationStatus": "verified-original",
+      "sourceRepresentation": "original",
+      "evidenceRecoveryRequired": false,
+      "evidenceLimitations": ["Cognitive complexity manually estimated"]
+    }
+  ],
+  "topRisks": [
+    { "findingId": "QUAL-ACC-001", "summary": "Main driver of maintenance effort as contract rules grow." }
+  ],
+  "recommendations": [
+    { "priority": "Medium", "title": "Introduce a data-driven Assert-Contains helper", "detail": "Collapse the 18 guards into a table of file-to-required-text entries with one comparison policy. Small effort.", "findingIds": ["QUAL-ACC-001", "QUAL-001"] },
+    { "priority": "Low", "title": "Derive skill inventory from the report schema", "detail": "Remove hardcoded counts and exclusion lists. Small effort.", "findingIds": ["QUAL-ACC-002"] },
+    { "priority": "Low", "title": "Report all validation failures in one run", "detail": "Accumulate errors and exit non-zero at the end. Small effort.", "findingIds": ["QUAL-002"] }
+  ],
+  "limitations": [
+    "Static review of a single script; Markdown instruction files were not scored as code.",
+    "Cognitive complexity is an AST-assisted manual estimate."
+  ],
+  "conclusion": "Code quality is good (B, 87). The validator is easy to read; consolidating its repeated guard pattern is the single highest-value improvement."
+}

@@ -113,18 +113,19 @@ Before executing this skill, read and apply:
 - `../codepulse-shared/references/recommendations-library.md`
 - `../codepulse-shared/references/report-standard.md`
 - `../codepulse-shared/references/assessment-methodology.md`
-- `../codepulse-shared/schemas/finding-schema.md`
-- `../codepulse-shared/schemas/assessment-result-schema.md`
+- `../codepulse-shared/schemas/finding-schema.json`
+- `../codepulse-shared/schemas/assessment-result-schema.json`
+- `../codepulse-shared/schemas/codepulse-report-schema.json`
 
-Preserve exhaustive line-level evidence, CVE/NVD references, and stable finding IDs. Use `../codepulse-shared/templates/report-template.html` for the detailed report presentation.
+Preserve exhaustive line-level evidence, CVE/NVD references, and stable finding IDs. Render with `../codepulse-shared/renderers/html-template.md` after the report object is final.
 
 ## Normalized Result
 
-Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.md`. Every line-level finding must use the shared finding schema with a stable `SEC-*` ID and preserve exhaustive path, line, source-to-sink, severity, impact, recommendation, and CVE evidence.
+Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.json`. Every line-level finding must use the shared finding schema with a stable `SEC-*` ID and preserve exhaustive path, line, source-to-sink, severity, impact, recommendation, and CVE evidence.
 
 ## Output
 
-Create a focused, verbose HTML security vulnerability report in:
+Follow the Output Protocol in `../codepulse-shared/references/report-standard.md`: write `{skill_name}_{currentDate}-result.json` and render `{skill_name}_{currentDate}-report.html` in:
 
 ```text
 codepulse-vuln-verbose/reports/

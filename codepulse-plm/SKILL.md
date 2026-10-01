@@ -51,18 +51,19 @@ Before executing this skill, read and apply:
 - `../codepulse-shared/references/recommendations-library.md`
 - `../codepulse-shared/references/report-standard.md`
 - `../codepulse-shared/references/assessment-methodology.md`
-- `../codepulse-shared/schemas/finding-schema.md`
-- `../codepulse-shared/schemas/assessment-result-schema.md`
+- `../codepulse-shared/schemas/finding-schema.json`
+- `../codepulse-shared/schemas/assessment-result-schema.json`
+- `../codepulse-shared/schemas/codepulse-report-schema.json`
 
-Use `../codepulse-shared/templates/report-template.html` for the detailed report presentation and preserve exact dependency names, versions, and CVE evidence.
+Render with `../codepulse-shared/renderers/html-template.md` after the report object is final and preserve exact dependency names, versions, and CVE evidence.
 
 ## Normalized Result
 
-Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.md`. Use stable `PLM-*` finding IDs and preserve exact dependency names, versions, advisory identifiers, evidence, impact, and remediation.
+Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.json`. Use stable `PLM-*` finding IDs and preserve exact dependency names, versions, advisory identifiers, evidence, impact, and remediation.
 
 ## Output
 
-Create a focused HTML dependency lifecycle report.
+Follow the Output Protocol in `../codepulse-shared/references/report-standard.md`: write `{skill_name}_{currentDate}-result.json` and render `{skill_name}_{currentDate}-report.html`.
 File output path =  codepulse-plm/reports/
 
 Include:

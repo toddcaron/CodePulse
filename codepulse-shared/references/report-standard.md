@@ -21,8 +21,19 @@ Findings must retain evidence, impact, severity, recommendation, and stable IDs.
 
 Executive reports summarize overall posture, business impact, top risks, modernization readiness, strengths, and prioritized investment actions. Do not repeat detailed source code, file names, line numbers, or every finding unless materially needed for a decision.
 
+## Output Protocol
+
+Data and presentation are separate. `../schemas/codepulse-report-schema.json` defines all report data; `../renderers/*.md` define presentation. Every skill that writes a report:
+
+1. Builds one report object conforming to `../schemas/codepulse-report-schema.json` (`reportType: "detailed"`, or `"executive"` for `codepulse-exec`). Each assessment result conforms to `../schemas/assessment-result-schema.json`; each finding to `../schemas/finding-schema.json`.
+2. Validates the object against the schemas. Fix missing required fields from original evidence, or mark the finding or assessment incomplete with the limitation recorded. Do not invent values to satisfy the schema.
+3. Writes the object as `{skill_name}_{currentDate}-result.json` to the skill's `reports/` directory.
+4. Renders the object to `{skill_name}_{currentDate}-report.html` in the same directory using `../renderers/html-template.md` (detailed) or `../renderers/executive-summary-template.md` (executive). When the user explicitly requests Markdown, render `{skill_name}_{currentDate}-report.md` using `../renderers/markdown-template.md` instead.
+
+Read the renderer only after the report object is final. Rendered reports contain no data that is absent from the JSON.
+
 ## Compatibility
 
 Keep existing user-facing skill names, report directories, and filename conventions. Focused reports continue under their existing `codepulse-*/reports/` directories. Full reports continue under `codepulse-full/reports/` using `{skill_name}_{currentDate}-report.html`.
 
-The shared `../templates/report-template.html` and `../templates/executive-report-template.html` files define structure and presentation. Existing local templates are migration inputs and must not be treated as separate authorities after migration.
+Schema version is `2.0`. Version `1.0` results (Markdown schemas, optional provenance fields) are not accepted; rerun the assessment to produce a `2.0` result.

@@ -22,11 +22,11 @@ Before executing this skill, read and apply:
 - `../codepulse-shared/references/report-standard.md`
 - `../codepulse-shared/references/assessment-methodology.md`
 - `../codepulse-shared/references/complexity-model.md`
-- `../codepulse-shared/schemas/finding-schema.md`
-- `../codepulse-shared/schemas/assessment-result-schema.md`
-- `../codepulse-shared/templates/assessment-output-template.md`
+- `../codepulse-shared/schemas/finding-schema.json`
+- `../codepulse-shared/schemas/assessment-result-schema.json`
+- `../codepulse-shared/schemas/codepulse-report-schema.json`
 
-Use `../codepulse-shared/templates/report-template.html` as the detailed report presentation template.
+Render with `../codepulse-shared/renderers/html-template.md` after the report object is final.
 
 ## Input and Scope
 
@@ -52,12 +52,12 @@ Use `codepulse-vuln-verbose` only when exhaustive line-level vulnerability analy
 1. Detect repository type, languages, frameworks, boundaries, entry points, manifests, configuration, CI/CD, and infrastructure.
 2. Select the six required capabilities and apply their focused workflows. Reuse repository metadata and evidence between capabilities.
 3. Collect one normalized assessment result from each capability. Each result must include `assessmentName`, `repository`, `assessmentDate`, `score`, `status`, `findings`, and `summary`. Record `complete`, `incomplete`, `failed`, or `unavailable` for every capability. Represent an intentionally skipped capability as `incomplete` with an explicit `skipReason` and affected scope. Never infer successful completion from a compressed summary.
-4. Normalize every finding with stable `id` (also called `findingId` in intermediate output), category, severity where applicable, title, exact evidence, impact, recommendation, `verificationStatus`, `sourceRepresentation`, `evidenceRecoveryRequired`, and `evidenceLimitations`.
+4. Normalize every finding with stable `id`, category, severity where applicable, title, exact evidence, impact, recommendation, `verificationStatus`, `sourceRepresentation`, `evidenceRecoveryRequired`, and `evidenceLimitations`.
 5. Validate every result and finding against the shared schemas. Validate evidence references against available original repository content or original tool output. Reject or mark findings incomplete when required evidence, impact, recommendation, or provenance is missing. Inspect original content whenever required by the runtime contract; do not reconstruct exact evidence from summaries.
 6. Preserve exact paths, lines, commands, versions, URLs, CVEs, errors, and configuration values. Confirmed High and Critical findings must be verified against original content and must not rely only on compressed or summarized context. If originals cannot be recovered, retain the observation as unverified or incomplete and record the limitation rather than claiming confirmation.
 7. Merge results by stable finding ID only after validation. Deduplicate repeated findings without deleting distinct evidence; cross-reference reused findings. Reopen original evidence to resolve conflicting findings or sources.
 8. Calculate the weighted overall score and assign the overall letter grade only after evidence and finding validation. Do not present the overall assessment as complete when a required capability is incomplete, failed, intentionally skipped, or unavailable; explain the effect on score and coverage.
-9. Generate the final detailed HTML report only from validated normalized results, using the existing report structure and shared report standard. Preserve each capability status, evidence limitations, and required report sections.
+9. Assemble one `codepulse-report-schema.json` object (`reportType: "detailed"`) only from validated normalized results, set `overall.complete` to false when any capability is not `complete`, and render the final detailed HTML report from it. Preserve each capability status, evidence limitations, and required report sections.
 
 ## Required Report Sections
 
@@ -95,8 +95,6 @@ The assessment answers whether the application is healthy, secure, maintainable,
 
 ## Output
 
-Output one complete HTML report.
-
-Filename: `{skill_name}_{currentDate}-report.html`
+Follow the Output Protocol in `../codepulse-shared/references/report-standard.md`: write `{skill_name}_{currentDate}-result.json` and render one complete `{skill_name}_{currentDate}-report.html`.
 
 Path: `codepulse-full/reports/`

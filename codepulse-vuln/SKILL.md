@@ -67,18 +67,19 @@ Before executing this skill, read and apply:
 - `../codepulse-shared/references/recommendations-library.md`
 - `../codepulse-shared/references/report-standard.md`
 - `../codepulse-shared/references/assessment-methodology.md`
-- `../codepulse-shared/schemas/finding-schema.md`
-- `../codepulse-shared/schemas/assessment-result-schema.md`
+- `../codepulse-shared/schemas/finding-schema.json`
+- `../codepulse-shared/schemas/assessment-result-schema.json`
+- `../codepulse-shared/schemas/codepulse-report-schema.json`
 
-Preserve CVE/NVD evidence and emit stable finding IDs. Use `../codepulse-shared/templates/report-template.html` for the detailed report presentation.
+Preserve CVE/NVD evidence and emit stable finding IDs. Render with `../codepulse-shared/renderers/html-template.md` after the report object is final.
 
 ## Normalized Result
 
-Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.md`. Every finding must use the shared finding schema with a stable `SEC-*` ID, exact evidence, severity, impact, recommendation, and CVE data when applicable.
+Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.json`. Every finding must use the shared finding schema with a stable `SEC-*` ID, exact evidence, severity, impact, recommendation, and CVE data when applicable.
 
 ## Output
 
-Create a focused HTML security vulnerability report.
+Follow the Output Protocol in `../codepulse-shared/references/report-standard.md`: write `{skill_name}_{currentDate}-result.json` and render `{skill_name}_{currentDate}-report.html`.
 File output path =  codepulse-vuln/reports/
 
 Include:

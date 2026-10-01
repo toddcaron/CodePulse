@@ -35,18 +35,19 @@ Before executing this skill, read and apply:
 - `../codepulse-shared/references/recommendations-library.md`
 - `../codepulse-shared/references/report-standard.md`
 - `../codepulse-shared/references/assessment-methodology.md`
-- `../codepulse-shared/schemas/finding-schema.md`
-- `../codepulse-shared/schemas/assessment-result-schema.md`
+- `../codepulse-shared/schemas/finding-schema.json`
+- `../codepulse-shared/schemas/assessment-result-schema.json`
+- `../codepulse-shared/schemas/codepulse-report-schema.json`
 
-Use `../codepulse-shared/templates/report-template.html` for the detailed report presentation.
+Render with `../codepulse-shared/renderers/html-template.md` after the report object is final.
 
 ## Normalized Result
 
-Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.md`. Use stable `LOC-*` finding IDs for evidence-backed maintainability observations and include the score, grade, status, summary, and limitations.
+Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.json`. Use stable `LOC-*` finding IDs for evidence-backed maintainability observations and include the score, grade, status, summary, limitations, and `metrics.loc`.
 
 ## Output
 
-Create a focused HTML report section for lines of code only.
+Follow the Output Protocol in `../codepulse-shared/references/report-standard.md`: write `{skill_name}_{currentDate}-result.json` and render `{skill_name}_{currentDate}-report.html`.
 File output path =  codepulse-loc/reports/
 
 Include:

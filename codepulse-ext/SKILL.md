@@ -53,19 +53,19 @@ Before executing this skill, read and apply:
 - `../codepulse-shared/references/recommendations-library.md`
 - `../codepulse-shared/references/report-standard.md`
 - `../codepulse-shared/references/assessment-methodology.md`
-- `../codepulse-shared/schemas/finding-schema.md`
-- `../codepulse-shared/schemas/assessment-result-schema.md`
+- `../codepulse-shared/schemas/finding-schema.json`
+- `../codepulse-shared/schemas/assessment-result-schema.json`
+- `../codepulse-shared/schemas/codepulse-report-schema.json`
 
-Use `../codepulse-shared/templates/report-template.html` for the detailed report presentation and preserve exact exposure evidence.
+Render with `../codepulse-shared/renderers/html-template.md` after the report object is final and preserve exact exposure evidence.
 
 ## Normalized Result
 
-Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.md`. Use stable `EXT-*` finding IDs for evidence-backed exposure observations and include status, score, limitations, impact, and remediation.
+Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.json`. Use stable `EXT-*` finding IDs for evidence-backed exposure observations and include status, score, limitations, impact, and remediation.
 
 ## Output
 
-Create a focused HTML external access report.
-Filename =  {skill_name}_{currentDate}-report.html
+Follow the Output Protocol in `../codepulse-shared/references/report-standard.md`: write `{skill_name}_{currentDate}-result.json` and render `{skill_name}_{currentDate}-report.html`.
 File output path =  codepulse-ext/reports/
 
 Include:

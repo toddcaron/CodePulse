@@ -11,15 +11,20 @@ $sharedFiles = @(
     'codepulse-shared/references/report-standard.md',
     'codepulse-shared/references/assessment-methodology.md',
     'codepulse-shared/references/complexity-model.md',
-    'codepulse-shared/schemas/finding-schema.md',
-    'codepulse-shared/schemas/assessment-result-schema.md',
-    'codepulse-shared/templates/assessment-output-template.md',
-    'codepulse-shared/templates/report-template.html',
-    'codepulse-shared/templates/executive-report-template.html'
+    'codepulse-shared/schemas/finding-schema.json',
+    'codepulse-shared/schemas/assessment-result-schema.json',
+    'codepulse-shared/schemas/codepulse-report-schema.json',
+    'codepulse-shared/renderers/html-template.md',
+    'codepulse-shared/renderers/markdown-template.md',
+    'codepulse-shared/renderers/executive-summary-template.md'
 )
 
 foreach ($file in $sharedFiles) {
     if (-not (Test-Path $file)) { throw "Missing shared file: $file" }
+}
+
+foreach ($legacy in @('codepulse-shared/templates','codepulse-shared/schemas/finding-schema.md','codepulse-shared/schemas/assessment-result-schema.md','codepulse-exec/references/executive-scorecard-template.html')) {
+    if (Test-Path $legacy) { throw "Legacy report asset must be removed: $legacy" }
 }
 
 $allSkills = Get-ChildItem -Directory -Filter 'codepulse-*' |
@@ -35,8 +40,9 @@ $requiredLinks = @(
     '../codepulse-shared/references/report-standard.md',
     '../codepulse-shared/references/assessment-methodology.md',
     '../codepulse-shared/references/recommendations-library.md',
-    '../codepulse-shared/schemas/finding-schema.md',
-    '../codepulse-shared/schemas/assessment-result-schema.md'
+    '../codepulse-shared/schemas/finding-schema.json',
+    '../codepulse-shared/schemas/assessment-result-schema.json',
+    '../codepulse-shared/schemas/codepulse-report-schema.json'
 )
 foreach ($skill in $skills) {
     $text = Get-Content (Join-Path $skill.FullName 'SKILL.md') -Raw
@@ -45,8 +51,15 @@ foreach ($skill in $skills) {
             throw "$($skill.Name) is missing shared link: $link"
         }
     }
-    if (Test-Path (Join-Path $skill.FullName 'references/report-template.html')) {
-        throw "$($skill.Name) contains a duplicate local report template"
+    $renderer = if ($skill.Name -eq 'codepulse-exec') { 'executive-summary-template.md' } else { 'html-template.md' }
+    if ($text.IndexOf("``../codepulse-shared/renderers/$renderer``") -lt 0) {
+        throw "$($skill.Name) is missing renderer link: $renderer"
+    }
+    if ($text -match 'report-template\.html|executive-scorecard-template|templates/|-schema\.md') {
+        throw "$($skill.Name) still references a legacy HTML template or Markdown schema"
+    }
+    if ($text.IndexOf('-result.json') -lt 0) {
+        throw "$($skill.Name) does not persist a -result.json report object"
     }
 }
 
@@ -69,23 +82,55 @@ foreach ($requirement in @('Cyclomatic Complexity','Cognitive Complexity','Accid
     if ($complexityModel.IndexOf($requirement) -lt 0) { throw "Complexity model is missing: $requirement" }
 }
 
-$findingSchema = Get-Content 'codepulse-shared/schemas/finding-schema.md' -Raw
-foreach ($field in @('`id`','`category`','`severity`','`title`','`evidence`','`impact`','`recommendation`')) {
-    if ($findingSchema.IndexOf($field) -lt 0) { throw "Finding schema is missing field: $field" }
+$findingSchema = Get-Content 'codepulse-shared/schemas/finding-schema.json' -Raw | ConvertFrom-Json
+foreach ($field in @('id','category','title','evidence','impact','recommendation','verificationStatus','sourceRepresentation','evidenceRecoveryRequired','evidenceLimitations')) {
+    if ($findingSchema.required -notcontains $field) { throw "Finding schema does not require field: $field" }
+}
+if (-not $findingSchema.properties.severity) { throw 'Finding schema is missing field: severity' }
+$verificationValues = $findingSchema.properties.verificationStatus.enum
+foreach ($value in @('verified-original','verified-tool-output','partially-verified','unverified','unavailable')) {
+    if ($verificationValues -notcontains $value) { throw "Finding schema is missing provenance value: $value" }
+}
+$representationValues = $findingSchema.properties.sourceRepresentation.enum
+foreach ($value in @('original','normalized','compressed','summarized')) {
+    if ($representationValues -notcontains $value) { throw "Finding schema is missing provenance value: $value" }
 }
 
-$resultSchema = Get-Content 'codepulse-shared/schemas/assessment-result-schema.md' -Raw
-foreach ($field in @('assessmentName','repository','assessmentDate','score','status','findings','summary')) {
-    if ($resultSchema.IndexOf($field) -lt 0) { throw "Assessment-result schema is missing field: $field" }
+$resultSchema = Get-Content 'codepulse-shared/schemas/assessment-result-schema.json' -Raw | ConvertFrom-Json
+foreach ($field in @('schemaVersion','assessmentName','repository','assessmentDate','score','status','findings','summary')) {
+    if ($resultSchema.required -notcontains $field) { throw "Assessment-result schema does not require field: $field" }
+}
+foreach ($value in @('complete','incomplete','failed','unavailable')) {
+    if ($resultSchema.properties.status.enum -notcontains $value) { throw "Assessment-result schema is missing status: $value" }
+}
+if (-not $resultSchema.properties.skipReason) { throw 'Assessment-result schema does not document skipReason' }
+
+$reportSchema = Get-Content 'codepulse-shared/schemas/codepulse-report-schema.json' -Raw | ConvertFrom-Json
+foreach ($field in @('schemaVersion','reportType','skillName','application','repository','assessmentDate')) {
+    if ($reportSchema.required -notcontains $field) { throw "Report schema does not require field: $field" }
+}
+foreach ($skill in $allSkills | Where-Object { $_.Name -ne 'codepulse-shared' -and $_.Name -ne 'codepulse-full' -and $_.Name -ne 'codepulse-exec' }) {
+    if ($resultSchema.properties.assessmentName.enum -notcontains $skill.Name) { throw "Assessment-result schema is missing assessmentName: $($skill.Name)" }
+}
+foreach ($skill in $skills) {
+    if ($reportSchema.properties.skillName.enum -notcontains $skill.Name) { throw "Report schema is missing skillName: $($skill.Name)" }
+}
+$dashboard = $reportSchema.'$defs'.executive.properties.dashboard
+foreach ($field in @('overallGrade','securityPosture','technologyHealth','maintainability','operationalRisk','modernizationReadiness')) {
+    if ($dashboard.required -notcontains $field) { throw "Executive dashboard does not require: $field" }
 }
 
-foreach ($field in @('`verificationStatus`','`sourceRepresentation`','`evidenceRecoveryRequired`','`evidenceLimitations`')) {
-    if ($findingSchema.IndexOf($field) -lt 0) { throw "Finding schema is missing provenance field: $field" }
+$htmlRenderer = Get-Content 'codepulse-shared/renderers/html-template.md' -Raw
+foreach ($requirement in @('codepulse-report-schema.json','HTML-escape','```css','Executive Summary','Assessment Dashboard','Overall Grade','Assessment Methodology','Security Assessment','Code Quality Assessment','Dead Code Assessment','Dependency & Framework Assessment','External Exposure Assessment','Codebase Metrics','Top Risks','Recommendations','Modernization Opportunities','Conclusion','Complexity breakdown','verificationStatus')) {
+    if ($htmlRenderer.IndexOf($requirement) -lt 0) { throw "HTML renderer is missing: $requirement" }
 }
-foreach ($field in @('verified-original','verified-tool-output','partially-verified','unverified','unavailable','original','normalized','compressed','summarized')) {
-    if ($findingSchema.IndexOf($field) -lt 0) { throw "Finding schema is missing provenance value: $field" }
+$execRenderer = Get-Content 'codepulse-shared/renderers/executive-summary-template.md' -Raw
+foreach ($requirement in @('Executive Dashboard','Application Snapshot','Top Risks','Strengths','Investment Priorities','Modernization Outlook','Executive Recommendation')) {
+    if ($execRenderer.IndexOf($requirement) -lt 0) { throw "Executive renderer is missing section: $requirement" }
 }
-if ($resultSchema.IndexOf('`skipReason`') -lt 0) { throw 'Assessment-result schema does not document skipReason' }
+if ((Get-Content 'codepulse-shared/renderers/markdown-template.md' -Raw).IndexOf('explicitly asks for Markdown') -lt 0) {
+    throw 'Markdown renderer must be opt-in'
+}
 
 $runtime = Get-Content 'codepulse-shared/references/runtime-contract.md' -Raw
 foreach ($requirement in @('## Runtime Precedence','## External Context Optimization Runtime','### Mandatory Original Review','### Negative Finding Standard','### Compression Boundaries','### Secrets and Recovery','High or Critical','not detected in the reviewed scope')) {
@@ -94,12 +139,6 @@ foreach ($requirement in @('## Runtime Precedence','## External Context Optimiza
 
 $tokenEfficiency = Get-Content 'codepulse-shared/references/token-efficiency.md' -Raw
 if ($tokenEfficiency.IndexOf('## External Proxy Coordination') -lt 0) { throw 'Token-efficiency reference is missing external proxy coordination' }
-
-foreach ($required in @('verificationStatus','sourceRepresentation','evidenceRecoveryRequired','evidenceLimitations','findingId')) {
-    if ((Get-Content 'codepulse-shared/templates/assessment-output-template.md' -Raw).IndexOf($required) -lt 0) {
-        throw "Assessment-output template is missing provenance field: $required"
-    }
-}
 
 foreach ($requirement in @('normalized assessment result','evidence references','original evidence','only after evidence and finding validation','intentionally skipped','compressed summary')) {
     if ($full.IndexOf($requirement, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {

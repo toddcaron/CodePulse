@@ -1,13 +1,13 @@
 ---
 name: codepulse-shared
-description: Shared runtime contract, grading standards, severity ratings, recommendations library, report standards, schemas, and templates for all CodePulse assessment skills. Required companion for any CodePulse skill installation.
+description: Shared runtime contract, grading standards, severity ratings, recommendations library, report standards, JSON schemas, and report renderers for all CodePulse assessment skills. Required companion for any CodePulse skill installation.
 ---
 
 # CodePulse Shared Runtime and Standards
 
 ## Purpose
 
-`codepulse-shared` provides the shared runtime contract, grading methodology, severity ratings, recommendations library, report standards, schemas, and templates consumed by all CodePulse assessment skills:
+`codepulse-shared` provides the shared runtime contract, grading methodology, severity ratings, recommendations library, report standards, JSON schemas, and renderers consumed by all CodePulse assessment skills:
 
 - `codepulse-full`
 - `codepulse-loc`
@@ -34,13 +34,16 @@ This shared module must be installed alongside any CodePulse skill in the same p
 - `references/report-standard.md`: Standards for detailed and executive reports.
 - `references/assessment-methodology.md`: Shared repository analysis workflow and static assessment limitations.
 
-### Schemas
+### Schemas (JSON Schema 2020-12, sole data authority)
 
-- `schemas/finding-schema.md`: Normalized finding schema with stable ID, category, severity, title, evidence, impact, and recommendation.
-- `schemas/assessment-result-schema.md`: Normalized assessment result contract used for intermediate and aggregated results.
+- `schemas/finding-schema.json`: Normalized finding with stable ID, category, severity, title, evidence, impact, recommendation, and provenance.
+- `schemas/assessment-result-schema.json`: Normalized per-capability assessment result, including complexity and LOC metrics.
+- `schemas/codepulse-report-schema.json`: Report object persisted as `{skill_name}_{currentDate}-result.json` and consumed by renderers and `codepulse-exec`.
 
-### Templates
+### Renderers
 
-- `templates/report-template.html`: Standard HTML layout and styling for detailed assessments.
-- `templates/executive-report-template.html`: Standard HTML layout and styling for executive health summaries.
-- `templates/assessment-output-template.md`: Compact intermediate markdown assessment output template.
+- `renderers/html-template.md`: Detailed HTML report rendering rules and fixed CSS.
+- `renderers/markdown-template.md`: Opt-in Markdown report rendering rules.
+- `renderers/executive-summary-template.md`: Executive HTML scorecard rendering rules.
+
+The output protocol is defined in `references/report-standard.md`.

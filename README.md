@@ -21,7 +21,7 @@ CodePulse provides a collection of focused GitHub Copilot skills that can be run
 | **codepulse-deadcode** | Identifies cleanup opportunities                      | Unused code, unused variables, obsolete classes, dead endpoints, commented-out code  | `Run codepulse-deadcode and identify code safe for removal.`               |
 | **codepulse-plm**      | Reviews technology lifecycle health                   | Outdated frameworks, package versions, deprecated libraries, upgrade risk            | `Run codepulse-plm and identify unsupported technologies.`                 |
 | **codepulse-ext**      | Reviews external accessibility and exposure risks     | Public endpoints, APIs, webhooks, CORS, anonymous access, attack surface             | `Run codepulse-ext and analyze the application's external exposure.`       |
-| **codepulse-exec**      | Converts a report into an executive-level summary.     | Per provided report. Attempts to answer leadership questions and provide investment and strength analysis.             | `/codepulse-exec <report-filepath>`       |
+| **codepulse-exec**      | Converts a JSON result into an executive-level summary.     | Per provided `*-result.json`. Attempts to answer leadership questions and provide investment and strength analysis.             | `/codepulse-exec <result-json-filepath>`       |
 
 ## Common Assessment Scenarios
 | Scenario                        | Recommended Skills                                         |
@@ -97,15 +97,14 @@ Each CodePulse skill can be run independently when installed with the sibling `c
 │   ├── SKILL.md
 │   ├── references/
 │   └── reports/
-└── codepulse-exec/
-        ├── SKILL.md
-        ├── references/
-        └── reports/
-├── codepulse-shared/
+├── codepulse-exec/
+│   ├── SKILL.md
+│   └── reports/
+└── codepulse-shared/
         ├── SKILL.md
         ├── references/
         ├── schemas/
-        └── templates/
+        └── renderers/
 ```
 
 ### Shared References
@@ -123,10 +122,20 @@ The `codepulse-shared/` directory is the single source of truth for framework-wi
 | `references/report-standard.md` | Detailed and executive report requirements |
 | `references/assessment-methodology.md` | Shared assessment workflow and limitations |
 | `references/complexity-model.md` | Readability complexity definitions, measurement, thresholds, and scoring |
-| `schemas/` | Normalized finding and assessment-result contracts |
-| `templates/` | Intermediate and executive report templates |
+| `schemas/finding-schema.json` | Normalized evidence-backed finding contract |
+| `schemas/assessment-result-schema.json` | Per-capability assessment result contract |
+| `schemas/codepulse-report-schema.json` | Complete detailed or executive report contract |
+| `renderers/html-template.md` | Detailed HTML rendering instructions and fixed CSS |
+| `renderers/markdown-template.md` | Opt-in Markdown rendering instructions |
+| `renderers/executive-summary-template.md` | Executive HTML scorecard rendering instructions |
 
-Each `SKILL.md` lists the local references required for that skill. Skills use their local `reports/` folder for generated output.
+Each `SKILL.md` lists the local references required for that skill. Reports use schema version `2.0` and follow this sequence:
+
+1. Build and validate a JSON report object against the shared schemas.
+2. Write `{skill_name}_{currentDate}-result.json` to the skill's local `reports/` folder.
+3. Render `{skill_name}_{currentDate}-report.html` from that JSON using the appropriate renderer. Render `{skill_name}_{currentDate}-report.md` only when Markdown is explicitly requested.
+
+`codepulse-exec` reads a detailed `-result.json` file and writes its own executive `-result.json` and HTML report. It does not parse HTML reports.
 
 This approach ensures:
 
@@ -197,7 +206,7 @@ An individual skill can be installed separately when the installation bundle inc
                 ├── SKILL.md
                 ├── references/
                 ├── schemas/
-                └── templates/
+                └── renderers/
 ```
 
 ### Important
@@ -218,11 +227,11 @@ Or test a focused assessment:
 ```
 If the assessment executes successfully, CodePulse has been installed correctly.
 
-# Reporting Framework
+## Reporting Framework
 
-CodePulse skills use the shared reporting conventions while keeping report output folders local to each skill.
+CodePulse separates report data from report presentation. JSON schemas define the data contract; Markdown renderer files define how that data becomes HTML or Markdown. Skills keep report output folders local to each skill.
 
-When generating reports, assigning grades, or classifying severity, skills should read the corresponding files under `../codepulse-shared/references/` listed in their `SKILL.md`.
+When generating reports, skills should read the relevant references, JSON schemas, and renderer listed in their `SKILL.md`. Findings preserve exact evidence, stable IDs, provenance, limitations, and recommendations in JSON before presentation is rendered.
 
 This ensures that whether an engineer runs:
 
@@ -242,7 +251,7 @@ or
 codepulse-full
 ```
 
-the output follows the same standards, visual design, grading methodology, and risk classification system without requiring another skill package.
+the output follows the same standards, data schema, rendering rules, visual design, grading methodology, and risk classification system without requiring another skill package.
 
 # Scoring Model
 
@@ -258,10 +267,10 @@ Each assessment category receives a letter grade.
 
 The `codepulse-full` assessment calculates an overall grade based on all assessment categories.
 
-The `codepulse-full` skill can generate a complete HTML assessment report suitable for engineering leadership and architecture reviews.
+The `codepulse-full` skill can generate a complete HTML assessment report suitable for engineering leadership and architecture reviews. The JSON result remains the authoritative machine-readable report; the HTML is a rendered presentation of that result.
 ---
 
-## Quick Start Promps
+## Quick Start Prompts
 | Goal                  | Example Prompt                                                                 |
 | --------------------- | ---------------------------------------------------------------------- |
 | Full Assessment       | `/codepulse-full on this repository.`                               |

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vue_NetApp Code Quality Assessment</title>
+  <style>
+    :root { color-scheme: light; --ink: #19211d; --muted: #5d6962; --paper: #f5f7f2; --line: #d9dfd8; --green: #176b4d; --amber: #a65d00; --red: #a52f2f; --blue: #245a7a; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: linear-gradient(135deg, #eef4ee 0, var(--paper) 42%, #eef2f6 100%); color: var(--ink); font-family: Georgia, "Times New Roman", serif; line-height: 1.55; }
+    main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 48px 0 72px; }
+    header { border-top: 8px solid var(--ink); padding: 24px 0 30px; }
+    .eyebrow, h2, h3, th, .grade, .meta, code { font-family: "Trebuchet MS", Verdana, sans-serif; letter-spacing: 0; }
+    .eyebrow { color: var(--green); font-size: .78rem; font-weight: 700; text-transform: uppercase; }
+    h1 { max-width: 760px; margin: 8px 0 12px; font-size: clamp(2.2rem, 6vw, 4.2rem); line-height: .98; font-weight: 500; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; }
+    h3 { margin: 24px 0 8px; font-size: 1rem; }
+    p { margin: 0 0 14px; }
+    .lede { max-width: 760px; color: var(--muted); font-size: 1.12rem; }
+    .summary-grid { display: grid; grid-template-columns: 1.3fr .7fr; gap: 18px; margin: 20px 0 30px; }
+    .panel { background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 8px; padding: 22px; }
+    .overall { display: flex; align-items: center; gap: 20px; }
+    .grade { display: inline-grid; place-items: center; flex: 0 0 auto; width: 78px; height: 78px; border-radius: 50%; color: white; font-size: 2.5rem; font-weight: 800; }
+    .grade-a { background: var(--green); } .grade-b { background: var(--blue); } .grade-c { background: var(--amber); } .grade-d { background: var(--red); }
+    .scorecard { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-size: .78rem; text-transform: uppercase; }
+    .mini-grade { display: inline-block; min-width: 28px; border-radius: 4px; color: white; font: 700 .85rem "Trebuchet MS", sans-serif; padding: 2px 7px; text-align: center; }
+    section { margin-top: 18px; }
+    .section-head { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+    .finding { border-left: 4px solid var(--line); padding: 2px 0 2px 14px; margin: 16px 0; }
+    .high { border-left-color: var(--red); } .medium { border-left-color: var(--amber); } .positive { border-left-color: var(--green); }
+    .finding strong { font-family: "Trebuchet MS", Verdana, sans-serif; }
+    .meta { color: var(--muted); font-size: .85rem; }
+    ul, ol { margin: 8px 0 0; padding-left: 22px; }
+    li { margin: 7px 0; }
+    code { background: #eef1ed; border: 1px solid #dfe4de; border-radius: 3px; padding: 1px 4px; font-size: .88em; overflow-wrap: anywhere; }
+    footer { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; }
+    @media (max-width: 760px) { .summary-grid { grid-template-columns: 1fr; } }
+    @media print { body { background: white; } .panel { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">CodePulse / codepulse-quality / 2026-10-01</div>
+      <h1>Vue_NetApp code quality assessment</h1>
+      <p class="lede">Focused review of readability complexity (cyclomatic, cognitive, accidental) and other maintainability signals across the ASP.NET Core API and Vue client.</p>
+    </header>
+
+    <div class="summary-grid">
+      <div class="panel overall">
+        <span class="grade grade-b" aria-label="Code quality grade B">B</span>
+        <div>
+          <h2>Executive summary</h2>
+          <p>Score <strong>85 / 100</strong>, status <strong>complete</strong>. The code is small and easy to read: every measured function is well within cyclomatic and cognitive thresholds. The main maintainability drag is accidental complexity in the Vue client: request/loading/error plumbing and the status list are copy-pasted across views instead of shared. On the server, a singleton service with unsynchronized mutable state is the most significant non-complexity defect. No automated tests exist.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Assessment dashboard</h2>
+        <table class="scorecard">
+          <thead><tr><th>Component</th><th>Weight</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>Cyclomatic Complexity</td><td>10</td><td>98</td></tr>
+            <tr><td>Cognitive Complexity</td><td>15</td><td>95</td></tr>
+            <tr><td>Accidental Complexity</td><td>15</td><td>84</td></tr>
+            <tr><td>Other quality signals</td><td>60</td><td>80</td></tr>
+            <tr><td><strong>Code Quality</strong></td><td>100</td><td><span class="mini-grade grade-b">85 B</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <section class="panel">
+      <h2>Assessment methodology</h2>
+      <p>Applied <code>codepulse-shared/references/complexity-model.md</code>. Scope: 19 source files (<code>Vue App Demo/Vue_NetApp.Server/**/*.cs</code>, <code>Vue App Demo/vue_netapp.client/src/**/*.{js,vue}</code>, client config). Excluded <code>node_modules</code>, <code>bin</code>, <code>obj</code>, <code>dist</code>, <code>public</code>.</p>
+      <ul>
+        <li><strong>Cyclomatic:</strong> tool-measured with <code>lizard 1.24.0</code> (32 functions; C#, JavaScript, Vue). <code>verificationStatus: verified-tool-output</code>.</li>
+        <li><strong>Cognitive:</strong> <code>manual-estimate</code> using the SonarSource model; <code>eslint-plugin-sonarjs</code> is not installed in the client and was not added to avoid modifying the repository. <code>verificationStatus: partially-verified</code>.</li>
+        <li><strong>Accidental:</strong> manual review of original source against the accidental-complexity indicators and the inherent-vs-accidental test.</li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <div class="section-head"><h2>Complexity breakdown</h2><span class="mini-grade grade-a">A</span></div>
+      <table class="scorecard">
+        <thead><tr><th>Measure</th><th>Source</th><th>Functions</th><th>Median</th><th>P90</th><th>Max</th><th>Above threshold</th><th>Score</th></tr></thead>
+        <tbody>
+          <tr><td>Cyclomatic</td><td><code>lizard 1.24.0</code></td><td>32</td><td>1</td><td>2</td><td>4</td><td>0 (0%)</td><td>98</td></tr>
+          <tr><td>Cognitive</td><td><code>manual-estimate</code></td><td>32</td><td>0</td><td>2</td><td>3</td><td>0 (0%)</td><td>95</td></tr>
+          <tr><td>Accidental</td><td>Manual review</td><td colspan="5">4 indicators: 2 Low (recurring across client views), 2 Informational (server)</td><td>84</td></tr>
+        </tbody>
+      </table>
+      <p class="meta">Thresholds: cyclomatic acceptable 1–10; cognitive acceptable 0–15. Cognitive score is held below the cyclomatic score because it is estimated, not tool-measured.</p>
+
+      <h3>Complexity hotspots (centrality-weighted)</h3>
+      <table class="scorecard">
+        <thead><tr><th>Function</th><th>Location</th><th>Cyclomatic</th><th>Cognitive (est.)</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td><code>onSubmit</code></td><td><code>vue_netapp.client/src/views/CreateRequestView.vue:14-32</code></td><td>4</td><td>3</td><td>Highest in codebase; entry point for request creation. Acceptable.</td></tr>
+          <tr><td><code>submitComment</code></td><td><code>vue_netapp.client/src/views/RequestDetailView.vue:43-56</code></td><td>3</td><td>2</td><td>Acceptable.</td></tr>
+          <tr><td><code>statusCounts</code> callback</td><td><code>vue_netapp.client/src/views/DashboardView.vue:13-15</code></td><td>2</td><td>2</td><td>Nested <code>if</code> in <code>forEach</code>. Acceptable.</td></tr>
+          <tr><td><code>RequestService.AddComment</code></td><td><code>Vue_NetApp.Server/Services/RequestService.cs:66-79</code></td><td>2</td><td>1</td><td>Core domain path. Acceptable.</td></tr>
+          <tr><td><code>RequestService.UpdateStatus</code></td><td><code>Vue_NetApp.Server/Services/RequestService.cs:51-58</code></td><td>2</td><td>1</td><td>Core domain path. Acceptable.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <div class="section-head"><h2>Findings</h2><span class="mini-grade grade-b">B</span></div>
+
+      <div class="finding positive"><strong>QUAL-CYC-001 · Informational · All functions within cyclomatic threshold.</strong>
+        <p>Evidence: <code>lizard 1.24.0</code> measured 32 functions; maximum CCN 4 at <code>CreateRequestView.vue:14</code>; 0 functions above 10.<br>Impact: Low test-path burden; changes are easy to reason about.<br>Recommendation: Keep the threshold enforced with ESLint <code>complexity</code> and <code>CA1502</code> in CI.<br><span class="meta">metrics: { cyclomatic: 4 (max), measurementSource: "lizard 1.24.0", threshold: "Acceptable" } · verified-tool-output · original</span></p></div>
+
+      <div class="finding positive"><strong>QUAL-COG-001 · Informational · All functions within cognitive threshold.</strong>
+        <p>Evidence: Manual estimate; highest is <code>onSubmit</code> (<code>if</code> +1, mixed <code>||</code> +1, <code>catch</code> +1 = 3). Nesting depth never exceeds 1.<br>Impact: Functions read top to bottom with guard clauses and flat <code>try/catch/finally</code>.<br>Recommendation: Add <code>eslint-plugin-sonarjs</code> <code>cognitive-complexity</code> (limit 15) and SonarAnalyzer <code>S3776</code> to replace the estimate with measured values.<br><span class="meta">metrics: { cognitive: 3 (max), measurementSource: "manual-estimate", threshold: "Acceptable" } · partially-verified · original · evidenceLimitations: ["manually estimated"]</span></p></div>
+
+      <div class="finding medium"><strong>QUAL-ACC-001 · Low · Request/loading/error plumbing duplicated across views.</strong>
+        <p>Evidence: Same <code>loading = true; error = null; try { axios … } catch (e) { error = e.message } finally { loading = false }</code> shape in <code>DashboardView.vue:21-32</code>, <code>RequestListView.vue:18-29</code> (identical to Dashboard), <code>RequestDetailView.vue:17-28</code>, <code>:30-41</code>, <code>:43-56</code>, and <code>CreateRequestView.vue:14-32</code>. API URLs are built by string concatenation inline (e.g. <code>'/api/requests/' + request.value.id + '/status'</code>).<br>Inherent vs. accidental: Accidental. The same behavior can be expressed with one API module and one async-state composable without losing correctness.<br>Impact: Six copies to change for any cross-cutting concern (auth header, base URL, error mapping, retries).<br>Recommendation: Add <code>src/services/requestsApi.js</code> for endpoints and a <code>useAsync()</code> composable for <code>loading</code>/<code>error</code> state.<br><span class="meta">verified-original · original</span></p></div>
+
+      <div class="finding medium"><strong>QUAL-ACC-002 · Low · Status values defined in four places.</strong>
+        <p>Evidence: <code>RequestListView.vue:11</code> and <code>RequestDetailView.vue:11</code> declare <code>['New', 'InProgress', 'Blocked', 'Completed']</code>; <code>DashboardView.vue:12</code> hardcodes the same keys; the server source of truth is <code>enum RequestStatus</code> in <code>Models/OperationalRequest.cs:13-19</code>.<br>Inherent vs. accidental: Accidental. The status set is a domain rule, but repeating it is not required.<br>Impact: Adding a status needs four coordinated edits; a missed one silently drops counts on the dashboard (<code>counts[r.status] !== undefined</code> guard).<br>Recommendation: Export one <code>REQUEST_STATUSES</code> constant in the client, or serve it from the API.<br><span class="meta">verified-original · original</span></p></div>
+
+      <div class="finding"><strong>QUAL-ACC-003 · Informational · Redundant enum-to-string conversion.</strong>
+        <p>Evidence: <code>RequestDto.Status</code> is <code>string</code> (<code>Models/RequestDto.cs</code>) and <code>RequestService.ToDto</code> calls <code>r.Status.ToString()</code> (<code>RequestService.cs:86</code>), although <code>JsonStringEnumConverter</code> is already registered (<code>Program.cs:8</code>).<br>Inherent vs. accidental: Accidental. Two mechanisms do the same job, and the DTO loses type safety.<br>Recommendation: Type <code>RequestDto.Status</code> as <code>RequestStatus</code> and rely on the converter.<br><span class="meta">verified-original · original</span></p></div>
+
+      <div class="finding"><strong>QUAL-ACC-004 · Informational · Repeated lookup expression.</strong>
+        <p>Evidence: <code>_requests.Find(r =&gt; r.Id == id)</code> repeated at <code>RequestService.cs:35</code>, <code>:53</code>, <code>:62</code>, <code>:68</code>.<br>Recommendation: Extract a private <code>FindRequest(int id)</code>, or replace with a dictionary when storage is reworked (see QUAL-001).<br><span class="meta">verified-original · original</span></p></div>
+
+      <div class="finding high"><strong>QUAL-001 · Medium · Singleton service mutates shared state without synchronization.</strong>
+        <p>Evidence: <code>builder.Services.AddSingleton&lt;RequestService&gt;()</code> (<code>Program.cs:6</code>); <code>RequestService</code> holds <code>List&lt;OperationalRequest&gt;</code> and <code>_nextId</code>/<code>_nextCommentId</code> counters (<code>RequestService.cs:7-9</code>) incremented with <code>++</code> (<code>:43</code>, <code>:73</code>) and mutated by <code>Add</code>/<code>AddComment</code> with no lock.<br>Impact: Concurrent requests can produce duplicate IDs or corrupt/enumerate the list during mutation.<br>Recommendation: Use <code>ConcurrentDictionary</code> with <code>Interlocked.Increment</code>, guard with a lock, or move to a scoped persistence layer.<br><span class="meta">verified-original · original</span></p></div>
+
+      <div class="finding medium"><strong>QUAL-002 · Low · Inconsistent server-side validation.</strong>
+        <p>Evidence: <code>CreateRequestDto</code> uses <code>[Required]</code>/<code>[StringLength]</code>, but <code>AddCommentDto.Text</code> (<code>Models/AddCommentDto.cs:5</code>) has no constraints; the empty-comment check exists only on the client (<code>RequestDetailView.vue:44</code>).<br>Impact: Empty or unbounded comments are accepted by the API.<br>Recommendation: Add <code>[Required]</code> and <code>[StringLength]</code> to <code>AddCommentDto.Text</code>.<br><span class="meta">verified-original · original</span></p></div>
+
+      <div class="finding medium"><strong>QUAL-003 · Low · Raw transport errors shown to users; no client logging.</strong>
+        <p>Evidence: Every view assigns <code>e.message</code> directly to UI state (e.g. <code>DashboardView.vue:28</code>, <code>CreateRequestView.vue:28</code>).<br>Impact: Users see messages such as "Request failed with status code 500"; failures are not logged for diagnosis.<br>Recommendation: Map errors to user-facing text in the shared API module (QUAL-ACC-001) and log details centrally.<br><span class="meta">verified-original · original</span></p></div>
+
+      <div class="finding medium"><strong>QUAL-004 · Low · No automated tests.</strong>
+        <p>Evidence: No test project, <code>*.test.*</code>, or <code>*.spec.*</code> files outside excluded folders; only <code>Vue_NetApp.Server.csproj</code> exists.<br>Impact: No regression safety net for the refactors recommended above.<br>Recommendation: Add API integration tests (<code>WebApplicationFactory</code>) and Vitest component tests before refactoring.<br><span class="meta">verified-original · original</span></p></div>
+    </section>
+
+    <section class="panel">
+      <h2>Codebase metrics</h2>
+      <p>19 source files; 32 functions measured; largest function 18 NLOC (<code>onSubmit</code>). Seven model/DTO files contain no logic.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Top risks</h2>
+      <ol>
+        <li>QUAL-001: data corruption or duplicate IDs under concurrent load.</li>
+        <li>QUAL-ACC-001 / QUAL-ACC-002: client changes multiply across duplicated plumbing and status lists.</li>
+        <li>QUAL-004: no tests to protect refactoring.</li>
+      </ol>
+    </section>
+
+    <section class="panel">
+      <h2>Recommendations (prioritized by impact)</h2>
+      <ol>
+        <li><strong>Medium:</strong> Make <code>RequestService</code> thread-safe or replace with a persistence abstraction (QUAL-001).</li>
+        <li><strong>Medium:</strong> Add API integration and Vue component tests (QUAL-004) before the refactors below.</li>
+        <li><strong>Medium:</strong> Consolidate API calls and async state into a service module and composable (QUAL-ACC-001, QUAL-003).</li>
+        <li><strong>Low:</strong> Centralize the request status list (QUAL-ACC-002) and type <code>RequestDto.Status</code> as the enum (QUAL-ACC-003).</li>
+        <li><strong>Low:</strong> Add validation to <code>AddCommentDto</code> (QUAL-002).</li>
+        <li><strong>Low:</strong> Enforce cyclomatic (ESLint <code>complexity</code>, <code>CA1502</code>) and cognitive (<code>sonarjs/cognitive-complexity</code>, <code>S3776</code>) limits in CI so the current A-level complexity is preserved.</li>
+      </ol>
+    </section>
+
+    <section class="panel">
+      <h2>Conclusion</h2>
+      <p>Vue_NetApp is readable and low in cyclomatic and cognitive complexity. Its grade is held at B by localized accidental complexity in the client, a concurrency defect in the singleton service, and the absence of tests. Each is inexpensive to fix at the current codebase size.</p>
+      <h3>Limitations</h3>
+      <ul>
+        <li>Cognitive complexity is manually estimated; values may differ by ±1–2 from SonarSource tooling.</li>
+        <li>lizard parses only the <code>&lt;script&gt;</code> blocks of <code>.vue</code> files; template expressions are not counted.</li>
+        <li>The repository is not under Git, so change frequency could not inform hotspot weighting.</li>
+        <li>Security, dead code, dependency, and exposure concerns are out of scope for this skill.</li>
+      </ul>
+    </section>
+
+    <footer>Generated by codepulse-quality using the CodePulse shared complexity model. Finding IDs are stable for cross-reference with codepulse-full.</footer>
+  </main>
+</body>
+</html>

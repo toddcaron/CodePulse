@@ -28,8 +28,9 @@ Read and apply the shared files relevant to the active skill:
 - `recommendation-priority.md` when recommendations are produced
 - `report-standard.md`
 - `assessment-methodology.md`
-- `../schemas/finding-schema.md`
-- `../schemas/assessment-result-schema.md`
+- `../schemas/finding-schema.json`
+- `../schemas/assessment-result-schema.json`
+- `../schemas/codepulse-report-schema.json` and the matching `../renderers/` file when a report is written
 
 ## Quality Precedence
 

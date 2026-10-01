@@ -48,19 +48,19 @@ Before executing this skill, read and apply:
 - `../codepulse-shared/references/recommendations-library.md`
 - `../codepulse-shared/references/report-standard.md`
 - `../codepulse-shared/references/assessment-methodology.md`
-- `../codepulse-shared/schemas/finding-schema.md`
-- `../codepulse-shared/schemas/assessment-result-schema.md`
+- `../codepulse-shared/schemas/finding-schema.json`
+- `../codepulse-shared/schemas/assessment-result-schema.json`
+- `../codepulse-shared/schemas/codepulse-report-schema.json`
 
-Use `../codepulse-shared/templates/report-template.html` for the detailed report presentation. Preserve confirmed versus suspected dead-code distinctions and stable finding IDs.
+Render with `../codepulse-shared/renderers/html-template.md` after the report object is final. Preserve confirmed versus suspected dead-code distinctions and stable finding IDs.
 
 ## Normalized Result
 
-Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.md`. Use stable `DEAD-*` finding IDs and mark each observation as confirmed, potential, or requiring confirmation without overstating static evidence.
+Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.json`. Use stable `DEAD-*` finding IDs and mark each observation as confirmed, potential, or requiring confirmation without overstating static evidence.
 
 ## Output
 
-Create a focused HTML dead code report.
-Filename =  {skill_name}_{currentDate}-report.html
+Follow the Output Protocol in `../codepulse-shared/references/report-standard.md`: write `{skill_name}_{currentDate}-result.json` and render `{skill_name}_{currentDate}-report.html`.
 File output path =  codepulse-deadcode/reports/
 
 Include:

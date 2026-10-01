@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "finding-schema.json",
+  "title": "CodePulse Finding",
+  "description": "Normalized, evidence-backed finding. Never create a finding without evidence. Reuse the same id for the same finding and cross-reference instead of duplicating; distinct evidence or remediation may justify separate ids. A confirmed High or Critical finding must not rely only on compressed or summarized content.",
+  "type": "object",
+  "required": [
+    "id",
+    "category",
+    "title",
+    "evidence",
+    "impact",
+    "recommendation",
+    "verificationStatus",
+    "sourceRepresentation",
+    "evidenceRecoveryRequired",
+    "evidenceLimitations"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Z]+(-[A-Z]+)*-[0-9]{3,}$",
+      "description": "Stable id scoped by category, e.g. SEC-004, QUAL-CYC-001, DEAD-002, PLM-003, EXT-001, LOC-001."
+    },
+    "category": { "type": "string", "description": "Assessment category." },
+    "severity": {
+      "enum": ["Critical", "High", "Medium", "Low", "Informational"],
+      "description": "Required when risk is assessed. See ../references/severity.md."
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Exact repository or tool evidence. Preserve paths, lines, commands, versions, CVEs, URLs, and configuration values verbatim. Redact secret values.",
+      "items": {
+        "anyOf": [
+          { "type": "string", "minLength": 1 },
+          {
+            "type": "object",
+            "properties": {
+              "path": { "type": "string" },
+              "line": { "type": "integer", "minimum": 1 },
+              "endLine": { "type": "integer", "minimum": 1 },
+              "symbol": { "type": "string" },
+              "snippet": { "type": "string" },
+              "command": { "type": "string" },
+              "output": { "type": "string" },
+              "note": { "type": "string" }
+            },
+            "anyOf": [
+              { "required": ["path"] },
+              { "required": ["command"] }
+            ]
+          }
+        ]
+      }
+    },
+    "impact": { "type": "string", "description": "Security, business, operational, quality, or modernization impact." },
+    "recommendation": { "type": "string", "description": "Actionable remediation or explicit follow-up." },
+    "verificationStatus": {
+      "enum": ["verified-original", "verified-tool-output", "partially-verified", "unverified", "unavailable"]
+    },
+    "sourceRepresentation": {
+      "enum": ["original", "normalized", "compressed", "summarized"],
+      "description": "Representation on which the finding was reviewed."
+    },
+    "evidenceRecoveryRequired": {
+      "type": "boolean",
+      "description": "True when original evidence still must be retrieved or checked."
+    },
+    "evidenceLimitations": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Evidence gaps or verification limitations; empty array when none apply."
+    },
+    "status": {
+      "type": "string",
+      "description": "Finding state, e.g. confirmed, potential, requires-confirmation, positive. Renderers style 'positive' as a strength."
+    },
+    "affectedComponent": { "type": "string" },
+    "confidence": { "enum": ["High", "Medium", "Low"] },
+    "remediationPriority": { "enum": ["Critical", "High", "Medium", "Low"] },
+    "estimatedComplexity": { "enum": ["Low", "Medium", "High", "Very High"] },
+    "referenceLinks": {
+      "type": "array",
+      "items": { "type": "string", "format": "uri", "pattern": "^https?://" }
+    },
+    "cveInformation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "type": "string", "description": "CVE or GHSA identifier, verbatim." },
+          "package": { "type": "string" },
+          "version": { "type": "string" },
+          "fixedVersion": { "type": "string" },
+          "cvss": { "type": "number", "minimum": 0, "maximum": 10 },
+          "url": { "type": "string", "pattern": "^https?://" }
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Complexity measurements. See ../references/complexity-model.md.",
+      "properties": {
+        "cyclomatic": { "type": "number", "minimum": 0 },
+        "cognitive": { "type": "number", "minimum": 0 },
+        "measurementSource": { "type": "string", "description": "Tool name and version, or manual-estimate." },
+        "threshold": { "type": "string", "description": "Band exceeded." }
+      }
+    }
+  }
+}

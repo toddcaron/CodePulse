@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "assessment-result-schema.json",
+  "title": "CodePulse Assessment Result",
+  "description": "Normalized result emitted by each assessment capability. status describes workflow completion, not evidence verification. Never silently omit a category. Use incomplete when analysis started but evidence or execution was insufficient; use incomplete plus skipReason when intentionally skipped; failed for execution errors; unavailable when the capability or required evidence does not exist. Do not calculate a complete overall assessment when a required workflow is non-complete. Consumers must accept additive optional fields and preserve unknown fields when forwarding.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "assessmentName",
+    "repository",
+    "assessmentDate",
+    "score",
+    "status",
+    "findings",
+    "summary"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "2.0" },
+    "assessmentName": {
+      "enum": [
+        "codepulse-loc",
+        "codepulse-vuln",
+        "codepulse-vuln-verbose",
+        "codepulse-quality",
+        "codepulse-deadcode",
+        "codepulse-plm",
+        "codepulse-ext"
+      ]
+    },
+    "category": { "type": "string" },
+    "repository": { "type": "string" },
+    "assessmentDate": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}" },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "completedAt": { "type": "string", "format": "date-time" },
+    "score": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 100,
+      "description": "0-100 when scoring is possible; null when unavailable."
+    },
+    "grade": { "enum": ["A", "B", "C", "D", null] },
+    "status": { "enum": ["complete", "incomplete", "failed", "unavailable"] },
+    "skipReason": { "type": "string", "description": "Required when the workflow was intentionally skipped; include affected scope." },
+    "summary": { "type": "string" },
+    "findings": {
+      "type": "array",
+      "description": "Normalized finding records, or ids of findings defined elsewhere in the same report.",
+      "items": {
+        "anyOf": [
+          { "$ref": "finding-schema.json" },
+          { "type": "string", "pattern": "^[A-Z]+(-[A-Z]+)*-[0-9]{3,}$" }
+        ]
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Category metrics. codepulse-quality uses complexity; codepulse-loc uses loc.",
+      "properties": {
+        "complexity": { "$ref": "#/$defs/complexity" },
+        "loc": { "$ref": "#/$defs/loc" }
+      }
+    },
+    "recommendations": { "type": "array", "items": { "type": "string" } },
+    "limitations": { "type": "array", "items": { "type": "string" } },
+    "sourceReport": { "type": "string" },
+    "verificationStatus": {
+      "enum": ["verified-original", "verified-tool-output", "partially-verified", "unverified", "unavailable"],
+      "description": "Summary of provenance across the result; must not imply full verification when mixed."
+    },
+    "sourceRepresentation": { "enum": ["original", "normalized", "compressed", "summarized"] },
+    "evidenceRecoveryRequired": { "type": "boolean" },
+    "evidenceLimitations": { "type": "array", "items": { "type": "string" } }
+  },
+  "$defs": {
+    "complexity": {
+      "type": "object",
+      "properties": {
+        "measures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["measure", "source", "score"],
+            "properties": {
+              "measure": { "enum": ["Cyclomatic", "Cognitive", "Accidental"] },
+              "source": { "type": "string", "description": "Tool and version, manual-estimate, or manual review." },
+              "functions": { "type": "integer", "minimum": 0 },
+              "median": { "type": "number" },
+              "p90": { "type": "number" },
+              "max": { "type": "number" },
+              "aboveThreshold": { "type": "string", "description": "e.g. 0% or 3 of 120." },
+              "note": { "type": "string" },
+              "score": { "type": "number", "minimum": 0, "maximum": 100 }
+            }
+          }
+        },
+        "hotspots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["location"],
+            "properties": {
+              "function": { "type": "string" },
+              "location": { "type": "string", "description": "path:line" },
+              "cyclomatic": { "type": "number" },
+              "cognitive": { "type": "number" },
+              "findingId": { "type": "string" },
+              "note": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "loc": {
+      "type": "object",
+      "properties": {
+        "byLanguage": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["language", "files", "physical"],
+            "properties": {
+              "language": { "type": "string" },
+              "files": { "type": "integer", "minimum": 0 },
+              "physical": { "type": "integer", "minimum": 0 },
+              "nonblank": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "totals": {
+          "type": "object",
+          "properties": {
+            "files": { "type": "integer", "minimum": 0 },
+            "physical": { "type": "integer", "minimum": 0 },
+            "nonblank": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "exclusions": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}
