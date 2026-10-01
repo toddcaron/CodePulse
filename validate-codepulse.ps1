@@ -148,7 +148,7 @@ foreach ($requirement in @('## Runtime Precedence','## External Context Optimiza
 
 $tokenEfficiency = Get-Content 'codepulse-shared/references/token-efficiency.md' -Raw
 if ($tokenEfficiency.IndexOf('## External Proxy Coordination') -lt 0) { throw 'Token-efficiency reference is missing external proxy coordination' }
-foreach ($requirement in @('## Shared Repository Inventory','does not prove absence','original-content review','schema validation and original-evidence recovery')) {
+foreach ($requirement in @('## Shared Repository Inventory','does not prove absence','analyzer execution','manual complexity estimates','schema validation and original-evidence recovery')) {
     if ($tokenEfficiency.IndexOf($requirement, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
         throw "Token-efficiency reference is missing shared-inventory requirement: $requirement"
     }
@@ -159,7 +159,7 @@ foreach ($requirement in @('normalized assessment result','evidence references',
         throw "codepulse-full is missing orchestration requirement: $requirement"
     }
 }
-foreach ($requirement in @('## Shared Repository Inventory','inline orchestration workflow','inventory projection','Build the shared repository inventory','Run the six capability workflows inline','never emit only a finding ID','render the final detailed HTML report once the report object is final')) {
+foreach ($requirement in @('## Shared Repository Inventory','inline orchestration workflow','inventory projection','Build the shared repository inventory','Run the six capability workflows inline','execute an available complexity analyzer','Use `lizard`','manual estimate only when no suitable analyzer can run','never emit only a finding ID','render the final detailed HTML report once the report object is final')) {
     if ($full.IndexOf($requirement, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
         throw "codepulse-full is missing shared-inventory orchestration requirement: $requirement"
     }

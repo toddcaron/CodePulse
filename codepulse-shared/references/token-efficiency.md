@@ -35,12 +35,12 @@ Project only the inventory evidence each capability needs:
 
 - LOC: source roots, file classifications, and exclusions.
 - Vulnerability: authentication, authorization, routes, data access, integrations, manifests, and configuration.
-- Quality: source roots, entry points, core paths, and available analyzers.
+- Quality: source roots, entry points, core paths, and analyzer commands and versions. Execute an available suitable analyzer before manual estimation; use `lizard` for multi-language Cyclomatic Complexity when available and suitable, otherwise use the ecosystem-specific analyzer in `complexity-model.md`. Preserve the command, version, scope, exclusions, and coverage gaps in complexity metrics.
 - Dead code: source roots, imports, routes, configuration, and project references.
 - PLM: manifests, lock files, runtimes, containers, build, and deployment configuration.
 - External exposure: routes, authentication, CORS, ingress, host/port configuration, and external integrations.
 
-Inventory reuse avoids repeated discovery; it does not prove absence, replace targeted searches, or replace original-content review. Retrieve original content whenever required by the runtime contract, especially for sensitive evidence, High or Critical findings, conflicts, missing context, and negative findings.
+Inventory reuse avoids repeated discovery; it does not prove absence, replace targeted searches, analyzer execution, or original-content review. Retrieve original content whenever required by the runtime contract, especially for sensitive evidence, High or Critical findings, conflicts, missing context, and negative findings. Use manual complexity estimates only when no suitable analyzer can run, and retain the required partial-verification and limitation metadata.
 
 ## Output Compression
 

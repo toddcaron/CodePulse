@@ -64,7 +64,7 @@ Keep the inventory to paths, classifications, versions, commands, and concise me
 |---|---|
 | `codepulse-loc` | Source roots, file classifications, exclusions |
 | `codepulse-vuln` | Authentication, authorization, routes, data access, integrations, manifests, configuration |
-| `codepulse-quality` | Source roots, entry points, core paths, analyzers |
+| `codepulse-quality` | Source roots, entry points, core paths, analyzer commands and versions |
 | `codepulse-deadcode` | Source roots, imports, routes, configuration and project references |
 | `codepulse-plm` | Manifests, lock files, runtimes, containers, build and deployment configuration |
 | `codepulse-ext` | Routes, authentication, CORS, ingress, host/port configuration, external integrations |
@@ -74,7 +74,7 @@ Inventory reuse reduces duplicate discovery only. It never proves a negative fin
 ## Orchestration Procedure
 
 1. Build the shared repository inventory.
-2. Run the six capability workflows inline, using the relevant inventory projection, targeted searches, and original-content reads only where required by the active capability or evidence rule.
+2. Run the six capability workflows inline, using the relevant inventory projection, targeted searches, and original-content reads only where required by the active capability or evidence rule. For `codepulse-quality`, execute an available complexity analyzer without modifying the analyzed repository before manually estimating complexity. Use `lizard` for multi-language Cyclomatic Complexity when it is available and suitable for the detected source types; otherwise use the ecosystem-specific analyzer defined by `complexity-model.md`. Record the analyzer name and version, command, scope, exclusions, and coverage gaps in `metrics.complexity`. Use a manual estimate only when no suitable analyzer can run, mark affected findings `partially-verified`, and record `manual-estimate` with the reason in the result limitations.
 3. Collect one normalized assessment result from each capability. Each result must include `assessmentName`, `repository`, `assessmentDate`, `score`, `status`, `findings`, and `summary`. Record `complete`, `incomplete`, `failed`, or `unavailable` for every capability. Represent an intentionally skipped capability as `incomplete` with an explicit `skipReason` and affected scope. Never infer successful completion from a compressed summary.
 4. Normalize every finding with stable `id`, category, severity where applicable, title, exact evidence, impact, recommendation, `verificationStatus`, `sourceRepresentation`, `evidenceRecoveryRequired`, and `evidenceLimitations`. Embed each complete normalized finding object in its assessment result; never emit only a finding ID in `findings`.
 5. Validate every result and finding against the shared schemas. Validate evidence references against available original repository content or original tool output. Reject or mark findings incomplete when required evidence, impact, recommendation, or provenance is missing. Inspect original content whenever required by the runtime contract; do not reconstruct exact evidence from summaries.
