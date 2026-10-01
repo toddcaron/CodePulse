@@ -15,6 +15,8 @@ Run the same assessment in these four modes:
 
 Record any unavailable mode as not run with a reason. Do not substitute one integration for the other.
 
+For a direct CodePulse context-optimization comparison, also run a baseline and the shared-repository-inventory workflow with the same Caveman mode. Use [the full-context benchmark template](codepulse-full-context-benchmark-template.md) to record both runs. This comparison measures CodePulse workflow reuse; it does not demonstrate Caveman or proxy savings.
+
 ## Controls
 
 Keep these consistent where practical and record unavoidable differences:
@@ -56,3 +58,5 @@ Do not treat proxy-provided compression counts or estimated savings as measured 
 ## Result Record
 
 Keep the completed run records and comparison with the assessment artifacts under the team's approved data-retention policy. Do not put credentials, raw secrets, provider keys, session data, or unredacted sensitive source material in benchmark summaries. Preserve exact identifiers and sanitized evidence references needed to reproduce the comparison.
+
+Use [the full-context benchmark template](codepulse-full-context-benchmark-template.md) for every baseline-versus-optimized `codepulse-full` comparison.

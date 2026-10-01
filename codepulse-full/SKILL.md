@@ -47,17 +47,41 @@ Apply the focused workflow for each category:
 
 Use `codepulse-vuln-verbose` only when exhaustive line-level vulnerability analysis is explicitly requested. Do not silently substitute it for the normal security capability.
 
+## Shared Repository Inventory
+
+Run this assessment as one inline orchestration workflow. Do not assume focused skills can invoke one another or suppress their standalone output contracts.
+
+Before category analysis, build one repository inventory containing metadata and exact evidence references for:
+
+- Repository type, languages, frameworks, boundaries, and source roots.
+- Entry points, manifests, lock files, configuration, CI/CD, and infrastructure.
+- Authentication, authorization, routes/endpoints, data access, and external integrations.
+- Available analyzers and exclusions.
+
+Keep the inventory to paths, classifications, versions, commands, and concise metadata. Do not copy complete source files, raw logs, or summarized findings into it. Each capability consumes only its relevant projection and retrieves original content when the inventory is insufficient:
+
+| Capability | Inventory projection |
+|---|---|
+| `codepulse-loc` | Source roots, file classifications, exclusions |
+| `codepulse-vuln` | Authentication, authorization, routes, data access, integrations, manifests, configuration |
+| `codepulse-quality` | Source roots, entry points, core paths, analyzers |
+| `codepulse-deadcode` | Source roots, imports, routes, configuration and project references |
+| `codepulse-plm` | Manifests, lock files, runtimes, containers, build and deployment configuration |
+| `codepulse-ext` | Routes, authentication, CORS, ingress, host/port configuration, external integrations |
+
+Inventory reuse reduces duplicate discovery only. It never proves a negative finding, replaces mandatory original review, or replaces exact evidence in normalized findings.
+
 ## Orchestration Procedure
 
-1. Detect repository type, languages, frameworks, boundaries, entry points, manifests, configuration, CI/CD, and infrastructure.
-2. Select the six required capabilities and apply their focused workflows. Reuse repository metadata and evidence between capabilities.
+1. Build the shared repository inventory.
+2. Run the six capability workflows inline, using the relevant inventory projection, targeted searches, and original-content reads only where required by the active capability or evidence rule.
 3. Collect one normalized assessment result from each capability. Each result must include `assessmentName`, `repository`, `assessmentDate`, `score`, `status`, `findings`, and `summary`. Record `complete`, `incomplete`, `failed`, or `unavailable` for every capability. Represent an intentionally skipped capability as `incomplete` with an explicit `skipReason` and affected scope. Never infer successful completion from a compressed summary.
 4. Normalize every finding with stable `id`, category, severity where applicable, title, exact evidence, impact, recommendation, `verificationStatus`, `sourceRepresentation`, `evidenceRecoveryRequired`, and `evidenceLimitations`. Embed each complete normalized finding object in its assessment result; never emit only a finding ID in `findings`.
 5. Validate every result and finding against the shared schemas. Validate evidence references against available original repository content or original tool output. Reject or mark findings incomplete when required evidence, impact, recommendation, or provenance is missing. Inspect original content whenever required by the runtime contract; do not reconstruct exact evidence from summaries.
 6. Preserve exact paths, lines, commands, versions, URLs, CVEs, errors, and configuration values. Confirmed High and Critical findings must be verified against original content and must not rely only on compressed or summarized context. If originals cannot be recovered, retain the observation as unverified or incomplete and record the limitation rather than claiming confirmation.
 7. Merge results by stable finding ID only after validation. Deduplicate repeated findings without deleting distinct evidence; cross-reference reused findings. Reopen original evidence to resolve conflicting findings or sources.
-8. Calculate the weighted overall score and assign the overall letter grade only after evidence and finding validation. Do not present the overall assessment as complete when a required capability is incomplete, failed, intentionally skipped, or unavailable; explain the effect on score and coverage.
-9. Assemble one `codepulse-report-schema.json` object (`reportType: "detailed"`) only from validated normalized results, set `overall.complete` to false when any capability is not `complete`, and render the final detailed HTML report from it. Preserve each capability status, evidence limitations, and required report sections.
+8. Calculate the weighted overall score and assign the overall letter grade only after evidence and finding validation. Select recommendations after deduplication, using stable IDs to reference complete findings rather than repeating evidence. Do not present the overall assessment as complete when a required capability is incomplete, failed, intentionally skipped, or unavailable; explain the effect on score and coverage.
+9. Assemble one `codepulse-report-schema.json` object (`reportType: "detailed"`) only from validated normalized results, set `overall.complete` to false when any capability is not `complete`, and render the final detailed HTML report once the report object is final. Preserve each capability status, evidence limitations, and required report sections.
 
 ## Required Report Sections
 

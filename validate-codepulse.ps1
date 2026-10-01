@@ -145,10 +145,20 @@ foreach ($requirement in @('## Runtime Precedence','## External Context Optimiza
 
 $tokenEfficiency = Get-Content 'codepulse-shared/references/token-efficiency.md' -Raw
 if ($tokenEfficiency.IndexOf('## External Proxy Coordination') -lt 0) { throw 'Token-efficiency reference is missing external proxy coordination' }
+foreach ($requirement in @('## Shared Repository Inventory','does not prove absence','original-content review','schema validation and original-evidence recovery')) {
+    if ($tokenEfficiency.IndexOf($requirement, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
+        throw "Token-efficiency reference is missing shared-inventory requirement: $requirement"
+    }
+}
 
 foreach ($requirement in @('normalized assessment result','evidence references','original evidence','only after evidence and finding validation','intentionally skipped','compressed summary')) {
     if ($full.IndexOf($requirement, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
         throw "codepulse-full is missing orchestration requirement: $requirement"
+    }
+}
+foreach ($requirement in @('## Shared Repository Inventory','inline orchestration workflow','inventory projection','Build the shared repository inventory','Run the six capability workflows inline','never emit only a finding ID','render the final detailed HTML report once the report object is final')) {
+    if ($full.IndexOf($requirement, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
+        throw "codepulse-full is missing shared-inventory orchestration requirement: $requirement"
     }
 }
 
@@ -185,6 +195,18 @@ foreach ($mode in @('CodePulse only','Repo instructions','Proxy','Both')) {
 foreach ($metric in @('Duration','input tokens','output tokens','Findings produced','verified against originals','Report completeness','Assessment failures')) {
     if ($benchmarkDoc.IndexOf($metric, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
         throw "Caveman benchmark plan is missing capture field: $metric"
+    }
+}
+if ($benchmarkDoc.IndexOf('codepulse-full-context-benchmark-template.md', [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
+    throw 'Caveman benchmark plan does not link the full-context benchmark template'
+}
+if (-not (Test-Path 'docs/codepulse-full-context-benchmark-template.md')) {
+    throw 'Missing CodePulse full-context benchmark template'
+}
+$benchmarkTemplate = Get-Content 'docs/codepulse-full-context-benchmark-template.md' -Raw
+foreach ($requirement in @('Baseline','Optimized','input tokens','output tokens','High/Critical','Schema validation','Parity verdict')) {
+    if ($benchmarkTemplate.IndexOf($requirement, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
+        throw "Full-context benchmark template is missing: $requirement"
     }
 }
 
