@@ -70,13 +70,13 @@ Every finding in the HTML report must include:
 
 - A unique finding identifier such as `VULN-001`.
 - Finding title.
-- Risk level: Critical, High, Medium, Low, or Informational, following `severity-ratings.md`.
+- Risk level: Critical, High, Medium, Low, or Informational, following `../codepulse-shared/references/severity.md`.
 - Affected component or area.
 - A complete Evidence Locations table with columns for `File`, `Line`, `Code`, and `Role in Vulnerability`.
 - Evidence from the codebase and the relevant source-to-sink or control-flow explanation.
 - Why it matters and likely impact.
 - Exploitability conditions and assumptions.
-- Recommended remediation, using `recommendations-library.md` where applicable.
+- Recommended remediation, using `../codepulse-shared/references/recommendations-library.md` where applicable.
 - CVE reference and NVD link when a direct match is found.
 - The exact statement `No direct CVE match identified from available evidence.` when no direct CVE match is found.
 - Verification steps for confirming the remediation.
@@ -103,20 +103,24 @@ Before finalizing the report:
 
 ## Shared References
 
-Before generating findings, review:
+Before executing this skill, read and apply:
 
-- `references/report-template.html`
-- `references/grading-model.md`
-- `references/severity-ratings.md`
-- `references/recommendations-library.md`
+- `../codepulse-shared/references/runtime-contract.md`
+- `../codepulse-shared/references/token-efficiency.md`
+- `../codepulse-shared/references/grading.md`
+- `../codepulse-shared/references/severity.md`
+- `../codepulse-shared/references/recommendation-priority.md`
+- `../codepulse-shared/references/recommendations-library.md`
+- `../codepulse-shared/references/report-standard.md`
+- `../codepulse-shared/references/assessment-methodology.md`
+- `../codepulse-shared/schemas/finding-schema.md`
+- `../codepulse-shared/schemas/assessment-result-schema.md`
 
-Requirements:
+Preserve exhaustive line-level evidence, CVE/NVD references, and stable finding IDs. Use `../codepulse-shared/templates/report-template.html` for the detailed report presentation.
 
-- Generate the report using `report-template.html`.
-- Use `severity-ratings.md` when assigning Critical, High, Medium, Low, or Informational severity.
-- Validate known vulnerabilities using the CVE process defined in `severity-ratings.md`.
-- Use standardized remediation guidance from `recommendations-library.md` whenever applicable.
-- Assign the final assessment grade using `grading-model.md`.
+## Normalized Result
+
+Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.md`. Every line-level finding must use the shared finding schema with a stable `SEC-*` ID and preserve exhaustive path, line, source-to-sink, severity, impact, recommendation, and CVE evidence.
 
 ## Output
 

@@ -41,19 +41,24 @@ When possible, categorize each item as:
 
 ## Shared References
 
-Before generating the assessment, review:
+Before executing this skill, read and apply:
 
-- `references/report-template.html`
-- `references/grading-model.md`
-- `references/severity-ratings.md`
-- `references/recommendations-library.md`
+- `../codepulse-shared/references/runtime-contract.md`
+- `../codepulse-shared/references/token-efficiency.md`
+- `../codepulse-shared/references/grading.md`
+- `../codepulse-shared/references/severity.md`
+- `../codepulse-shared/references/recommendation-priority.md`
+- `../codepulse-shared/references/recommendations-library.md`
+- `../codepulse-shared/references/report-standard.md`
+- `../codepulse-shared/references/assessment-methodology.md`
+- `../codepulse-shared/schemas/finding-schema.md`
+- `../codepulse-shared/schemas/assessment-result-schema.md`
 
-Requirements:
+Use `../codepulse-shared/templates/report-template.html` for the detailed report presentation and preserve exact dependency names, versions, and CVE evidence.
 
-- Use report-template.html for formatting.
-- Use severity-ratings.md when evaluating framework, runtime, or dependency risks.
-- Use recommendations-library.md for upgrade guidance.
-- Use grading-model.md for scoring.
+## Normalized Result
+
+Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.md`. Use stable `PLM-*` finding IDs and preserve exact dependency names, versions, advisory identifiers, evidence, impact, and remediation.
 
 ## Output
 

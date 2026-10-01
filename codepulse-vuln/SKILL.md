@@ -57,20 +57,24 @@ For each finding, include:
 
 ## Shared References
 
-Before generating findings, review:
+Before executing this skill, read and apply:
 
-- `references/report-template.html`
-- `references/grading-model.md`
-- `references/severity-ratings.md`
-- `references/recommendations-library.md`
+- `../codepulse-shared/references/runtime-contract.md`
+- `../codepulse-shared/references/token-efficiency.md`
+- `../codepulse-shared/references/grading.md`
+- `../codepulse-shared/references/severity.md`
+- `../codepulse-shared/references/recommendation-priority.md`
+- `../codepulse-shared/references/recommendations-library.md`
+- `../codepulse-shared/references/report-standard.md`
+- `../codepulse-shared/references/assessment-methodology.md`
+- `../codepulse-shared/schemas/finding-schema.md`
+- `../codepulse-shared/schemas/assessment-result-schema.md`
 
-Requirements:
+Preserve CVE/NVD evidence and emit stable finding IDs. Use `../codepulse-shared/templates/report-template.html` for the detailed report presentation.
 
-- Generate reports using the report template.
-- Use the Severity Ratings framework when assigning Critical, High, Medium, Low, or Informational severity levels.
-- Validate known vulnerabilities using the CVE process defined in severity-ratings.md.
-- Use standardized remediation guidance from recommendations-library.md whenever applicable.
-- Assign the final assessment grade using grading-model.md.
+## Normalized Result
+
+Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.md`. Every finding must use the shared finding schema with a stable `SEC-*` ID, exact evidence, severity, impact, recommendation, and CVE data when applicable.
 
 ## Output
 

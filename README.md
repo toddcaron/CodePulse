@@ -5,7 +5,8 @@ CodePulse provides a collection of focused GitHub Copilot skills that can be run
 
 ## Notes on Token Usage
 - Token usage will vary depending on the skill chosen, context and size of codebase.
-- Highly recommended to install and use Caveman along with Codepulse to minimize token usage: https://github.com/juliusbrussee/caveman
+- CodePulse includes shared token-efficiency guidance and remains fully functional without Caveman.
+- CodePulse may operate alongside Caveman or another token-efficiency companion, but does not download or execute external instructions automatically.
 
 ## CodePulse Skills
 
@@ -46,7 +47,7 @@ CodePulse is distributed as a collection of GitHub Copilot custom skills. Each s
 
 ## Directory Structure
 
-Each CodePulse skill is self-contained so it can be installed and run independently. Its local `references/` folder contains the templates and guidance needed by that skill, and its local `reports/` folder is the default output location.
+Each CodePulse skill can be run independently when installed with the sibling `codepulse-shared/` directory. Shared references are authoritative and prevent grading, severity, recommendation, and reporting guidance from drifting between skills. Each skill retains its local `reports/` folder as the default output location.
 
 ```text
 ├── codepulse-full/
@@ -89,19 +90,28 @@ Each CodePulse skill is self-contained so it can be installed and run independen
         ├── SKILL.md
         ├── references/
         └── reports/
+├── codepulse-shared/
+        ├── references/
+        ├── schemas/
+        └── templates/
 ```
 
-### Local References
+### Shared References
 
-Every skill owns the assets it needs in its local `references/` folder.
+The `codepulse-shared/` directory is the single source of truth for framework-wide behavior.
 
 | File | Purpose |
 |--------|----------|
-| `report-template.html` | Standard HTML layout, styling, executive summary format, and report structure |
-| `grading-model.md` | Defines grading criteria and score calculations |
-| `severity-ratings.md` | Defines Low, Medium, High, and Critical risk ratings where the skill evaluates risk |
-| `recommendations-library.md` | Standard remediation guidance where the skill produces recommendations |
-| `executive-scorecard-template.html` | Executive report layout used by `codepulse-exec` |
+| `references/runtime-contract.md` | Universal evidence, quality, output, and compatibility rules |
+| `references/token-efficiency.md` | Targeted scanning and concise-output rules |
+| `references/grading.md` | Grading scale, category weights, and scoring guidance |
+| `references/severity.md` | Severity and CVE reporting rules |
+| `references/recommendation-priority.md` | Recommendation ordering and formatting |
+| `references/recommendations-library.md` | Standard remediation guidance |
+| `references/report-standard.md` | Detailed and executive report requirements |
+| `references/assessment-methodology.md` | Shared assessment workflow and limitations |
+| `schemas/` | Normalized finding and assessment-result contracts |
+| `templates/` | Intermediate and executive report templates |
 
 Each `SKILL.md` lists the local references required for that skill. Skills use their local `reports/` folder for generated output.
 
@@ -111,7 +121,7 @@ This approach ensures:
 - Consistent grading across skills
 - Consistent severity classifications
 - Easier maintenance and future enhancements
-- Skills can be installed without a separate shared package
+- Shared behavior can be updated in one location
 
 ## Installation Methods
 
@@ -125,7 +135,7 @@ The easiest way to install CodePulse is with the Skills CLI:
 npx skills add toddcaron/CodePulse
 ```
 
-This installs the self-contained CodePulse skills with their local references and report folders.
+This installs the CodePulse skills together with the required `codepulse-shared/` contract and report folders.
 
 This includes:
 
@@ -160,26 +170,25 @@ Copy all CodePulse skill folders into the skills directory used by your harness.
 
 ### Method 3: Install an individual skill
 
-Every skill can be installed separately because its references and report output folder are included in the skill directory.
+An individual skill can be installed separately when the installation bundle includes that skill, its `reports/` folder, and the sibling `codepulse-shared/` directory. The shared directory is required; local duplicate generic references are not authoritative.
 
 ### Minimum Installation Example
 
 ```text
 .agents/
 └── skills/
-    └── codepulse-vuln/
-        ├── SKILL.md
-        ├── references/
-        │   ├── report-template.html
-        │   ├── grading-model.md
-        │   ├── severity-ratings.md
-        │   └── recommendations-library.md
-        └── reports/
+        ├── codepulse-vuln/
+        │   ├── SKILL.md
+        │   └── reports/
+        └── codepulse-shared/
+                ├── references/
+                ├── schemas/
+                └── templates/
 ```
 
 ### Important
 
-Install the complete skill folder, including its `references/` and `reports/` subfolders. Omitting the local references may prevent the skill from generating a correctly formatted or graded report.
+Install the complete skill bundle, including the skill's `reports/` folder and the sibling `codepulse-shared/` directory. Omitting the shared directory may prevent the skill from applying the required contract, grading, or report standards.
 
 # Verify Installation
 After installation, open GitHub Copilot and run:
@@ -197,25 +206,9 @@ If the assessment executes successfully, CodePulse has been installed correctly.
 
 # Reporting Framework
 
-CodePulse skills use the same reporting conventions while keeping their required assets locally available.
+CodePulse skills use the shared reporting conventions while keeping report output folders local to each skill.
 
-When generating reports, skills should reference:
-
-```text
-references/report-template.html
-```
-
-When assigning grades, skills should reference:
-
-```text
-references/grading-model.md
-```
-
-When assigning severity levels, skills should reference:
-
-```text
-references/severity-ratings.md
-```
+When generating reports, assigning grades, or classifying severity, skills should read the corresponding files under `../codepulse-shared/references/` listed in their `SKILL.md`.
 
 This ensures that whether an engineer runs:
 

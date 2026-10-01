@@ -1,10 +1,6 @@
 # CodePulse Recommendations Library
 
-## Purpose
-
-This document provides standardized remediation guidance used by all CodePulse skills.
-
-Skills should reference and reuse these recommendations whenever applicable to maintain consistency across reports, assessments, and executive summaries.
+This document provides standardized remediation guidance used by all CodePulse skills. Reuse these recommendations whenever applicable.
 
 ---
 
@@ -488,7 +484,7 @@ Medium
 
 # Executive Summary Recommendation Prioritization
 
-Reports should prioritize recommendations in the following order:
+Reports should prioritize recommendations in this order:
 
 1. Critical Security Risks
 2. High-Risk Security Findings
@@ -543,12 +539,4 @@ Describe the expected improvement after remediation.
 
 # Guiding Principle
 
-CodePulse recommendations should be:
-
-- Actionable
-- Specific
-- Evidence-based
-- Prioritized by risk
-- Understandable by both technical and leadership audiences
-
-Recommendations should focus on reducing risk while improving maintainability, security posture,
+CodePulse recommendations should be actionable, specific, evidence-based, prioritized by risk, and understandable by both technical and leadership audiences. Recommendations should focus on reducing risk while improving maintainability, security posture, and modernization readiness.

@@ -242,6 +242,12 @@ rather than assigning a confirmed severity rating.
 
 ---
 
+# Evidence Fidelity
+
+Findings must preserve exact file paths, line references, commands, dependency names and versions, CVE identifiers, URLs, configuration values, and relevant error messages. Do not create a finding without evidence. Use stable finding IDs and cross-reference repeated evidence instead of duplicating it.
+
+---
+
 # Guiding Principle
 
 CodePulse severity ratings should prioritize:

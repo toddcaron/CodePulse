@@ -56,20 +56,23 @@ Assume the detailed report already contains the authoritative findings.
 
 ## Shared References
 
-Review the following resources before generating the executive assessment:
+Before executing this skill, read and apply:
 
-- `references/report-template.html`
-- `references/grading-model.md`
-- `references/severity-ratings.md`
-- `references/recommendations-library.md`
+- `../codepulse-shared/references/runtime-contract.md`
+- `../codepulse-shared/references/token-efficiency.md`
+- `../codepulse-shared/references/grading.md`
+- `../codepulse-shared/references/severity.md`
+- `../codepulse-shared/references/recommendation-priority.md`
+- `../codepulse-shared/references/recommendations-library.md`
+- `../codepulse-shared/references/report-standard.md`
+- `../codepulse-shared/references/assessment-methodology.md`
+- `../codepulse-shared/schemas/finding-schema.md`
+- `../codepulse-shared/schemas/assessment-result-schema.md`
+- `../codepulse-shared/templates/report-template.html`
+- `../codepulse-shared/templates/executive-report-template.html`
 - `references/executive-scorecard-template.html`
 
-Requirements:
-
-- Use the CodePulse grading model when interpreting overall health.
-- Use standardized severity definitions when communicating risk.
-- Use recommendation categories from the recommendations library.
-- Follow the CodePulse report structure and styling guidance.
+Use the shared contract for interpretation and preserve the local scorecard as the executive presentation extension. Do not rerun code analysis unless explicitly requested.
 
 ---
 
@@ -370,6 +373,10 @@ Provide a brief rationale.
 The recommendation should clearly communicate the level of management attention required.
 
 ---
+
+## Normalized Input
+
+Prefer a normalized assessment result or a detailed CodePulse report conforming to `../codepulse-shared/schemas/assessment-result-schema.md`. Preserve stable finding IDs when summarizing risks and recommendations; do not rerun analysis unless explicitly requested.
 
 ## Output Format
 

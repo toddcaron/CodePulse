@@ -214,35 +214,9 @@ Total Weight = 100%
 
 The overall application grade should be calculated using the weighted score from all assessed categories.
 
-Example:
+The category weights above are authoritative. Legacy examples that use different weights are illustrative history and must not override the declared 30%, 5%, 25%, 10%, 15%, 10%, and 5% model.
 
-| Category | Grade | Score |
-|----------|----------|----------|
-| Security | B | 85 |
-| MFA | A | 95 |
-| Code Quality | B | 82 |
-| Dead Code | C | 72 |
-| Dependencies | B | 84 |
-| Exposure | A | 95 |
-| LOC | B | 86 |
-
-Weighted Overall Score:
-
-```text
-(85 × 0.25)
-+ (95 × 0.15)
-+ (82 × 0.20)
-+ (72 × 0.10)
-+ (84 × 0.15)
-+ (95 × 0.10)
-+ (86 × 0.05)
-```
-
-Result:
-
-```text
-85.55 = Grade B
-```
+Every category included in the aggregate must have a numeric score from 0 to 100 or an explicitly recorded incomplete/unavailable status. Do not silently substitute a score for missing evidence.
 
 ---
 

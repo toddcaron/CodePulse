@@ -39,18 +39,23 @@ Distinguish between valid comments and commented-out code that may indicate dead
 
 ## Shared References
 
-Before generating the assessment, review:
+Before executing this skill, read and apply:
 
-- `references/report-template.html`
-- `references/grading-model.md`
-- `references/recommendations-library.md`
+- `../codepulse-shared/references/runtime-contract.md`
+- `../codepulse-shared/references/token-efficiency.md`
+- `../codepulse-shared/references/grading.md`
+- `../codepulse-shared/references/recommendation-priority.md`
+- `../codepulse-shared/references/recommendations-library.md`
+- `../codepulse-shared/references/report-standard.md`
+- `../codepulse-shared/references/assessment-methodology.md`
+- `../codepulse-shared/schemas/finding-schema.md`
+- `../codepulse-shared/schemas/assessment-result-schema.md`
 
-Requirements:
+Use `../codepulse-shared/templates/report-template.html` for the detailed report presentation. Preserve confirmed versus suspected dead-code distinctions and stable finding IDs.
 
-- Use report-template.html for output formatting.
-- Use grading-model.md for scoring.
-- Use dead code cleanup recommendations from recommendations-library.md.
-`
+## Normalized Result
+
+Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.md`. Use stable `DEAD-*` finding IDs and mark each observation as confirmed, potential, or requiring confirmation without overstating static evidence.
 
 ## Output
 
