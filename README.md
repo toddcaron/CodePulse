@@ -92,6 +92,7 @@ Each CodePulse skill can be run independently when installed with the sibling `c
         ├── references/
         └── reports/
 ├── codepulse-shared/
+        ├── SKILL.md
         ├── references/
         ├── schemas/
         └── templates/
@@ -140,6 +141,7 @@ This installs the CodePulse skills together with the required `codepulse-shared/
 
 This includes:
 
+- codepulse-shared
 - codepulse-full
 - codepulse-loc
 - codepulse-mfa
@@ -182,6 +184,7 @@ An individual skill can be installed separately when the installation bundle inc
         │   ├── SKILL.md
         │   └── reports/
         └── codepulse-shared/
+                ├── SKILL.md
                 ├── references/
                 ├── schemas/
                 └── templates/

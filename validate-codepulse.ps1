@@ -1,6 +1,7 @@
 $ErrorActionPreference = 'Stop'
 
 $sharedFiles = @(
+    'codepulse-shared/SKILL.md',
     'codepulse-shared/references/runtime-contract.md',
     'codepulse-shared/references/token-efficiency.md',
     'codepulse-shared/references/grading.md',
@@ -20,9 +21,12 @@ foreach ($file in $sharedFiles) {
     if (-not (Test-Path $file)) { throw "Missing shared file: $file" }
 }
 
-$skills = Get-ChildItem -Directory -Filter 'codepulse-*' |
+$allSkills = Get-ChildItem -Directory -Filter 'codepulse-*' |
     Where-Object { Test-Path (Join-Path $_.FullName 'SKILL.md') }
-if ($skills.Count -ne 10) { throw "Expected 10 skills, found $($skills.Count)" }
+if ($allSkills.Count -ne 11) { throw "Expected 11 total skills (10 assessment + 1 shared), found $($allSkills.Count)" }
+
+$skills = $allSkills | Where-Object { $_.Name -ne 'codepulse-shared' }
+if ($skills.Count -ne 10) { throw "Expected 10 assessment skills, found $($skills.Count)" }
 
 $requiredLinks = @(
     '../codepulse-shared/references/runtime-contract.md',
