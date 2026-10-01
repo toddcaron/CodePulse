@@ -44,13 +44,8 @@
     "summary": { "type": "string" },
     "findings": {
       "type": "array",
-      "description": "Normalized finding records, or ids of findings defined elsewhere in the same report.",
-      "items": {
-        "anyOf": [
-          { "$ref": "finding-schema.json" },
-          { "type": "string", "pattern": "^[A-Z]+(-[A-Z]+)*-[0-9]{3,}$" }
-        ]
-      }
+      "description": "Self-contained normalized finding records. Do not use finding-id strings here; cross-references may use ids in topRisks, recommendations, and modernization entries.",
+      "items": { "$ref": "finding-schema.json" }
     },
     "metrics": {
       "type": "object",

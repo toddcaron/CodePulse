@@ -104,6 +104,12 @@ foreach ($value in @('complete','incomplete','failed','unavailable')) {
     if ($resultSchema.properties.status.enum -notcontains $value) { throw "Assessment-result schema is missing status: $value" }
 }
 if (-not $resultSchema.properties.skipReason) { throw 'Assessment-result schema does not document skipReason' }
+if ($resultSchema.properties.findings.items.'$ref' -ne 'finding-schema.json') {
+    throw 'Assessment-result findings must embed complete finding-schema.json objects'
+}
+if ($resultSchema.properties.findings.description -notmatch 'Self-contained') {
+    throw 'Assessment-result findings must document self-contained records'
+}
 
 $reportSchema = Get-Content 'codepulse-shared/schemas/codepulse-report-schema.json' -Raw | ConvertFrom-Json
 foreach ($field in @('schemaVersion','reportType','skillName','application','repository','assessmentDate')) {

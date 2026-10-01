@@ -1,6 +1,6 @@
 # Markdown Renderer (Opt-In)
 
-Use only when the user explicitly asks for Markdown output. Render a `reportType: "detailed"` object conforming to `../schemas/codepulse-report-schema.json` to `{skill_name}_{currentDate}-report.md`. Section order, inclusion rules, assessment titles, and required sections are identical to `html-template.md`; this file defines only the Markdown form.
+Use only when the user explicitly asks for Markdown output. Render a `reportType: "detailed"` object conforming to `../schemas/codepulse-report-schema.json` to `{skill_name}_{currentDate}-report.md`. Every `assessments[].findings[]` entry is a complete embedded finding object; IDs in risks and recommendations are cross-references only. Section order, inclusion rules, assessment titles, and required sections are identical to `html-template.md`; this file defines only the Markdown form.
 
 ## Rules
 

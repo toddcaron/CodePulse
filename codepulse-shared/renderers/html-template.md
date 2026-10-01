@@ -59,7 +59,7 @@ footer{margin-top:28px;border-top:1px solid var(--line);padding-top:14px;color:v
   - EVIDENCE string → escaped text. Object → `<code>{path}:{line}[-{endLine}]</code>` or `<code>{command}</code>`, then `{symbol}`, `<pre><code>{snippet|output}</code></pre>` and `{note}` when present.
   - Append `cveInformation` as `<li><code>{id}</code> {package} {version} → {fixedVersion} (CVSS {cvss})</li>` and `referenceLinks` as links.
   - Order findings by severity: Critical, High, Medium, Low, Informational, no severity, positive.
-- **Finding reference** `R(id)`: `<a href="#{id}"><code>{id}</code></a>`.
+- **Finding reference** `R(id)`: `<a href="#{id}"><code>{id}</code></a>`. Resolve references only against the embedded finding objects in `assessments[].findings`; never require a second data file.
 
 ## Section Order
 
@@ -72,7 +72,7 @@ Each section is `<section><h2>{Title}</h2>…</section>` unless shown otherwise.
 | 2 | Assessment Dashboard | `assessments[]` | table: Category, Status, Score, Grade, Summary. Add `skipReason` to Status when present. |
 | 3 | Overall Grade | `overall` | `<div class="head">` with `G(grade) big`, `{score} / 100`, and `note`. If `complete` is false, prefix `Incomplete assessment:`. |
 | 4 | Assessment Methodology | `methodology`, `scope` | lists: Executed checks (`<code>`), Tools, Notes, Included, Excluded |
-| 5 | one per `assessments[]` item | see table below | `<div class="head"><h2>{title}</h2>{G(grade)}</div>`, `<p>{summary}</p>`, status line when not `complete`, metrics, `F()` per finding (resolve string ids to the full record elsewhere in the report and render `R(id)`), `limitations` list |
+| 5 | one per `assessments[]` item | see table below | `<div class="head"><h2>{title}</h2>{G(grade)}</div>`, `<p>{summary}</p>`, status line when not `complete`, metrics, `F()` for each embedded finding object, `limitations` list |
 | 6 | Codebase Metrics | `loc` metrics from `codepulse-loc` assessment | table: Language, Files, Physical, Nonblank; bold totals row; exclusions list |
 | 7 | Top Risks | `topRisks[]` | `<ol>` of `R(findingId)` + finding title + `summary` |
 | 8 | Recommendations | `recommendations[]` | `<ol>` of `<strong>{priority}: {title}</strong> {detail}` + `R()` per `findingIds` |
