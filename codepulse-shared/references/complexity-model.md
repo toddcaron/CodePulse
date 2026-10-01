@@ -19,7 +19,7 @@ Use tool-first measurement with a manual fallback.
 
    | Ecosystem | Cyclomatic | Cognitive |
    |---|---|---|
-   | Multi-language | `lizard` | — |
+   | Multi-language | Bundled `tools/lizard/lizard.py` (Lizard 1.24.0) | — |
    | Python | `radon cc` | `flake8-cognitive-complexity`, `complexipy` |
    | JavaScript / TypeScript | ESLint `complexity` | `eslint-plugin-sonarjs` `cognitive-complexity` |
    | Java | PMD `CyclomaticComplexity`, Checkstyle | PMD `CognitiveComplexity` |
@@ -27,10 +27,12 @@ Use tool-first measurement with a manual fallback.
    | Go | `gocyclo` | `gocognit` |
    | Existing SonarQube / SonarCloud output | Yes | Yes |
 
-2. When no analyzer can run, estimate by reading the source. Count decision points and nesting for the largest, most-branched, and most central functions. Mark resulting findings `partially-verified`, and record "manually estimated" in `evidenceLimitations`.
-3. Always record `measurementSource` (tool name and version, or `manual-estimate`) for each measure.
-4. Exclude generated code, minified files, vendored or third-party code, migrations, and build output. Report test code separately if it is measured.
-5. Discard analyzer pseudo-entries, such as lizard `*global*` rows or top-level statements reported as functions, and note analyzer coverage gaps (for example, lizard reads only `<script>` blocks in `.vue` files).
+2. For detected supported source types, resolve the bundled Lizard script relative to the installed shared skill and run `python <shared-tools-path>/lizard.py --version` before analysis. Run `python <shared-tools-path>/lizard.py --csv -C 999 <source-root>`, adding an explicit `-x` for each inventory-derived exclusion. Use a Python 3.8 or later interpreter, process CSV from standard output or a temporary file under the invoking skill's `reports/` directory, and never write files into the analyzed repository.
+3. For bundled Lizard output, discard `*global*` pseudo-functions. Calculate the Cyclomatic median, 90th percentile, maximum, threshold breaches, and hotspots from its function records. Record `lizard 1.24.0`, the exact command, source roots, exclusions, function count, and coverage gaps in `metrics.complexity`.
+4. When the bundled analyzer cannot run, a source type is unsupported, or no supported source is present, use the applicable ecosystem-specific analyzer. Estimate manually only when no suitable analyzer can run. Count decision points and nesting for the largest, most-branched, and most central functions; mark resulting findings `partially-verified`, and record `manual-estimate` plus the reason in `evidenceLimitations`.
+5. Always record `measurementSource` (tool name and version, or `manual-estimate`) for each measure.
+6. Exclude generated code, minified files, vendored or third-party code, migrations, and build output. Report test code separately if it is measured.
+7. Note analyzer coverage gaps, including Lizard's `.vue` `<script>`-only coverage and incomplete `.gitignore` interpretation when the optional upstream `pathspec` dependency is unavailable.
 
 ## Thresholds (per function or method)
 

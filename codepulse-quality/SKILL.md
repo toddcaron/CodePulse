@@ -25,7 +25,7 @@ Do not perform LOC counting, MFA review, vulnerability analysis, dead code detec
 
 Evaluate each measure using the shared complexity model:
 
-- **Cyclomatic Complexity**: independent paths per function. Measure with an available analyzer; otherwise estimate manually and mark findings `partially-verified`.
+- **Cyclomatic Complexity**: independent paths per function. For supported source types, first use the bundled `../codepulse-shared/tools/lizard/lizard.py` according to the shared complexity model. Run it with an available Python 3.8+ interpreter, verify its version, request CSV output, and process function records after excluding `*global*` pseudo-functions. Record `lizard 1.24.0`, exact command, source roots, exclusions, function count, and coverage gaps in `metrics.complexity`. Use an ecosystem-specific analyzer, then a manual estimate marked `partially-verified`, only when the bundled analyzer cannot supply the measure.
 - **Cognitive Complexity**: how hard a function is to read, driven by nesting, breaks in linear flow, and mixed boolean logic.
 - **Accidental Complexity**: complexity the problem does not require. Apply the inherent-vs-accidental test and state the simpler alternative for every accidental finding. Do not deduct for inherent domain complexity.
 
@@ -57,6 +57,7 @@ Before executing this skill, read and apply:
 - `../codepulse-shared/references/report-standard.md`
 - `../codepulse-shared/references/assessment-methodology.md`
 - `../codepulse-shared/references/complexity-model.md`
+- `../codepulse-shared/tools/lizard/README.md`
 - `../codepulse-shared/schemas/finding-schema.json`
 - `../codepulse-shared/schemas/assessment-result-schema.json`
 - `../codepulse-shared/schemas/codepulse-report-schema.json`

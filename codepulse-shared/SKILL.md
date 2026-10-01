@@ -46,4 +46,8 @@ This shared module must be installed alongside any CodePulse skill in the same p
 - `renderers/markdown-template.md`: Opt-in Markdown report rendering rules.
 - `renderers/executive-summary-template.md`: Executive HTML scorecard rendering rules.
 
+### Tools
+
+- `tools/lizard/`: Pinned Lizard 1.24.0 runtime for multi-language Cyclomatic Complexity measurement. `codepulse-quality` and `codepulse-full` invoke it with an available Python 3.8+ interpreter; no `pip` installation is required.
+
 The output protocol is defined in `references/report-standard.md`.

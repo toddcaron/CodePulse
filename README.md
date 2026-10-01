@@ -48,7 +48,7 @@ In CodePulse, complexity means **human readability and maintainability**, not th
 
 - **Inherent complexity** (essential business rules, regulatory logic, algorithms) is recorded as context but never deducted.
 - Complexity contributes 40% of the Code Quality score (Cyclomatic 10, Cognitive 15, Accidental 15); other quality signals contribute 60%.
-- Measurement is tool-first. Installing an analyzer such as `lizard`, `radon`, ESLint `complexity` with `eslint-plugin-sonarjs`, PMD, Roslyn metrics, `gocyclo`, or `gocognit` improves accuracy. Without one, values are manually estimated and findings are marked `partially-verified`.
+- Measurement is tool-first. CodePulse bundles Lizard 1.24.0 for multi-language Cyclomatic Complexity; an available Python 3.8+ interpreter runs it without `pip install lizard`. Ecosystem-specific analyzers such as `radon`, ESLint `complexity` with `eslint-plugin-sonarjs`, PMD, Roslyn metrics, `gocyclo`, or `gocognit` can provide additional measures. When no suitable analyzer runs, values are manually estimated and findings are marked `partially-verified`.
 - Complexity findings use `QUAL-CYC-*`, `QUAL-COG-*`, and `QUAL-ACC-*` IDs.
 
 # Installation
@@ -59,6 +59,7 @@ CodePulse is distributed as a collection of GitHub Copilot custom skills. Each s
 - GitHub Copilot with support for custom skills
 - Access to a repository that supports custom Copilot skills
 - Read/write access to the repository
+- Python 3.8 or later on `PATH` for the bundled Lizard Cyclomatic Complexity analyzer; CodePulse records a manual or ecosystem-specific fallback when Python is unavailable.
 
 ## Directory Structure
 
@@ -104,7 +105,9 @@ Each CodePulse skill can be run independently when installed with the sibling `c
         ├── SKILL.md
         ├── references/
         ├── schemas/
-        └── renderers/
+        ├── renderers/
+        └── tools/
+                └── lizard/
 ```
 
 ### Shared References
@@ -128,6 +131,7 @@ The `codepulse-shared/` directory is the single source of truth for framework-wi
 | `renderers/html-template.md` | Detailed HTML rendering instructions and fixed CSS |
 | `renderers/markdown-template.md` | Opt-in Markdown rendering instructions |
 | `renderers/executive-summary-template.md` | Executive HTML scorecard rendering instructions |
+| `tools/lizard/` | Pinned Lizard 1.24.0 source runtime for multi-language Cyclomatic Complexity; invoked through Python without package installation |
 
 Each `SKILL.md` lists the local references required for that skill. Reports use schema version `2.0` and follow this sequence:
 
@@ -206,7 +210,8 @@ An individual skill can be installed separately when the installation bundle inc
                 ├── SKILL.md
                 ├── references/
                 ├── schemas/
-                └── renderers/
+                ├── renderers/
+                └── tools/lizard/
 ```
 
 ### Important

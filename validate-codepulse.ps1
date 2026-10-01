@@ -85,6 +85,38 @@ foreach ($requirement in @('Cyclomatic Complexity','Cognitive Complexity','Accid
     if ($complexityModel.IndexOf($requirement) -lt 0) { throw "Complexity model is missing: $requirement" }
 }
 
+$lizardRoot = 'codepulse-shared/tools/lizard'
+foreach ($path in @(
+    "$lizardRoot/lizard.py",
+    "$lizardRoot/lizard_ext/__init__.py",
+    "$lizardRoot/lizard_ext/version.py",
+    "$lizardRoot/lizard_languages/__init__.py",
+    "$lizardRoot/LICENSE.txt",
+    "$lizardRoot/PROVENANCE.md",
+    "$lizardRoot/README.md"
+)) {
+    if (-not (Test-Path $path)) { throw "Missing bundled Lizard runtime asset: $path" }
+}
+$lizardVersion = Get-Content "$lizardRoot/lizard_ext/version.py" -Raw
+if ($lizardVersion -notmatch 'version = "1\.24\.0"') { throw 'Bundled Lizard version must be 1.24.0' }
+$lizardProvenance = Get-Content "$lizardRoot/PROVENANCE.md" -Raw
+foreach ($requirement in @('1.24.0','308b1c3efd8c1c69bcc3eb82deeaec64fd3662ec','MIT','Apache-2.0','Python 3.8')) {
+    if ($lizardProvenance.IndexOf($requirement) -lt 0) { throw "Lizard provenance is missing: $requirement" }
+}
+foreach ($skillName in @('codepulse-quality','codepulse-full')) {
+    $text = Get-Content "$skillName/SKILL.md" -Raw
+    if ($text.IndexOf('tools/lizard/lizard.py') -lt 0 -or $text.IndexOf('Python 3.8+') -lt 0) {
+        throw "$skillName does not require the bundled Lizard runtime"
+    }
+}
+$pythonCommand = Get-Command python -ErrorAction SilentlyContinue
+if ($pythonCommand) {
+    $reportedLizardVersion = (& $pythonCommand.Source "$lizardRoot/lizard.py" --version).Trim()
+    if ($reportedLizardVersion -ne '1.24.0') { throw "Bundled Lizard returned unexpected version: $reportedLizardVersion" }
+} else {
+    Write-Warning 'Python is unavailable; skipped bundled Lizard runtime smoke test.'
+}
+
 $findingSchema = Get-Content 'codepulse-shared/schemas/finding-schema.json' -Raw | ConvertFrom-Json
 foreach ($field in @('id','category','title','evidence','impact','recommendation','verificationStatus','sourceRepresentation','evidenceRecoveryRequired','evidenceLimitations')) {
     if ($findingSchema.required -notcontains $field) { throw "Finding schema does not require field: $field" }

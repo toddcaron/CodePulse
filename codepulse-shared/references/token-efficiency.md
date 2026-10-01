@@ -35,7 +35,7 @@ Project only the inventory evidence each capability needs:
 
 - LOC: source roots, file classifications, and exclusions.
 - Vulnerability: authentication, authorization, routes, data access, integrations, manifests, and configuration.
-- Quality: source roots, entry points, core paths, and analyzer commands and versions. Execute an available suitable analyzer before manual estimation; use `lizard` for multi-language Cyclomatic Complexity when available and suitable, otherwise use the ecosystem-specific analyzer in `complexity-model.md`. Preserve the command, version, scope, exclusions, and coverage gaps in complexity metrics.
+- Quality: source roots, entry points, core paths, and analyzer commands and versions. Execute an available suitable analyzer before manual estimation; for supported source types, use the bundled `tools/lizard/lizard.py` for multi-language Cyclomatic Complexity when Python is available, otherwise use the ecosystem-specific analyzer in `complexity-model.md`. Preserve the command, version, scope, exclusions, and coverage gaps in complexity metrics.
 - Dead code: source roots, imports, routes, configuration, and project references.
 - PLM: manifests, lock files, runtimes, containers, build, and deployment configuration.
 - External exposure: routes, authentication, CORS, ingress, host/port configuration, and external integrations.
