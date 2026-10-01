@@ -1,6 +1,6 @@
 ---
 name: codepulse-full
-description: Performs the complete CodePulse application assessment across security, authentication, code quality, dead code, dependency lifecycle health, external exposure, and maintainability metrics. Use when the user requests a full application health review, technical due diligence assessment, modernization readiness review, security posture assessment, portfolio evaluation, or comprehensive codebase analysis.
+description: Performs the complete CodePulse application assessment across security, code quality, dead code, dependency lifecycle health, external exposure, and maintainability metrics. Use when the user requests a full application health review, technical due diligence assessment, modernization readiness review, security posture assessment, portfolio evaluation, or comprehensive codebase analysis.
 ---
 
 # CodePulse Full Assessment
@@ -38,11 +38,10 @@ Apply the focused workflow for each category:
 | Capability | Skill | Weight |
 |---|---|---:|
 | Lines of code and maintainability indicators | `codepulse-loc` | 5% |
-| Authentication and MFA | `codepulse-mfa` | 5% |
-| Security vulnerabilities | `codepulse-vuln` | 30% |
-| Code quality | `codepulse-quality` | 25% |
-| Dead code | `codepulse-deadcode` | 10% |
-| Dependency and framework lifecycle | `codepulse-plm` | 15% |
+| Security vulnerabilities | `codepulse-vuln` | 32% |
+| Code quality | `codepulse-quality` | 26% |
+| Dead code | `codepulse-deadcode` | 11% |
+| Dependency and framework lifecycle | `codepulse-plm` | 16% |
 | External exposure | `codepulse-ext` | 10% |
 
 Use `codepulse-vuln-verbose` only when exhaustive line-level vulnerability analysis is explicitly requested. Do not silently substitute it for the normal security capability.
@@ -50,7 +49,7 @@ Use `codepulse-vuln-verbose` only when exhaustive line-level vulnerability analy
 ## Orchestration Procedure
 
 1. Detect repository type, languages, frameworks, boundaries, entry points, manifests, configuration, CI/CD, and infrastructure.
-2. Select the seven required capabilities and apply their focused workflows. Reuse repository metadata and evidence between capabilities.
+2. Select the six required capabilities and apply their focused workflows. Reuse repository metadata and evidence between capabilities.
 3. Collect one normalized assessment result from each capability. Each result must include `assessmentName`, `repository`, `assessmentDate`, `score`, `status`, `findings`, and `summary`. Record `complete`, `incomplete`, `failed`, or `unavailable` for every capability. Represent an intentionally skipped capability as `incomplete` with an explicit `skipReason` and affected scope. Never infer successful completion from a compressed summary.
 4. Normalize every finding with stable `id` (also called `findingId` in intermediate output), category, severity where applicable, title, exact evidence, impact, recommendation, `verificationStatus`, `sourceRepresentation`, `evidenceRecoveryRequired`, and `evidenceLimitations`.
 5. Validate every result and finding against the shared schemas. Validate evidence references against available original repository content or original tool output. Reject or mark findings incomplete when required evidence, impact, recommendation, or provenance is missing. Inspect original content whenever required by the runtime contract; do not reconstruct exact evidence from summaries.
@@ -68,22 +67,21 @@ The final report must contain:
 3. Overall Grade
 4. Assessment Methodology
 5. Security Assessment
-6. MFA Assessment
-7. Code Quality Assessment
-8. Dead Code Assessment
-9. Dependency & Framework Assessment
-10. External Exposure Assessment
-11. Codebase Metrics
-12. Top Risks
-13. Recommendations
-14. Modernization Opportunities
-15. Conclusion
+6. Code Quality Assessment
+7. Dead Code Assessment
+8. Dependency & Framework Assessment
+9. External Exposure Assessment
+10. Codebase Metrics
+11. Top Risks
+12. Recommendations
+13. Modernization Opportunities
+14. Conclusion
 
 Include category scores and grades, normalized finding IDs, limitations, incomplete capabilities, and exact evidence where applicable.
 
 ## Aggregation Rules
 
-- Critical recommendations precede High, authentication/MFA, lifecycle, exposure, quality, technical debt, dead code, and general best-practice actions.
+- Critical recommendations precede High, lifecycle, exposure, quality, technical debt, dead code, and general best-practice actions.
 - Preserve category-specific findings even when a category has no findings; report the evidence and limitation supporting that conclusion.
 - A no-finding result must document reviewed evidence scope and targeted original-content searches; compressed context alone cannot support a claim of absence.
 - A proxy's presence, use, successful compression, token savings, or ability to restore originals must be supported by verifiable runtime evidence. Otherwise record the state as unknown and proceed without relying on the proxy.
@@ -92,7 +90,7 @@ Include category scores and grades, normalized finding IDs, limitations, incompl
 
 ## Success Criteria
 
-The assessment answers whether the application is healthy, secure, maintainable, current, externally exposed, and in need of modernization investment. It retains all current category coverage and makes incomplete or failed analysis visible.
+The assessment answers whether the application is healthy, secure, maintainable, current, externally exposed, and in need of modernization investment. It retains all six defined category areas and makes incomplete or failed analysis visible.
 
 ## Output
 

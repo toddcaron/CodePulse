@@ -25,11 +25,10 @@ The CodePulse Full Assessment evaluates the following categories:
 
 | Category | Weight |
 |----------|----------|
-| Security Vulnerabilities | 30% |
-| MFA Implementation | 5% |
-| Code Quality | 25% |
-| Dead Code | 10% |
-| Dependency & Framework Health | 15% |
+| Security Vulnerabilities | 32% |
+| Code Quality | 26% |
+| Dead Code | 11% |
+| Dependency & Framework Health | 16% |
 | External Exposure | 10% |
 | Lines of Code & Maintainability Indicators | 5% |
 
@@ -66,32 +65,6 @@ Total Weight = 100%
 - Multiple high-risk vulnerabilities
 - Sensitive data exposure
 - Authentication or authorization weaknesses
-
----
-
-## MFA Implementation
-
-### Grade A
-
-- MFA enforced for all users
-- Authentication flows properly secured
-- No obvious bypass paths detected
-
-### Grade B
-
-- MFA implemented but coverage gaps exist
-- Administrative users protected
-
-### Grade C
-
-- Partial MFA implementation
-- Inconsistent enforcement
-
-### Grade D
-
-- MFA not detected
-- Authentication controls appear weak
-- Obvious bypass scenarios identified
 
 ---
 

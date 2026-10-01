@@ -23,10 +23,10 @@ foreach ($file in $sharedFiles) {
 
 $allSkills = Get-ChildItem -Directory -Filter 'codepulse-*' |
     Where-Object { Test-Path (Join-Path $_.FullName 'SKILL.md') }
-if ($allSkills.Count -ne 11) { throw "Expected 11 total skills (10 assessment + 1 shared), found $($allSkills.Count)" }
+if ($allSkills.Count -ne 10) { throw "Expected 10 total skills (9 assessment + 1 shared), found $($allSkills.Count)" }
 
 $skills = $allSkills | Where-Object { $_.Name -ne 'codepulse-shared' }
-if ($skills.Count -ne 10) { throw "Expected 10 assessment skills, found $($skills.Count)" }
+if ($skills.Count -ne 9) { throw "Expected 9 assessment skills, found $($skills.Count)" }
 
 $requiredLinks = @(
     '../codepulse-shared/references/runtime-contract.md',
@@ -50,10 +50,10 @@ foreach ($skill in $skills) {
 }
 
 $full = Get-Content 'codepulse-full/SKILL.md' -Raw
-foreach ($weight in @('30%','5%','25%','10%','15%')) {
+foreach ($weight in @('32%','5%','26%','11%','10%','16%')) {
     if ($full.IndexOf($weight) -lt 0) { throw "codepulse-full is missing weight: $weight" }
 }
-foreach ($section in @('Executive Summary','Security Assessment','MFA Assessment','Code Quality Assessment','Dead Code Assessment','Dependency & Framework Assessment','External Exposure Assessment','Codebase Metrics','Top Risks','Recommendations','Modernization Opportunities','Conclusion')) {
+foreach ($section in @('Executive Summary','Security Assessment','Code Quality Assessment','Dead Code Assessment','Dependency & Framework Assessment','External Exposure Assessment','Codebase Metrics','Top Risks','Recommendations','Modernization Opportunities','Conclusion')) {
     if ($full.IndexOf($section) -lt 0) { throw "codepulse-full is missing report section: $section" }
 }
 

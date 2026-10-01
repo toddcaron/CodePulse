@@ -11,7 +11,6 @@ description: Shared runtime contract, grading standards, severity ratings, recom
 
 - `codepulse-full`
 - `codepulse-loc`
-- `codepulse-mfa`
 - `codepulse-vuln`
 - `codepulse-vuln-verbose`
 - `codepulse-quality`

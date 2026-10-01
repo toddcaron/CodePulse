@@ -85,7 +85,7 @@ Include:
 
 - Executive summary.
 - Findings grouped by severity.
-- CVE matches where available.
+- CVE matches where available. If not CVE matches, include a statement indicating no direct CVE match was found.
 - Risk rating for each finding.
 - Recommended fixes.
 - A letter grade from D to A for the vulnerability posture.
