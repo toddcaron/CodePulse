@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "codepulse-report-schema.json",
-  "title": "CodePulse Report",
+  "title": "{skillName} Report",
   "description": "Single source of data for every rendered CodePulse report. Persist as {skill_name}_{currentDate}-result.json beside the rendered report. Every assessment embeds complete normalized finding records so the JSON is self-contained and renderer-independent. Renderers in ../renderers/ read only this object.",
   "type": "object",
   "required": ["schemaVersion", "reportType", "skillName", "application", "repository", "assessmentDate"],
