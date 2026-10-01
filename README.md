@@ -17,7 +17,7 @@ CodePulse provides a collection of focused GitHub Copilot skills that can be run
 | **codepulse-loc**      | Measures application size and composition             | Total LOC, language breakdown, large files/modules                                   | `Run codepulse-loc and provide a language breakdown.`                      |
 | **codepulse-vuln**     | Performs security and vulnerability analysis          | OWASP risks, dependency vulnerabilities, CVEs, secrets, injection vulnerabilities    | `Run codepulse-vuln and identify any high-risk findings.`                  |
 | **codepulse-vuln-verbose** | Performs exhaustive vulnerability analysis with line-level evidence | Every finding instance, source-to-sink evidence, file and line citations, CVEs | `/codepulse-vuln-verbose on this repo.` |
-| **codepulse-quality**  | Evaluates maintainability and code quality            | Complexity, code smells, standards compliance, duplication, architecture consistency | `Run codepulse-quality and identify refactoring opportunities.`            |
+| **codepulse-quality**  | Evaluates maintainability and code quality            | Readability complexity (cyclomatic, cognitive, accidental), code smells, standards compliance, architecture consistency | `Run codepulse-quality and identify refactoring opportunities.`            |
 | **codepulse-deadcode** | Identifies cleanup opportunities                      | Unused code, unused variables, obsolete classes, dead endpoints, commented-out code  | `Run codepulse-deadcode and identify code safe for removal.`               |
 | **codepulse-plm**      | Reviews technology lifecycle health                   | Outdated frameworks, package versions, deprecated libraries, upgrade risk            | `Run codepulse-plm and identify unsupported technologies.`                 |
 | **codepulse-ext**      | Reviews external accessibility and exposure risks     | Public endpoints, APIs, webhooks, CORS, anonymous access, attack surface             | `Run codepulse-ext and analyze the application's external exposure.`       |
@@ -35,6 +35,21 @@ CodePulse provides a collection of focused GitHub Copilot skills that can be run
 | Pre-Acquisition Due Diligence   | `codepulse-full`                                           |
 | Pre-Production Readiness Review | `codepulse-full`, `codepulse-vuln`                         |
 | Legacy System Assessment        | `codepulse-plm`, `codepulse-deadcode`, `codepulse-quality` |
+
+## How CodePulse Measures Complexity
+
+In CodePulse, complexity means **human readability and maintainability**, not the inherent difficulty of the problem being solved. `codepulse-quality` (and the Code Quality area of `codepulse-full`) evaluates three measures defined in [`codepulse-shared/references/complexity-model.md`](codepulse-shared/references/complexity-model.md):
+
+| Measure | What It Answers | Acceptable | Moderate | High | Very High |
+|---|---|---|---|---|---|
+| Cyclomatic Complexity | How many independent paths must be understood and tested? | 1–10 | 11–20 | 21–50 | > 50 |
+| Cognitive Complexity | How hard is the code to read top to bottom? | 0–15 | 16–25 | > 25 | — |
+| Accidental Complexity | What complexity exists that the problem does not require? | Qualitative indicators with an inherent-vs-accidental test | | | |
+
+- **Inherent complexity** (essential business rules, regulatory logic, algorithms) is recorded as context but never deducted.
+- Complexity contributes 40% of the Code Quality score (Cyclomatic 10, Cognitive 15, Accidental 15); other quality signals contribute 60%.
+- Measurement is tool-first. Installing an analyzer such as `lizard`, `radon`, ESLint `complexity` with `eslint-plugin-sonarjs`, PMD, Roslyn metrics, `gocyclo`, or `gocognit` improves accuracy. Without one, values are manually estimated and findings are marked `partially-verified`.
+- Complexity findings use `QUAL-CYC-*`, `QUAL-COG-*`, and `QUAL-ACC-*` IDs.
 
 # Installation
 
@@ -107,6 +122,7 @@ The `codepulse-shared/` directory is the single source of truth for framework-wi
 | `references/recommendations-library.md` | Standard remediation guidance |
 | `references/report-standard.md` | Detailed and executive report requirements |
 | `references/assessment-methodology.md` | Shared assessment workflow and limitations |
+| `references/complexity-model.md` | Readability complexity definitions, measurement, thresholds, and scoring |
 | `schemas/` | Normalized finding and assessment-result contracts |
 | `templates/` | Intermediate and executive report templates |
 
