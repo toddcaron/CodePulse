@@ -189,19 +189,57 @@ High
 
 # Code Quality Recommendations
 
-## Excessive Complexity
+## High Cyclomatic Complexity
 
 ### Finding
 
-Methods, classes, or modules are overly complex.
+Functions exceed cyclomatic complexity thresholds, creating many independent paths to understand and test.
 
 ### Recommendation
 
-- Break large functions into smaller units.
-- Apply separation of concerns principles.
-- Reduce nesting and conditional complexity.
-- Extract reusable business logic components.
-- Increase unit test coverage during refactoring.
+- Add characterization tests before refactoring.
+- Extract cohesive branches into well-named methods.
+- Replace conditional chains with lookup tables, strategy objects, or polymorphism.
+- Separate validation, orchestration, and business rules.
+
+### Priority
+
+Medium
+
+---
+
+## High Cognitive Complexity
+
+### Finding
+
+Functions are difficult to read due to deep nesting, broken linear flow, or mixed boolean logic.
+
+### Recommendation
+
+- Use guard clauses and early returns to flatten nesting.
+- Name intermediate boolean expressions to reveal intent.
+- Extract nested loops and blocks into named functions.
+- Avoid mixing `&&` and `||` in a single expression without grouping.
+
+### Priority
+
+Medium
+
+---
+
+## Accidental Complexity
+
+### Finding
+
+The implementation contains complexity the problem does not require, such as needless abstraction, indirection, duplication, or reinvented framework features.
+
+### Recommendation
+
+- Remove pass-through layers and single-implementation abstractions without a seam purpose.
+- Replace custom infrastructure with framework or standard-library features.
+- Consolidate inconsistent patterns that solve the same problem.
+- Remove speculative extension points and unused options.
+- Document the simpler alternative and refactor incrementally behind tests.
 
 ### Priority
 

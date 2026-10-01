@@ -10,6 +10,7 @@ $sharedFiles = @(
     'codepulse-shared/references/recommendations-library.md',
     'codepulse-shared/references/report-standard.md',
     'codepulse-shared/references/assessment-methodology.md',
+    'codepulse-shared/references/complexity-model.md',
     'codepulse-shared/schemas/finding-schema.md',
     'codepulse-shared/schemas/assessment-result-schema.md',
     'codepulse-shared/templates/assessment-output-template.md',
@@ -55,6 +56,17 @@ foreach ($weight in @('32%','5%','26%','11%','10%','16%')) {
 }
 foreach ($section in @('Executive Summary','Security Assessment','Code Quality Assessment','Dead Code Assessment','Dependency & Framework Assessment','External Exposure Assessment','Codebase Metrics','Top Risks','Recommendations','Modernization Opportunities','Conclusion')) {
     if ($full.IndexOf($section) -lt 0) { throw "codepulse-full is missing report section: $section" }
+}
+
+$complexityLink = '`../codepulse-shared/references/complexity-model.md`'
+foreach ($skillName in @('codepulse-quality','codepulse-full')) {
+    if ((Get-Content "$skillName/SKILL.md" -Raw).IndexOf($complexityLink) -lt 0) {
+        throw "$skillName is missing shared link: ../codepulse-shared/references/complexity-model.md"
+    }
+}
+$complexityModel = Get-Content 'codepulse-shared/references/complexity-model.md' -Raw
+foreach ($requirement in @('Cyclomatic Complexity','Cognitive Complexity','Accidental Complexity','Inherent vs. Accidental Test','QUAL-CYC-','QUAL-COG-','QUAL-ACC-','manual-estimate')) {
+    if ($complexityModel.IndexOf($requirement) -lt 0) { throw "Complexity model is missing: $requirement" }
 }
 
 $findingSchema = Get-Content 'codepulse-shared/schemas/finding-schema.md' -Raw

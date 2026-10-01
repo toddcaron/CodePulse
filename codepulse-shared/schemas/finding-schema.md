@@ -22,6 +22,8 @@ Allowed `sourceRepresentation` values: `original`, `normalized`, `compressed`, a
 
 For backward compatibility, consumers may accept legacy records without the four provenance fields. New normalized findings must include them. A confirmed High or Critical finding must not rely only on compressed or summarized content; verify against original content or leave it partially verified, unverified, or unavailable.
 
-Optional fields: `referenceLinks`, `cveInformation`, `affectedComponent`, `confidence`, `remediationPriority`, `estimatedComplexity`, and `status`.
+Optional fields: `referenceLinks`, `cveInformation`, `affectedComponent`, `confidence`, `remediationPriority`, `estimatedComplexity`, `metrics`, and `status`.
+
+`metrics` records measured values for complexity findings: `cyclomatic`, `cognitive`, `measurementSource` (tool name and version, or `manual-estimate`), and `threshold` (the band exceeded). See `../references/complexity-model.md`.
 
 Do not create findings without evidence. Preserve exact evidence. Use the same ID when the same finding is reused; cross-reference it instead of creating a duplicate. Distinct evidence or remediation may justify separate IDs.

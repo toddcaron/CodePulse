@@ -98,8 +98,8 @@
         <span class="grade grade-c" aria-label="Overall grade C">C</span>
         <div>
           <h2>Overall grade</h2>
-          <p>The code is compact, readable, and builds cleanly, but it is not ready for untrusted users. Anonymous write endpoints, stored XSS, logged secrets, absent MFA, and vulnerable dependencies dominate the risk profile.</p>
-          <p class="meta">Average: 2.29 / 4.00 using A=4, B=3, C=2, D=1; rounded to C.</p>
+          <p>The code is compact, readable, and builds cleanly, but it is not ready for untrusted users. Anonymous write endpoints, stored XSS, logged secrets, and vulnerable dependencies dominate the risk profile.</p>
+          <p class="meta">Weighted score: 75 / 100 using the <code>codepulse-full</code> category weights; grade C.</p>
         </div>
       </div>
       <div class="panel">
@@ -115,9 +115,8 @@
         <thead><tr><th>Section</th><th>Headline</th><th>Grade</th></tr></thead>
         <tbody>
           <tr><td>Lines of code</td><td>Small, understandable source footprint</td><td><span class="mini-grade grade-a">A</span></td></tr>
-          <tr><td>MFA</td><td>No identity or MFA implementation</td><td><span class="mini-grade grade-d">D</span></td></tr>
           <tr><td>Security</td><td>Stored XSS, secret exposure, anonymous mutation, vulnerable packages</td><td><span class="mini-grade grade-d">D</span></td></tr>
-          <tr><td>Code quality</td><td>Clean lint/build; validation, concurrency, and testing gaps</td><td><span class="mini-grade grade-b">B</span></td></tr>
+          <tr><td>Code quality</td><td>Low cyclomatic/cognitive complexity; client accidental complexity, concurrency, and testing gaps</td><td><span class="mini-grade grade-b">B</span></td></tr>
           <tr><td>Dead code</td><td>One unused exported endpoint helper; no analyzer-reported unused variables</td><td><span class="mini-grade grade-b">B</span></td></tr>
           <tr><td>Frameworks and libraries</td><td>Modern platforms, but patch lag and active advisories</td><td><span class="mini-grade grade-c">C</span></td></tr>
           <tr><td>External access</td><td>Local dev binding; unsafe if deployed to a public interface</td><td><span class="mini-grade grade-c">C</span></td></tr>
@@ -142,15 +141,7 @@
     </section>
 
     <section class="panel">
-      <div class="section-head"><h2>2. Multi-factor authentication</h2><span class="mini-grade grade-d">D</span></div>
-      <div class="finding high"><strong>No authentication or MFA is implemented.</strong> The server calls <code>UseAuthorization()</code> but does not register or invoke authentication, and controllers have no <code>[Authorize]</code> policy. There is no ASP.NET Identity, external identity provider, WebAuthn, TOTP, recovery-code, or challenge flow.</div>
-      <div class="finding high"><strong>The client token is cosmetic.</strong> <code>src/config/auth.js</code> defaults to <code>spoof-token</code>. Browser-delivered environment values are not secrets, and the API does not validate this bearer token.</div>
-      <h3>Action</h3>
-      <p>Use an external OpenID Connect provider or ASP.NET Core Identity. Require authorization by default, validate access tokens server-side, enforce MFA for privileged or write operations, and test enrollment, challenge, recovery, lockout, and bypass paths.</p>
-    </section>
-
-    <section class="panel">
-      <div class="section-head"><h2>3. Security vulnerabilities</h2><span class="mini-grade grade-d">D</span></div>
+      <div class="section-head"><h2>2. Security vulnerabilities</h2><span class="mini-grade grade-d">D</span></div>
       <div class="finding critical"><strong>High: stored cross-site scripting.</strong> Comment text passes from <code>AddCommentDto.Text</code> into the in-memory model unchanged, then <code>RequestDetailView.vue</code> renders it with <code>v-html</code>. An attacker can persist executable markup that runs for later viewers.</div>
       <div class="finding critical"><strong>High: secret embedded and logged.</strong> <code>Program.cs</code> contains <code>prod-secret-123</code> and writes it to warning logs at startup. Source history and log aggregation both become disclosure paths.</div>
       <div class="finding high"><strong>High: anonymous API mutation.</strong> Anyone who can reach the host can create requests, change statuses, and add comments. The client Authorization header provides no protection.</div>
@@ -162,25 +153,39 @@
     </section>
 
     <section class="panel">
-      <div class="section-head"><h2>4. Code quality</h2><span class="mini-grade grade-b">B</span></div>
-      <div class="finding positive"><strong>Clean automated checks.</strong> ESLint 10.2.1 and Oxlint 1.60.0 completed with no findings. The Vite production build completed successfully. The .NET build completed successfully; its eight warnings were dependency advisories rather than compiler errors.</div>
-      <div class="finding positive"><strong>Readable structure.</strong> Controllers delegate state changes to <code>RequestService</code>, DTOs are separate from the domain model, client API calls are centralized, and methods are short with low visible branch complexity.</div>
-      <div class="finding medium"><strong>Concurrency defect risk.</strong> <code>RequestService</code> is a singleton with a mutable <code>List</code> and incremented integer IDs. Concurrent requests can race, produce duplicate IDs, or mutate/enumerate the list unsafely.</div>
-      <div class="finding medium"><strong>Behavioral coverage is absent.</strong> No test or spec files were found. Authentication, validation, controller behavior, XSS rendering, and concurrent mutations have no regression safety net.</div>
-      <div class="finding medium"><strong>Style consistency.</strong> <code>CreateRequestDto.cs</code> uses tabs while neighboring C# files use spaces. This is minor and analyzer-neutral but suggests formatting is not enforced across the solution.</div>
+      <div class="section-head"><h2>3. Code quality</h2><span class="mini-grade grade-b">B</span></div>
+      <div class="finding positive"><strong>Readable structure.</strong> Controllers delegate state changes to <code>RequestService</code>, DTOs are separate from the domain model, and functions are short and flat (max 18 NLOC, nesting depth 1).</div>
+      <h3>Complexity breakdown</h3>
+      <table class="scorecard">
+        <thead><tr><th>Measure</th><th>Source</th><th>Median</th><th>P90</th><th>Max</th><th>Above threshold</th><th>Score</th></tr></thead>
+        <tbody>
+          <tr><td>Cyclomatic</td><td><code>lizard 1.24.0</code> (32 functions)</td><td>1</td><td>2</td><td>4</td><td>0%</td><td>98</td></tr>
+          <tr><td>Cognitive</td><td><code>manual-estimate</code></td><td>0</td><td>2</td><td>3</td><td>0%</td><td>95</td></tr>
+          <tr><td>Accidental</td><td>Manual review</td><td colspan="4">Duplicated client request/error plumbing and status list; redundant enum conversion</td><td>84</td></tr>
+        </tbody>
+      </table>
+      <h3>Complexity hotspots</h3>
+      <ul>
+        <li><code>onSubmit</code> (<code>vue_netapp.client/src/views/CreateRequestView.vue:14</code>) &mdash; cyclomatic 4, cognitive 3; highest in codebase, within thresholds.</li>
+        <li><code>QUAL-ACC-001</code> &mdash; the same loading/error/axios block appears in six functions across four views. Simpler alternative: one API module plus a <code>useAsync()</code> composable.</li>
+        <li><code>QUAL-ACC-002</code> &mdash; status values are declared in three client files and the server enum. Simpler alternative: one shared constant.</li>
+      </ul>
+      <div class="finding medium"><strong>QUAL-001 Concurrency defect risk.</strong> <code>RequestService</code> is a singleton with a mutable <code>List</code> and <code>++</code> ID counters. Concurrent requests can race, produce duplicate IDs, or mutate/enumerate the list unsafely.</div>
+      <div class="finding medium"><strong>QUAL-002 Inconsistent validation.</strong> <code>CreateRequestDto</code> has data annotations; <code>AddCommentDto</code> has none, so empty comments are rejected only by the client.</div>
+      <div class="finding medium"><strong>QUAL-004 Behavioral coverage is absent.</strong> No test or spec files were found. Refactoring the duplicated client code has no regression safety net.</div>
       <h3>Action</h3>
-      <p>Add API integration tests and focused Vue tests for the highest-risk paths. Replace singleton mutable storage with a thread-safe persistence abstraction, or synchronize access if this remains a demo-only in-memory service. Add server-side data annotations or validators and enforce formatting in CI.</p>
+      <p>Add API integration and Vue component tests first. Make <code>RequestService</code> thread-safe, consolidate client API calls and async state into a shared module, centralize the status list, and add validation to <code>AddCommentDto</code>.</p>
     </section>
 
     <section class="panel">
-      <div class="section-head"><h2>5. Dead code and unused variables</h2><span class="mini-grade grade-b">B</span></div>
+      <div class="section-head"><h2>4. Dead code and unused variables</h2><span class="mini-grade grade-b">B</span></div>
       <div class="finding positive"><strong>No analyzer findings.</strong> ESLint and Oxlint reported no unused variables or unreachable code, and the C# compiler reported no source warnings.</div>
       <div class="finding medium"><strong>Likely dead export.</strong> <code>getRequestComments()</code> is exported from <code>src/services/requestEndpoints.js</code> but has no call site. The detail page receives comments through <code>getRequest()</code>, making the separate helper redundant today.</div>
       <p>Remove the unused helper if separate comment refresh is not planned, or add the intended call path and tests. Keep lint and compiler warnings enforced in CI.</p>
     </section>
 
     <section class="panel">
-      <div class="section-head"><h2>6. Framework and library currency</h2><span class="mini-grade grade-c">C</span></div>
+      <div class="section-head"><h2>5. Framework and library currency</h2><span class="mini-grade grade-c">C</span></div>
       <div class="finding positive"><strong>Modern base platforms.</strong> The application targets .NET 10, Vue 3.5, Vite 8, and ESLint 10. These are current major generations as of the report date.</div>
       <div class="finding medium"><strong>Patch lag.</strong> <code>npm outdated</code> listed 12 packages with newer releases, including compatible updates for Axios 1.19.0, Vite 8.2.0, Vue 3.5.40, ESLint 10.8.0, and plugin-vue 6.0.8. Vue Router 5.2.0 and npm-run-all2 9.0.3 are major upgrades requiring review.</div>
       <div class="finding high"><strong>NuGet lag is security-relevant.</strong> <code>Microsoft.AspNetCore.OpenApi</code> resolves at 10.0.3 versus 10.0.10. Transitive <code>Microsoft.OpenApi</code> resolves at vulnerable 2.0.0 versus latest 3.9.0.</div>
@@ -188,7 +193,7 @@
     </section>
 
     <section class="panel">
-      <div class="section-head"><h2>7. External access</h2><span class="mini-grade grade-c">C</span></div>
+      <div class="section-head"><h2>6. External access</h2><span class="mini-grade grade-c">C</span></div>
       <div class="finding positive"><strong>Checked-in development profiles are local-only.</strong> Kestrel launch URLs use <code>localhost:5209</code> and <code>localhost:7034</code>; Vite also defaults to localhost and proxies <code>/api</code> to the local HTTPS backend. No CORS policy broadens browser access.</div>
       <div class="finding high"><strong>Public deployment would be unsafe.</strong> <code>AllowedHosts</code> is <code>*</code>, there is no authorization boundary, and runtime URL bindings can be overridden by hosting environment variables or a reverse proxy. If exposed, all API read/write routes and the SPA become externally reachable.</div>
       <div class="finding medium"><strong>Development OpenAPI is anonymous.</strong> <code>/openapi</code> is mapped in Development, which is acceptable on a developer workstation but leaks API shape if a development instance is bound beyond localhost.</div>
@@ -200,7 +205,7 @@
       <ol class="priority">
         <li><div><strong>Close the stored-XSS path.</strong> Render comment text normally, or sanitize against a strict allowlist on the server and client if rich text is required. Add a regression test with an event-handler payload.</div></li>
         <li><div><strong>Remove and rotate the hard-coded secret.</strong> Purge secret logging, move legitimate secrets to managed configuration, and review repository history and logs for exposure.</div></li>
-        <li><div><strong>Implement real authentication, authorization, and MFA.</strong> Protect all mutation routes and define who may read, create, update, and comment.</div></li>
+        <li><div><strong>Implement real authentication and authorization.</strong> Protect all mutation routes and define who may read, create, update, and comment.</div></li>
         <li><div><strong>Patch advisory-bearing packages.</strong> Update npm and NuGet lock resolution, then rerun audit, vulnerable-package, lint, and build checks.</div></li>
         <li><div><strong>Validate and constrain all input server-side.</strong> Add required and maximum-length rules, request-size limits, and safe logging practices.</div></li>
         <li><div><strong>Address shared-state concurrency and add tests.</strong> Introduce persistence or synchronization and cover simultaneous create/comment operations.</div></li>
@@ -210,7 +215,7 @@
 
     <section class="panel">
       <h2>Evidence and limitations</h2>
-      <p><strong>Executed checks:</strong> source line-count script; MFA/auth and dangerous-sink searches; ESLint; Oxlint; Vite production build; .NET build; <code>npm audit --audit-level=low</code>; <code>npm outdated</code>; <code>dotnet list package --vulnerable --include-transitive</code>; and <code>dotnet list package --outdated --include-transitive</code>.</p>
+      <p><strong>Executed checks:</strong> source line-count script; auth and dangerous-sink searches; ESLint; Oxlint; Vite production build; .NET build; <code>npm audit --audit-level=low</code>; <code>npm outdated</code>; <code>dotnet list package --vulnerable --include-transitive</code>; and <code>dotnet list package --outdated --include-transitive</code>.</p>
       <p><strong>Limitations:</strong> This is static analysis of the checked-out workspace, not a penetration test. No dynamic attack simulation, secret-history scan, container/IaC scan, license audit, runtime configuration inspection, or production network test was performed. Advisory results reflect registries on 2026-08-04 and can change.</p>
     </section>
 

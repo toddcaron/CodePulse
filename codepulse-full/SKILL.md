@@ -21,6 +21,7 @@ Before executing this skill, read and apply:
 - `../codepulse-shared/references/recommendations-library.md`
 - `../codepulse-shared/references/report-standard.md`
 - `../codepulse-shared/references/assessment-methodology.md`
+- `../codepulse-shared/references/complexity-model.md`
 - `../codepulse-shared/schemas/finding-schema.md`
 - `../codepulse-shared/schemas/assessment-result-schema.md`
 - `../codepulse-shared/templates/assessment-output-template.md`
@@ -77,7 +78,7 @@ The final report must contain:
 13. Modernization Opportunities
 14. Conclusion
 
-Include category scores and grades, normalized finding IDs, limitations, incomplete capabilities, and exact evidence where applicable.
+Include category scores and grades, normalized finding IDs, limitations, incomplete capabilities, and exact evidence where applicable. The Code Quality Assessment must include the Cyclomatic, Cognitive, and Accidental Complexity breakdown defined in the shared complexity model.
 
 ## Aggregation Rules
 
