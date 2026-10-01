@@ -40,3 +40,17 @@ Never shorten, rewrite, or omit source code, file paths, commands, CVE identifie
 ## Tool Usage
 
 Reuse existing results. Avoid duplicate enumeration, searches, dependency analysis, equivalent tools, and report generation. Batch related operations when supported.
+
+## External Proxy Coordination
+
+When an external context-optimization proxy is active:
+
+- Continue using targeted repository searches.
+- Reuse verified normalized findings.
+- Do not assume compression guarantees lower token usage.
+- Validate compression-sensitive evidence against original content.
+- Request original content only when required for evidence fidelity.
+- Do not repeatedly expand content already verified.
+- Do not place complete source files or raw logs in intermediate results.
+- Preserve exact paths, versions, identifiers, errors, and evidence.
+- Treat the CodePulse runtime contract as authoritative when external optimization conflicts with assessment requirements.

@@ -7,6 +7,7 @@ CodePulse provides a collection of focused GitHub Copilot skills that can be run
 - Token usage will vary depending on the skill chosen, context and size of codebase.
 - CodePulse includes shared token-efficiency guidance and remains fully functional without Caveman.
 - CodePulse may operate alongside Caveman or another token-efficiency companion, but does not download or execute external instructions automatically.
+- Optional integration, verification, and benchmarking guidance: [Caveman runtime setup](docs/caveman-runtime-setup.md) and [benchmark plan](docs/caveman-benchmark-plan.md).
 
 ## CodePulse Skills
 

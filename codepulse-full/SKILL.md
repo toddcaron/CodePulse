@@ -51,13 +51,13 @@ Use `codepulse-vuln-verbose` only when exhaustive line-level vulnerability analy
 
 1. Detect repository type, languages, frameworks, boundaries, entry points, manifests, configuration, CI/CD, and infrastructure.
 2. Select the seven required capabilities and apply their focused workflows. Reuse repository metadata and evidence between capabilities.
-3. Collect one normalized assessment result from each capability. Each result must include `assessmentName`, `repository`, `assessmentDate`, `score`, `status`, `findings`, and `summary`.
-4. Validate every finding against the shared finding schema. Reject or mark findings incomplete when required evidence, impact, or recommendation is missing.
-5. Preserve exact paths, lines, commands, versions, URLs, CVEs, errors, and configuration values.
-6. Merge results by stable finding ID. Cross-reference repeated findings instead of duplicating them.
-7. Calculate the weighted overall score using the shared grading standard and assign the overall letter grade.
-8. Record every capability as `complete`, `incomplete`, `failed`, or `unavailable`. Include the reason and affected scope for every non-complete result; never silently omit a category.
-9. Generate the final detailed HTML report using the existing report structure and shared report standard.
+3. Collect one normalized assessment result from each capability. Each result must include `assessmentName`, `repository`, `assessmentDate`, `score`, `status`, `findings`, and `summary`. Record `complete`, `incomplete`, `failed`, or `unavailable` for every capability. Represent an intentionally skipped capability as `incomplete` with an explicit `skipReason` and affected scope. Never infer successful completion from a compressed summary.
+4. Normalize every finding with stable `id` (also called `findingId` in intermediate output), category, severity where applicable, title, exact evidence, impact, recommendation, `verificationStatus`, `sourceRepresentation`, `evidenceRecoveryRequired`, and `evidenceLimitations`.
+5. Validate every result and finding against the shared schemas. Validate evidence references against available original repository content or original tool output. Reject or mark findings incomplete when required evidence, impact, recommendation, or provenance is missing. Inspect original content whenever required by the runtime contract; do not reconstruct exact evidence from summaries.
+6. Preserve exact paths, lines, commands, versions, URLs, CVEs, errors, and configuration values. Confirmed High and Critical findings must be verified against original content and must not rely only on compressed or summarized context. If originals cannot be recovered, retain the observation as unverified or incomplete and record the limitation rather than claiming confirmation.
+7. Merge results by stable finding ID only after validation. Deduplicate repeated findings without deleting distinct evidence; cross-reference reused findings. Reopen original evidence to resolve conflicting findings or sources.
+8. Calculate the weighted overall score and assign the overall letter grade only after evidence and finding validation. Do not present the overall assessment as complete when a required capability is incomplete, failed, intentionally skipped, or unavailable; explain the effect on score and coverage.
+9. Generate the final detailed HTML report only from validated normalized results, using the existing report structure and shared report standard. Preserve each capability status, evidence limitations, and required report sections.
 
 ## Required Report Sections
 
@@ -85,6 +85,8 @@ Include category scores and grades, normalized finding IDs, limitations, incompl
 
 - Critical recommendations precede High, authentication/MFA, lifecycle, exposure, quality, technical debt, dead code, and general best-practice actions.
 - Preserve category-specific findings even when a category has no findings; report the evidence and limitation supporting that conclusion.
+- A no-finding result must document reviewed evidence scope and targeted original-content searches; compressed context alone cannot support a claim of absence.
+- A proxy's presence, use, successful compression, token savings, or ability to restore originals must be supported by verifiable runtime evidence. Otherwise record the state as unknown and proceed without relying on the proxy.
 - Use the shared recommendation priority rules and existing recommendation library where applicable.
 - Executive content may summarize detailed findings, but must not remove required report sections or evidence from detailed findings.
 

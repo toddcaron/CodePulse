@@ -11,7 +11,11 @@ Each assessment should emit a versioned result compatible with:
   "score": null,
   "status": "complete",
   "findings": [],
-  "summary": ""
+  "summary": "",
+  "verificationStatus": "verified-original",
+  "sourceRepresentation": "original",
+  "evidenceRecoveryRequired": false,
+  "evidenceLimitations": []
 }
 ```
 
@@ -26,13 +30,24 @@ Each assessment should emit a versioned result compatible with:
 - `findings`: array of finding IDs or normalized finding records.
 - `summary`: concise result summary.
 
+## Evidence Provenance
+
+Every new normalized finding includes its own `verificationStatus`, `sourceRepresentation`, `evidenceRecoveryRequired`, and `evidenceLimitations`, as defined in `finding-schema.md`. Assessment results may include the same fields to summarize evidence provenance across the result; the summary must not imply that all evidence is verified when it is mixed.
+
+- `verificationStatus`: one of `verified-original`, `verified-tool-output`, `partially-verified`, `unverified`, or `unavailable`.
+- `sourceRepresentation`: one of `original`, `normalized`, `compressed`, or `summarized`.
+- `evidenceRecoveryRequired`: boolean; true when original evidence still needs retrieval or review.
+- `evidenceLimitations`: array of specific missing evidence or verification limitations; empty when none apply.
+
+Workflow `status` describes assessment completion and remains one of `complete`, `incomplete`, `failed`, or `unavailable`; it is not an evidence-verification status. A confirmed High or Critical finding must not rely only on compressed or summarized content. If original evidence cannot be verified, preserve the limitation and do not claim confirmation.
+
 ## Handling Gaps
 
-Use `incomplete` when analysis started but evidence or execution was insufficient. Use `failed` when the workflow could not complete because of an execution error. Use `unavailable` when the capability or required evidence does not exist. Include the reason and affected scope in `summary` or an optional `limitations` field. Never silently omit a category.
+Use `incomplete` when analysis started but evidence or execution was insufficient. If a workflow was intentionally skipped, use `incomplete` and include `skipReason` plus the affected scope in `summary` or `limitations`, so the skip is explicit without expanding the status enum. Use `failed` when the workflow could not complete because of an execution error. Use `unavailable` when the capability or required evidence does not exist. Never silently omit a category. Do not calculate a complete overall assessment when a required workflow was skipped or otherwise non-complete.
 
 ## Optional Fields
 
-`grade`, `category`, `limitations`, `metrics`, `recommendations`, `startedAt`, `completedAt`, and `sourceReport` may be included.
+`grade`, `category`, `limitations`, `metrics`, `recommendations`, `startedAt`, `completedAt`, `sourceReport`, `skipReason`, `verificationStatus`, `sourceRepresentation`, `evidenceRecoveryRequired`, and `evidenceLimitations` may be included.
 
 ## Compatibility
 

@@ -63,4 +63,68 @@ foreach ($field in @('assessmentName','repository','assessmentDate','score','sta
     if ($resultSchema.IndexOf($field) -lt 0) { throw "Assessment-result schema is missing field: $field" }
 }
 
+foreach ($field in @('`verificationStatus`','`sourceRepresentation`','`evidenceRecoveryRequired`','`evidenceLimitations`')) {
+    if ($findingSchema.IndexOf($field) -lt 0) { throw "Finding schema is missing provenance field: $field" }
+}
+foreach ($field in @('verified-original','verified-tool-output','partially-verified','unverified','unavailable','original','normalized','compressed','summarized')) {
+    if ($findingSchema.IndexOf($field) -lt 0) { throw "Finding schema is missing provenance value: $field" }
+}
+if ($resultSchema.IndexOf('`skipReason`') -lt 0) { throw 'Assessment-result schema does not document skipReason' }
+
+$runtime = Get-Content 'codepulse-shared/references/runtime-contract.md' -Raw
+foreach ($requirement in @('## Runtime Precedence','## External Context Optimization Runtime','### Mandatory Original Review','### Negative Finding Standard','### Compression Boundaries','### Secrets and Recovery','High or Critical','not detected in the reviewed scope')) {
+    if ($runtime.IndexOf($requirement) -lt 0) { throw "Runtime contract is missing requirement: $requirement" }
+}
+
+$tokenEfficiency = Get-Content 'codepulse-shared/references/token-efficiency.md' -Raw
+if ($tokenEfficiency.IndexOf('## External Proxy Coordination') -lt 0) { throw 'Token-efficiency reference is missing external proxy coordination' }
+
+foreach ($required in @('verificationStatus','sourceRepresentation','evidenceRecoveryRequired','evidenceLimitations','findingId')) {
+    if ((Get-Content 'codepulse-shared/templates/assessment-output-template.md' -Raw).IndexOf($required) -lt 0) {
+        throw "Assessment-output template is missing provenance field: $required"
+    }
+}
+
+foreach ($requirement in @('normalized assessment result','evidence references','original evidence','only after evidence and finding validation','intentionally skipped','compressed summary')) {
+    if ($full.IndexOf($requirement, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
+        throw "codepulse-full is missing orchestration requirement: $requirement"
+    }
+}
+
+$setupDoc = Get-Content 'docs/caveman-runtime-setup.md' -Raw
+foreach ($requirement in @('npx -y github:JuliusBrussee/caveman -- --only copilot --with-init','npm install -g @caveman-ai/cli','caveman setup --install','Caveman Proxy','Apache-2.0','Installation Validation Checklist','Secrets remain redacted','optional')) {
+    if ($setupDoc.IndexOf($requirement, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
+        throw "Caveman setup documentation is missing: $requirement"
+    }
+}
+
+$generatedInstructions = @(
+    '.github/copilot-instructions.md',
+    'AGENTS.md',
+    '.cursor/rules/caveman.mdc',
+    '.windsurf/rules/caveman.md',
+    '.clinerules/caveman.md',
+    '.opencode/AGENTS.md'
+)
+foreach ($file in $generatedInstructions) {
+    if (-not (Test-Path $file)) { continue }
+    $text = Get-Content $file -Raw
+    if ($text.IndexOf('CodePulse assessments', [System.StringComparison]::OrdinalIgnoreCase) -lt 0 -or
+        $text.IndexOf('runtime-contract.md', [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
+        throw "Generated Caveman instructions do not defer to the CodePulse runtime contract: $file"
+    }
+}
+
+$benchmarkDoc = Get-Content 'docs/caveman-benchmark-plan.md' -Raw
+foreach ($mode in @('CodePulse only','Repo instructions','Proxy','Both')) {
+    if ($benchmarkDoc.IndexOf($mode, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
+        throw "Caveman benchmark plan is missing comparison mode: $mode"
+    }
+}
+foreach ($metric in @('Duration','input tokens','output tokens','Findings produced','verified against originals','Report completeness','Assessment failures')) {
+    if ($benchmarkDoc.IndexOf($metric, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
+        throw "Caveman benchmark plan is missing capture field: $metric"
+    }
+}
+
 Write-Output 'CodePulse shared-contract validation passed.'
