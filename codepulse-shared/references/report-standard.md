@@ -27,13 +27,14 @@ Data and presentation are separate. `../schemas/codepulse-report-schema.json` de
 
 1. Builds one report object conforming to `../schemas/codepulse-report-schema.json` (`reportType: "detailed"`, or `"executive"` for `codepulse-exec`). Each assessment result conforms to `../schemas/assessment-result-schema.json` and embeds complete finding objects; each finding conforms to `../schemas/finding-schema.json`. Finding IDs may be used only as cross-references outside `assessments[].findings`.
 2. Validates the object against the schemas. Fix missing required fields from original evidence, or mark the finding or assessment incomplete with the limitation recorded. Do not invent values to satisfy the schema.
-3. Writes the object as `{skill_name}_{currentDate}-result.json` to the skill's `reports/` directory.
-4. Renders the object to `{skill_name}_{currentDate}-report.html` in the same directory using `../renderers/html-template.md` (detailed) or `../renderers/executive-summary-template.md` (executive). When the user explicitly requests Markdown, render `{skill_name}_{currentDate}-report.md` using `../renderers/markdown-template.md` instead.
+3. Resolves the skill-local output directory as the `reports/` directory beside the active skill's `SKILL.md`. This path is relative to the installed skill directory, not the analyzed repository, the user's current working directory, or the process working directory.
+4. Writes the object as `{skill_name}_{currentDate}-result.json` to that skill-local output directory.
+5. Renders the object to `{skill_name}_{currentDate}-report.html` in the same directory using `../renderers/html-template.md` (detailed) or `../renderers/executive-summary-template.md` (executive). When the user explicitly requests Markdown, render `{skill_name}_{currentDate}-report.md` using `../renderers/markdown-template.md` instead.
 
 Read the renderer only after the report object is final. Rendered reports contain no data that is absent from the JSON.
 
 ## Compatibility
 
-Keep existing user-facing skill names, report directories, and filename conventions. Focused reports continue under their existing `codepulse-*/reports/` directories. Full reports continue under `codepulse-full/reports/` using `{skill_name}_{currentDate}-report.html`.
+Keep existing user-facing skill names, report directories, and filename conventions. Focused reports continue under the installed skill's existing `codepulse-*/reports/` directory, beside that skill's `SKILL.md`. Full reports continue under the installed `codepulse-full/reports/` directory using `{skill_name}_{currentDate}-report.html`.
 
 Schema version is `2.0`. Version `1.0` results (Markdown schemas, optional provenance fields) are not accepted; rerun the assessment to produce a `2.0` result.

@@ -132,7 +132,7 @@ The `codepulse-shared/` directory is the single source of truth for framework-wi
 Each `SKILL.md` lists the local references required for that skill. Reports use schema version `2.0` and follow this sequence:
 
 1. Build and validate a JSON report object against the shared schemas.
-2. Write `{skill_name}_{currentDate}-result.json` to the skill's local `reports/` folder.
+2. Write `{skill_name}_{currentDate}-result.json` to the `reports/` folder beside the installed skill's `SKILL.md`, not to the analyzed repository's root or current working directory.
 3. Render `{skill_name}_{currentDate}-report.html` from that JSON using the appropriate renderer. Render `{skill_name}_{currentDate}-report.md` only when Markdown is explicitly requested.
 
 `codepulse-exec` reads a detailed `-result.json` file and writes its own executive `-result.json` and HTML report. It does not parse HTML reports.
@@ -231,7 +231,7 @@ If the assessment executes successfully, CodePulse has been installed correctly.
 
 CodePulse separates report data from report presentation. JSON schemas define the data contract; Markdown renderer files define how that data becomes HTML or Markdown. Skills keep report output folders local to each skill.
 
-When generating reports, skills should read the relevant references, JSON schemas, and renderer listed in their `SKILL.md`. Findings preserve exact evidence, stable IDs, provenance, limitations, and recommendations in JSON before presentation is rendered.
+When generating reports, skills should read the relevant references, JSON schemas, and renderer listed in their `SKILL.md`. Resolve each skill's `reports/` folder beside that installed `SKILL.md`; never resolve it against the analyzed repository's root or current working directory. Findings preserve exact evidence, stable IDs, provenance, limitations, and recommendations in JSON before presentation is rendered.
 
 This ensures that whether an engineer runs:
 

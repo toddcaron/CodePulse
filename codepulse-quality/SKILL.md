@@ -70,7 +70,7 @@ Emit an assessment result using `../codepulse-shared/schemas/assessment-result-s
 ## Output
 
 Follow the Output Protocol in `../codepulse-shared/references/report-standard.md`: write `{skill_name}_{currentDate}-result.json` and render `{skill_name}_{currentDate}-report.html`.
-File output path =  codepulse-quality/reports/
+File output path = the `reports/` directory beside this `SKILL.md` in the installed `codepulse-quality` skill. Resolve it relative to the skill directory, never relative to the analyzed repository or current working directory.
 
 Include:
 

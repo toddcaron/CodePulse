@@ -61,6 +61,9 @@ foreach ($skill in $skills) {
     if ($text.IndexOf('-result.json') -lt 0) {
         throw "$($skill.Name) does not persist a -result.json report object"
     }
+    if ($text.IndexOf('directory beside this `SKILL.md`', [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
+        throw "$($skill.Name) does not anchor report output to the installed skill directory"
+    }
 }
 
 $full = Get-Content 'codepulse-full/SKILL.md' -Raw

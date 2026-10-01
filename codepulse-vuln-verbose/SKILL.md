@@ -128,7 +128,7 @@ Emit an assessment result using `../codepulse-shared/schemas/assessment-result-s
 Follow the Output Protocol in `../codepulse-shared/references/report-standard.md`: write `{skill_name}_{currentDate}-result.json` and render `{skill_name}_{currentDate}-report.html` in:
 
 ```text
-codepulse-vuln-verbose/reports/
+the `reports/` directory beside this `SKILL.md` in the installed `codepulse-vuln-verbose` skill. Resolve it relative to the skill directory, never relative to the analyzed repository or current working directory.
 ```
 
 The report must include:

@@ -380,7 +380,7 @@ Preserve stable finding IDs in `executive.topRisks[].findingIds` when summarizin
 
 Build a `codepulse-report-schema.json` object with `reportType: "executive"`, `skillName: "codepulse-exec"`, `sourceReport` set to the input path, and the `executive` block populated from the sections below. When the source result does not contain a complete assessment for a dashboard category (for example, a focused `codepulse-quality` result has no security data), set that rating to `Not Assessed` and record the gap in `limitations`; never infer a rating. Follow the Output Protocol in `../codepulse-shared/references/report-standard.md`: write `{skill_name}_{currentDate}-result.json` and render `{skill_name}_{currentDate}-report.html` with the executive renderer.
 
-File output path =  codepulse-exec/reports/
+File output path = the `reports/` directory beside this `SKILL.md` in the installed `codepulse-exec` skill. Resolve it relative to the skill directory, never relative to the analyzed repository or current working directory.
 
 The report should be suitable for:
 
