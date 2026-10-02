@@ -57,31 +57,36 @@ For each finding, include:
 
 ## Shared References
 
-Before generating findings, review:
+Before executing this skill, read and apply:
 
-- `references/report-template.html`
-- `references/grading-model.md`
-- `references/severity-ratings.md`
-- `references/recommendations-library.md`
+- `../codepulse-shared/references/runtime-contract.md`
+- `../codepulse-shared/references/token-efficiency.md`
+- `../codepulse-shared/references/grading.md`
+- `../codepulse-shared/references/severity.md`
+- `../codepulse-shared/references/recommendation-priority.md`
+- `../codepulse-shared/references/recommendations-library.md`
+- `../codepulse-shared/references/report-standard.md`
+- `../codepulse-shared/references/assessment-methodology.md`
+- `../codepulse-shared/schemas/finding-schema.json`
+- `../codepulse-shared/schemas/assessment-result-schema.json`
+- `../codepulse-shared/schemas/codepulse-report-schema.json`
 
-Requirements:
+Preserve CVE/NVD evidence and emit stable finding IDs. Render with `../codepulse-shared/renderers/html-template.md` after the report object is final.
 
-- Generate reports using the report template.
-- Use the Severity Ratings framework when assigning Critical, High, Medium, Low, or Informational severity levels.
-- Validate known vulnerabilities using the CVE process defined in severity-ratings.md.
-- Use standardized remediation guidance from recommendations-library.md whenever applicable.
-- Assign the final assessment grade using grading-model.md.
+## Normalized Result
+
+Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.json`. Every finding must use the shared finding schema with a stable `SEC-*` ID, exact evidence, severity, impact, recommendation, and CVE data when applicable.
 
 ## Output
 
-Create a focused HTML security vulnerability report.
-File output path =  codepulse-vuln/reports/
+Follow the Output Protocol in `../codepulse-shared/references/report-standard.md`: write `{skill_name}_{currentDate}-result.json` and render `{skill_name}_{currentDate}-report.html`.
+File output path = the `reports/` directory beside this `SKILL.md` in the installed `codepulse-vuln` skill. Resolve it relative to the skill directory, never relative to the analyzed repository or current working directory.
 
 Include:
 
 - Executive summary.
 - Findings grouped by severity.
-- CVE matches where available.
+- CVE matches where available. If not CVE matches, include a statement indicating no direct CVE match was found.
 - Risk rating for each finding.
 - Recommended fixes.
 - A letter grade from D to A for the vulnerability posture.

@@ -1,13 +1,13 @@
 ---
 name: codepulse-exec
-description: Transforms an existing CodePulse assessment report into a concise executive-level application health summary. Use when the audience is leadership, management, governance teams, architecture review boards, portfolio managers, CIOs, CTOs, VPs, directors, or non-technical stakeholders. Focus on business risk, modernization readiness, security posture, maintainability, operational risk, and investment priorities rather than detailed technical findings.
+description: Transforms an existing CodePulse JSON result into a concise executive-level application health summary. Use when the audience is leadership, management, governance teams, architecture review boards, portfolio managers, CIOs, CTOs, VPs, directors, or non-technical stakeholders. Focus on business risk, modernization readiness, security posture, maintainability, operational risk, and investment priorities rather than detailed technical findings.
 ---
 
 # CodePulse Executive Summary
 
 ## Purpose
 
-CodePulse Executive Summary converts a detailed CodePulse assessment report into an executive-ready application health scorecard.
+CodePulse Executive Summary converts a detailed CodePulse result into an executive-ready application health scorecard.
 
 This skill is intended for leadership audiences that need a rapid understanding of:
 
@@ -33,7 +33,7 @@ This skill summarizes findings rather than repeating them.
 
 ## Input
 
-Use an existing CodePulse HTML report as the primary source. The user needs to provide the full report file path. If they don't provide a path, you will prompt for one.
+The only accepted input is a detailed CodePulse result file, `{skill_name}_{currentDate}-result.json`, conforming to `../codepulse-shared/schemas/codepulse-report-schema.json` with `reportType: "detailed"` and `schemaVersion: "2.0"`. The user provides its path; if they don't, prompt for one. Do not parse HTML or Markdown reports. If the file is missing, invalid, or a different schema version, stop and ask the user to rerun the source assessment.
 
 Review all available:
 
@@ -50,26 +50,27 @@ Review all available:
 
 Do not perform a new code analysis unless explicitly requested.
 
-Assume the detailed report already contains the authoritative findings.
+Assume the detailed result already contains the authoritative findings.
 
 ---
 
 ## Shared References
 
-Review the following resources before generating the executive assessment:
+Before executing this skill, read and apply:
 
-- `references/report-template.html`
-- `references/grading-model.md`
-- `references/severity-ratings.md`
-- `references/recommendations-library.md`
-- `references/executive-scorecard-template.html`
+- `../codepulse-shared/references/runtime-contract.md`
+- `../codepulse-shared/references/token-efficiency.md`
+- `../codepulse-shared/references/grading.md`
+- `../codepulse-shared/references/severity.md`
+- `../codepulse-shared/references/recommendation-priority.md`
+- `../codepulse-shared/references/recommendations-library.md`
+- `../codepulse-shared/references/report-standard.md`
+- `../codepulse-shared/references/assessment-methodology.md`
+- `../codepulse-shared/schemas/finding-schema.json`
+- `../codepulse-shared/schemas/assessment-result-schema.json`
+- `../codepulse-shared/schemas/codepulse-report-schema.json`
 
-Requirements:
-
-- Use the CodePulse grading model when interpreting overall health.
-- Use standardized severity definitions when communicating risk.
-- Use recommendation categories from the recommendations library.
-- Follow the CodePulse report structure and styling guidance.
+Render with `../codepulse-shared/renderers/executive-summary-template.md` after the executive object is final. Do not rerun code analysis unless explicitly requested.
 
 ---
 
@@ -371,13 +372,15 @@ The recommendation should clearly communicate the level of management attention 
 
 ---
 
+## Normalized Input
+
+Preserve stable finding IDs in `executive.topRisks[].findingIds` when summarizing risks; do not rerun analysis unless explicitly requested.
+
 ## Output Format
 
-Generate a concise executive HTML report that matches the CodePulse executive scorecard template:
-references/executive-scorecard-template.html
+Build a `codepulse-report-schema.json` object with `reportType: "executive"`, `skillName: "codepulse-exec"`, `sourceReport` set to the input path, and the `executive` block populated from the sections below. When the source result does not contain a complete assessment for a dashboard category (for example, a focused `codepulse-quality` result has no security data), set that rating to `Not Assessed` and record the gap in `limitations`; never infer a rating. Follow the Output Protocol in `../codepulse-shared/references/report-standard.md`: write `{skill_name}_{currentDate}-result.json` and render `{skill_name}_{currentDate}-report.html` with the executive renderer.
 
-Filename =  {skill_name}_{currentDate}-report.html
-File output path =  codepulse-exec/reports/
+File output path = the `reports/` directory beside this `SKILL.md` in the installed `codepulse-exec` skill. Resolve it relative to the skill directory, never relative to the analyzed repository or current working directory.
 
 The report should be suitable for:
 

@@ -27,20 +27,28 @@ Do not perform MFA review, vulnerability analysis, code quality review, dead cod
 
 ## Shared References
 
-Before generating the assessment, review:
+Before executing this skill, read and apply:
 
-- `references/report-template.html`
-- `references/grading-model.md`
+- `../codepulse-shared/references/runtime-contract.md`
+- `../codepulse-shared/references/token-efficiency.md`
+- `../codepulse-shared/references/grading.md`
+- `../codepulse-shared/references/recommendations-library.md`
+- `../codepulse-shared/references/report-standard.md`
+- `../codepulse-shared/references/assessment-methodology.md`
+- `../codepulse-shared/schemas/finding-schema.json`
+- `../codepulse-shared/schemas/assessment-result-schema.json`
+- `../codepulse-shared/schemas/codepulse-report-schema.json`
 
-Requirements:
+Render with `../codepulse-shared/renderers/html-template.md` after the report object is final.
 
-- Use report-template.html for formatting.
-- Use grading-model.md when assigning maintainability grades related to codebase size and organization.
+## Normalized Result
+
+Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.json`. Use stable `LOC-*` finding IDs for evidence-backed maintainability observations and include the score, grade, status, summary, limitations, and `metrics.loc`.
 
 ## Output
 
-Create a focused HTML report section for lines of code only.
-File output path =  codepulse-loc/reports/
+Follow the Output Protocol in `../codepulse-shared/references/report-standard.md`: write `{skill_name}_{currentDate}-result.json` and render `{skill_name}_{currentDate}-report.html`.
+File output path = the `reports/` directory beside this `SKILL.md` in the installed `codepulse-loc` skill. Resolve it relative to the skill directory, never relative to the analyzed repository or current working directory.
 
 Include:
 

@@ -39,24 +39,29 @@ Distinguish between valid comments and commented-out code that may indicate dead
 
 ## Shared References
 
-Before generating the assessment, review:
+Before executing this skill, read and apply:
 
-- `references/report-template.html`
-- `references/grading-model.md`
-- `references/recommendations-library.md`
+- `../codepulse-shared/references/runtime-contract.md`
+- `../codepulse-shared/references/token-efficiency.md`
+- `../codepulse-shared/references/grading.md`
+- `../codepulse-shared/references/recommendation-priority.md`
+- `../codepulse-shared/references/recommendations-library.md`
+- `../codepulse-shared/references/report-standard.md`
+- `../codepulse-shared/references/assessment-methodology.md`
+- `../codepulse-shared/schemas/finding-schema.json`
+- `../codepulse-shared/schemas/assessment-result-schema.json`
+- `../codepulse-shared/schemas/codepulse-report-schema.json`
 
-Requirements:
+Render with `../codepulse-shared/renderers/html-template.md` after the report object is final. Preserve confirmed versus suspected dead-code distinctions and stable finding IDs.
 
-- Use report-template.html for output formatting.
-- Use grading-model.md for scoring.
-- Use dead code cleanup recommendations from recommendations-library.md.
-`
+## Normalized Result
+
+Emit an assessment result using `../codepulse-shared/schemas/assessment-result-schema.json`. Use stable `DEAD-*` finding IDs and mark each observation as confirmed, potential, or requiring confirmation without overstating static evidence.
 
 ## Output
 
-Create a focused HTML dead code report.
-Filename =  {skill_name}_{currentDate}-report.html
-File output path =  codepulse-deadcode/reports/
+Follow the Output Protocol in `../codepulse-shared/references/report-standard.md`: write `{skill_name}_{currentDate}-result.json` and render `{skill_name}_{currentDate}-report.html`.
+File output path = the `reports/` directory beside this `SKILL.md` in the installed `codepulse-deadcode` skill. Resolve it relative to the skill directory, never relative to the analyzed repository or current working directory.
 
 Include:
 
