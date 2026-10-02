@@ -24,6 +24,15 @@ CodePulse provides a collection of focused GitHub Copilot skills that can be run
 | **codepulse-exec**      | Converts a JSON result into an executive-level summary.     | Per provided `*-result.json`. Attempts to answer leadership questions and provide investment and strength analysis.             | `/codepulse-exec <result-json-filepath>`       |
 
 ## Common Assessment Scenarios
+Feature Parity is under development. The Python engine supports repository
+inventory, schema-validated discovery policy, provisional OpenAPI/C# HTTP,
+Vue/AngularJS UI/router and ColdFusion tag discovery, manifest validation,
+human review reconciliation, JSON and marked text/Markdown requirements ingestion and reviewed
+static-contract comparison, plus separately reviewed static requirements coverage. Full
+framework analysis and new slash commands are not available yet.
+See the [engine setup and limitations](codepulse-shared/tools/feature-parity/README.md)
+and [agent implementation progress](docs/feature-parity-agent-implementation-plan.md).
+
 | Scenario                        | Recommended Skills                                         |
 | ------------------------------- | ---------------------------------------------------------- |
 | Security Review                 | `codepulse-vuln`, `codepulse-ext`                          |

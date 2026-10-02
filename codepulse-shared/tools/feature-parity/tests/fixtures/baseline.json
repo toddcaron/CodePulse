@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "application": {"name": "Fixture", "sourceType": "repository", "revision": null},
+  "scan": {"coverage": "unknown", "limitations": ["Static evidence only"], "inventoryDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+  "evidence": [{
+    "id": "evidence-1", "type": "endpoint", "location": "src/users.cs",
+    "lineStart": 1, "lineEnd": 4, "summary": "User creation endpoint",
+    "contentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "verification": "verified-original"
+  }],
+  "features": [{
+    "id": "identity.create-user", "name": "Create User", "domain": "Identity",
+    "capabilityType": "business", "fingerprint": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "status": "confirmed", "aliases": [], "actors": ["Administrator"],
+    "inputs": ["User profile"], "outputs": ["User account"],
+    "preconditions": ["Authorized administrator"],
+    "behaviors": [{"id": "create-account", "description": "Creates an account", "mandatory": true, "evidenceRefs": ["evidence-1"]}],
+    "evidenceRefs": ["evidence-1"],
+    "confidence": {"level": "medium", "score": 0.6, "reasons": ["Endpoint evidence"]},
+    "requiresHumanValidation": false,
+    "review": {"approvedReference": "Fixture approval", "contractDigest": "8a92265071c37cf7e2909c59f8c2d96296a827c1f361811f6e1f15ee5b7c6d29"}
+  }],
+  "reviewQueue": []
+}

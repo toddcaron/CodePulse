@@ -1,0 +1,8 @@
+{
+  "candidateCount": 15,
+  "byCapabilityType": {"ui": 10, "api": 1, "integrations": 2, "jobs": 1, "reports": 1},
+  "byEvidenceType": {"ui": 8, "route": 2, "endpoint": 1, "integration": 2, "job": 1, "report": 1},
+  "confirmedCount": 0,
+  "admittedCount": 0,
+  "reviewCount": 15
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-review-decisions:1.0",
+  "title": "CodePulse Human Review Batch",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "baseManifestDigest", "decisions"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "baseManifestDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "decisions": {
+      "type": "array", "minItems": 1, "maxItems": 10000,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["featureId", "expectedContractDigest", "decision", "approvedReference"],
+        "properties": {
+          "featureId": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"},
+          "expectedContractDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+          "decision": {"enum": ["confirmed", "needs-review", "rejected", "deprecated"]},
+          "approvedReference": {"type": "string", "pattern": "\\S", "maxLength": 1000},
+          "reviewerNote": {"type": "string", "maxLength": 4000},
+          "updates": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "name": {"type": "string", "pattern": "\\S", "maxLength": 200},
+              "domain": {"type": "string", "pattern": "\\S", "maxLength": 200},
+              "aliases": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
+              "actors": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
+              "inputs": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
+              "outputs": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
+              "preconditions": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
+              "evidenceRefs": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs", "minItems": 1},
+              "behaviors": {"type": "array", "minItems": 1, "items": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/behavior"}}
+            }
+          }
+        }
+      }
+    }
+  }
+}

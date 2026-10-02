@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-prose-source-map:1.0",
+  "title": "CodePulse Prose Requirements Source Map",
+  "type": "object", "additionalProperties": false,
+  "required": ["format", "lineCount", "ranges", "ignoredNonemptyLines"],
+  "properties": {
+    "format": {"const": "prose"},
+    "lineCount": {"type": "integer", "minimum": 1},
+    "ignoredNonemptyLines": {"type": "integer", "minimum": 0},
+    "ranges": {
+      "type": "object",
+      "propertyNames": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"},
+      "additionalProperties": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 1}}
+    }
+  }
+}

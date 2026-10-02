@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-manifest:1.0",
+  "title": "CodePulse Feature Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "application", "scan", "evidence", "features", "reviewQueue"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "application": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "sourceType", "revision"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "sourceType": {"enum": ["repository", "requirements"]},
+        "revision": {"type": ["string", "null"]}
+      }
+    },
+    "scan": {
+      "type": "object", "additionalProperties": false,
+      "required": ["coverage", "limitations", "inventoryDigest"],
+      "properties": {
+        "coverage": {"enum": ["complete-in-scope", "incomplete", "unknown"]},
+        "limitations": {"$ref": "#/$defs/strings"},
+        "inventoryDigest": {"$ref": "#/$defs/hash"},
+        "configurationDigest": {"$ref": "#/$defs/hash"}
+      }
+    },
+    "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+    "features": {"type": "array", "items": {"$ref": "#/$defs/feature"}},
+    "reviewQueue": {
+      "type": "array", "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["featureId", "reason", "evidenceRefs"],
+        "properties": {
+          "featureId": {"$ref": "#/$defs/id"},
+          "reason": {"type": "string", "minLength": 1},
+          "evidenceRefs": {"$ref": "#/$defs/refs"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"},
+    "hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "strings": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "refs": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+    "confidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["level", "score", "reasons"],
+      "properties": {
+        "level": {"enum": ["low", "medium", "high"]},
+        "score": {"type": "number", "minimum": 0, "maximum": 1},
+        "reasons": {"$ref": "#/$defs/strings", "minItems": 1}
+      }
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "type", "location", "lineStart", "lineEnd", "summary", "contentHash", "verification"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "type": {"enum": ["route", "ui", "endpoint", "service", "handler", "job", "integration", "authorization", "data-operation", "test", "requirement", "documentation", "feature-flag", "report", "configuration"]},
+        "location": {"type": "string", "minLength": 1},
+        "lineStart": {"type": "integer", "minimum": 1},
+        "lineEnd": {"type": "integer", "minimum": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "contentHash": {"$ref": "#/$defs/hash"},
+        "verification": {"enum": ["verified-original", "verified-tool-output", "partially-verified", "unverified", "unavailable"]}
+      }
+    },
+    "behavior": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "description", "mandatory", "evidenceRefs"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"type": "string", "minLength": 1},
+        "mandatory": {"type": "boolean"},
+        "evidenceRefs": {"$ref": "#/$defs/refs", "minItems": 1}
+      }
+    },
+    "feature": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "name", "domain", "capabilityType", "fingerprint", "status", "aliases", "actors", "inputs", "outputs", "preconditions", "behaviors", "evidenceRefs", "confidence", "requiresHumanValidation"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "name": {"type": "string", "minLength": 1},
+        "domain": {"type": "string", "minLength": 1},
+        "capabilityType": {"enum": ["business", "ui", "api", "integrations", "reports", "jobs", "authorization", "data-operations"]},
+        "fingerprint": {"$ref": "#/$defs/hash"},
+        "status": {"enum": ["discovered", "confirmed", "rejected", "merged", "split", "deprecated", "needs-review"]},
+        "aliases": {"$ref": "#/$defs/strings"},
+        "actors": {"$ref": "#/$defs/strings"},
+        "inputs": {"$ref": "#/$defs/strings"},
+        "outputs": {"$ref": "#/$defs/strings"},
+        "preconditions": {"$ref": "#/$defs/strings"},
+        "behaviors": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/behavior"}},
+        "evidenceRefs": {"$ref": "#/$defs/refs", "minItems": 1},
+        "confidence": {"$ref": "#/$defs/confidence"},
+        "requiresHumanValidation": {"type": "boolean"},
+        "admitted": {"type": "boolean"},
+        "reviewerNote": {"type": "string", "maxLength": 4000},
+        "review": {
+          "type": "object", "additionalProperties": false,
+          "required": ["approvedReference", "contractDigest"],
+          "properties": {
+            "approvedReference": {"type": "string", "pattern": "\\S"},
+            "contractDigest": {"$ref": "#/$defs/hash"}
+          }
+        }
+      },
+      "allOf": [{
+        "if": {"properties": {"status": {"const": "confirmed"}}},
+        "then": {"required": ["review"]}
+      }]
+    }
+  }
+}

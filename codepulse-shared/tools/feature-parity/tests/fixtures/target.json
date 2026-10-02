@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "application": {"name": "Fixture Target", "sourceType": "repository", "revision": null},
+  "scan": {"coverage": "unknown", "limitations": ["Static evidence only"], "inventoryDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+  "evidence": [{
+    "id": "evidence-1", "type": "endpoint", "location": "src/users.cs",
+    "lineStart": 1, "lineEnd": 4, "summary": "User creation endpoint",
+    "contentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "verification": "verified-original"
+  }],
+  "features": [{
+    "id": "identity.create-user", "name": "Create User", "domain": "Identity",
+    "capabilityType": "business", "fingerprint": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "status": "discovered", "aliases": [], "actors": ["Administrator"],
+    "inputs": ["User profile"], "outputs": ["User account"],
+    "preconditions": ["Authorized administrator"],
+    "behaviors": [{"id": "create-account", "description": "Creates an account", "mandatory": true, "evidenceRefs": ["evidence-1"]}],
+    "evidenceRefs": ["evidence-1"],
+    "confidence": {"level": "medium", "score": 0.6, "reasons": ["Endpoint evidence"]},
+    "requiresHumanValidation": true
+  }],
+  "reviewQueue": [{"featureId": "identity.create-user", "reason": "Synthetic target contract requires human approval", "evidenceRefs": ["evidence-1"]}]
+}

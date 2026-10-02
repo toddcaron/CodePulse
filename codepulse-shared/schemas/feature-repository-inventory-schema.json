@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-repository-inventory:1.0",
+  "title": "CodePulse Repository Inventory",
+  "type": "array",
+  "items": {
+    "type": "object", "additionalProperties": false,
+    "required": ["path", "fileType", "size", "language", "contentHash", "adapter", "exclusionReason"],
+    "properties": {
+      "path": {"type": "string", "minLength": 1},
+      "fileType": {"type": "string"},
+      "size": {"type": ["integer", "null"], "minimum": 0},
+      "language": {"enum": ["csharp", "visual-basic", "vue", "javascript", "typescript", "coldfusion", "sql", "json", "markdown", "text", "html", "unknown"]},
+      "contentHash": {"anyOf": [{"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"}, {"type": "null"}]},
+      "adapter": {"enum": ["generic", "openapi-json", "dotnet-lexical", "vue-template", "angularjs-template", "frontend-routes", "coldfusion-tags"]},
+      "exclusionReason": {
+        "enum": [null, "link-or-junction", "dependency-or-generated-directory", "non-regular-file", "sensitive-file-policy", "file-size-limit", "binary-file", "unsupported-encoding", "unreadable-file", "forbidden-path-policy", "configured-exclusion", "configuration-input", "outside-includes", "generated-file"]
+      }
+    },
+    "allOf": [{
+      "if": {"properties": {"exclusionReason": {"type": "null"}}},
+      "then": {
+        "properties": {
+          "contentHash": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+          "size": {"type": "integer", "minimum": 0}
+        }
+      }
+    }]
+  }
+}

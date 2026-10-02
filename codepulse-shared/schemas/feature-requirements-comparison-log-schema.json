@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-requirements-comparison-log:1.0",
+  "title": "CodePulse Requirements Coverage Audit",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "engineVersion", "resultDigest", "applicationCodeExecuted"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "engineVersion": {"type": "string", "minLength": 1},
+    "resultDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "applicationCodeExecuted": {"const": false}
+  }
+}

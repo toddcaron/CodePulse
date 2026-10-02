@@ -1,0 +1,11 @@
+[project]
+name = "codepulse-feature-parity"
+version = "0.8.0"
+description = "Evidence-backed static feature-contract validation and comparison"
+requires-python = ">=3.11"
+dependencies = ["jsonschema==4.23.0", "pathspec==0.12.1", "Pygments==2.19.2"]
+
+[tool.codepulse]
+schema-location = "../../schemas"
+entry-point = "cli.py"
+installation = "sibling-shared-directory"

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-requirements-log:1.0",
+  "title": "CodePulse Requirements Ingestion Log",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "engineVersion", "inputDigest", "sourceDigest", "baselineDigest", "manifestDigest", "statistics", "applicationCodeExecuted"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "engineVersion": {"type": "string", "minLength": 1},
+    "inputDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "sourceDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "baselineDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "manifestDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "applicationCodeExecuted": {"const": false},
+    "statistics": {
+      "type": "object", "additionalProperties": false,
+      "required": ["requirements", "ambiguousRequirements", "confirmedFeatures", "admittedFeatures", "reviewQueueItems"],
+      "properties": {
+        "requirements": {"$ref": "#/$defs/count"},
+        "ambiguousRequirements": {"$ref": "#/$defs/count"},
+        "confirmedFeatures": {"const": 0},
+        "admittedFeatures": {"const": 0},
+        "reviewQueueItems": {"$ref": "#/$defs/count"}
+      }
+    }
+  },
+  "$defs": {"count": {"type": "integer", "minimum": 0}}
+}

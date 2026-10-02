@@ -1,0 +1,1 @@
+"""Static adapters return provisional evidence, never confirmed capabilities."""

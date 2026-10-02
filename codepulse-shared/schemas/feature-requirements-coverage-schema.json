@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-requirements-coverage:1.0",
+  "title": "CodePulse Reviewed Static Requirements Coverage",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "baselineDigest", "reviewsDigest", "targetDigest", "methodology", "limitations", "matches", "statistics"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "baselineDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "reviewsDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "targetDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "methodology": {"type": "string", "minLength": 1},
+    "limitations": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
+    "matches": {
+      "type": "array", "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["requirementId", "targetFeatureId", "status", "baselineEvidenceRefs", "targetEvidenceRefs", "coveredBehaviorIds", "unresolvedBehaviorIds", "coveredCriteria", "unresolvedCriteria", "differences", "rationale", "requiresHumanValidation"],
+        "properties": {
+          "requirementId": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"},
+          "targetFeatureId": {"anyOf": [{"type": "null"}, {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"}]},
+          "status": {"enum": ["covered", "partial", "unable-to-verify", "needs-sme-validation"]},
+          "baselineEvidenceRefs": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs"},
+          "targetEvidenceRefs": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs"},
+          "coveredBehaviorIds": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs"},
+          "unresolvedBehaviorIds": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs"},
+          "coveredCriteria": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
+          "unresolvedCriteria": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
+          "differences": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
+          "rationale": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings", "minItems": 1},
+          "requiresHumanValidation": {"type": "boolean"}
+        }
+      }
+    },
+    "statistics": {
+      "type": "object", "additionalProperties": false,
+      "required": ["requirementCount", "reviewedCount", "coveredCount", "partialCount", "unresolvedCount", "coveragePercent"],
+      "properties": {
+        "requirementCount": {"type": "integer", "minimum": 0},
+        "reviewedCount": {"type": "integer", "minimum": 0},
+        "coveredCount": {"type": "integer", "minimum": 0},
+        "partialCount": {"type": "integer", "minimum": 0},
+        "unresolvedCount": {"type": "integer", "minimum": 0},
+        "coveragePercent": {"type": ["number", "null"], "minimum": 0, "maximum": 100}
+      }
+    }
+  }
+}

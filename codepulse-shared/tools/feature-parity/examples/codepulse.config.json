@@ -1,0 +1,11 @@
+{
+  "featureParity": {
+    "applicationName": "Example Application",
+    "defaultScope": ["api"],
+    "include": ["src/**", "docs/**"],
+    "exclude": ["**/fixtures/**"],
+    "forbiddenPaths": ["private/**"],
+    "minimumConfidence": "medium",
+    "limits": {"maxFileBytes": 1048576, "maxEntries": 20000, "maxDepth": 64}
+  }
+}

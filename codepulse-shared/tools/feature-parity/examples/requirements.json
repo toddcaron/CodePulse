@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "applicationName": "Synthetic Account Administration",
+  "requirements": [
+    {
+      "id": "identity.create-user",
+      "name": "Create User",
+      "domain": "Identity",
+      "capabilityType": "business",
+      "actors": ["Administrator"],
+      "inputs": ["User profile"],
+      "outputs": ["User account"],
+      "preconditions": ["Authorized administrator"],
+      "behaviors": [
+        {"id": "create-account", "description": "Creates an account", "mandatory": true}
+      ],
+      "acceptanceCriteria": ["One account is created for an accepted profile"],
+      "ambiguities": []
+    },
+    {
+      "id": "identity.disable-user",
+      "name": "Disable User",
+      "domain": "Identity",
+      "capabilityType": "business",
+      "actors": [],
+      "inputs": ["Account identifier"],
+      "outputs": ["Disabled account"],
+      "preconditions": [],
+      "behaviors": [
+        {"id": "disable-account", "description": "Disables an account", "mandatory": true}
+      ],
+      "acceptanceCriteria": [],
+      "ambiguities": ["The approval role and effect on active sessions are unspecified"]
+    }
+  ]
+}

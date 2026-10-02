@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-evidence-index:1.0",
+  "title": "CodePulse Feature Evidence Index",
+  "type": "array",
+  "items": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/evidence"}
+}

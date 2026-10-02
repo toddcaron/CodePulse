@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-parity-result:1.0",
+  "title": "CodePulse Reviewed Contract Comparison",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "baselineDigest", "targetDigest", "methodology", "limitations", "matches", "statistics"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "baselineDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "targetDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "methodology": {"type": "string", "minLength": 1},
+    "limitations": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings", "minItems": 1},
+    "matches": {"type": "array", "items": {"$ref": "#/$defs/match"}},
+    "statistics": {
+      "type": "object", "additionalProperties": false,
+      "required": ["byStatus", "verifiedDenominator", "equivalentCount", "coveragePercent", "unresolvedCount"],
+      "properties": {
+        "byStatus": {
+          "type": "object", "additionalProperties": false,
+          "required": ["equivalent", "partial", "changed-intentionally", "replaced", "missing", "new-in-target", "not-applicable", "unable-to-verify", "needs-sme-validation"],
+          "properties": {
+            "equivalent": {"$ref": "#/$defs/count"},
+            "partial": {"$ref": "#/$defs/count"},
+            "changed-intentionally": {"$ref": "#/$defs/count"},
+            "replaced": {"$ref": "#/$defs/count"},
+            "missing": {"$ref": "#/$defs/count"},
+            "new-in-target": {"$ref": "#/$defs/count"},
+            "not-applicable": {"$ref": "#/$defs/count"},
+            "unable-to-verify": {"$ref": "#/$defs/count"},
+            "needs-sme-validation": {"$ref": "#/$defs/count"}
+          }
+        },
+        "verifiedDenominator": {"$ref": "#/$defs/count"},
+        "equivalentCount": {"$ref": "#/$defs/count"},
+        "coveragePercent": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+        "unresolvedCount": {"$ref": "#/$defs/count"}
+      }
+    }
+  },
+  "$defs": {
+    "count": {"type": "integer", "minimum": 0},
+    "match": {
+      "type": "object", "additionalProperties": false,
+      "required": ["baselineFeatureId", "targetFeatureIds", "matchingStage", "status", "baselineEvidenceRefs", "targetEvidenceRefs", "coveredBehaviorIds", "unresolvedBehaviorIds", "differences", "rationale", "requiresHumanValidation"],
+      "properties": {
+        "baselineFeatureId": {"anyOf": [{"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"}, {"type": "null"}]},
+        "targetFeatureIds": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs"},
+        "matchingStage": {"enum": ["exact-id", "unresolved"]},
+        "status": {"enum": ["equivalent", "partial", "new-in-target", "unable-to-verify", "needs-sme-validation"]},
+        "baselineEvidenceRefs": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs"},
+        "targetEvidenceRefs": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs"},
+        "coveredBehaviorIds": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs"},
+        "unresolvedBehaviorIds": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs"},
+        "differences": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
+        "rationale": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings", "minItems": 1},
+        "requiresHumanValidation": {"type": "boolean"}
+      },
+      "allOf": [{
+        "if": {"properties": {"status": {"const": "equivalent"}}},
+        "then": {
+          "properties": {
+            "baselineFeatureId": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"},
+            "targetFeatureIds": {"minItems": 1},
+            "coveredBehaviorIds": {"minItems": 1},
+            "baselineEvidenceRefs": {"minItems": 1},
+            "targetEvidenceRefs": {"minItems": 1},
+            "unresolvedBehaviorIds": {"maxItems": 0},
+            "differences": {"maxItems": 0},
+            "requiresHumanValidation": {"const": false}
+          }
+        }
+      }]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-requirements-baseline:1.0",
+  "title": "CodePulse Provisional Requirements Baseline",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "document", "inputDigest", "sourceDigest", "evidence", "featureLinks", "coverage", "requiresHumanValidation"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "document": {"$ref": "urn:codepulse:feature-requirements-input:1.0"},
+    "inputDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "sourceDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "sourceMap": {"$ref": "urn:codepulse:feature-prose-source-map:1.0"},
+    "coverage": {"const": "incomplete"},
+    "requiresHumanValidation": {"const": true},
+    "evidence": {"type": "array", "items": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/evidence"}},
+    "featureLinks": {
+      "type": "array", "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["requirementId", "featureId", "evidenceRefs"],
+        "properties": {
+          "requirementId": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"},
+          "featureId": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"},
+          "evidenceRefs": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs", "minItems": 1}
+        }
+      }
+    }
+  }
+}
