@@ -2,22 +2,24 @@
 
 ## Current State
 
-Last updated: **2026-10-02**. Engine version: **0.8.0**.
+Last updated: **2026-10-02**. Engine version: **0.9.0**.
 
-**Latest completed milestone:** reviewed static requirements coverage.
+**Latest completed milestone:** persisted provisional agent enrichment.
 **Release status:** development engine only; the first complete release is not finished.
-**Active implementation:** none currently in progress. The next recommended slice
-is persisted agent enrichment, followed by approved identity mappings.
+**Active implementation:** paused at user request after unittest completion.
+No implementation is currently in progress. The next recommended slice is approved
+identity mappings.
 
 The engine can discover provisional capabilities, reconcile human feature reviews,
 ingest requirements, compare reviewed feature manifests and assess separately
 reviewed requirements against supported target manifests. It does not build or run
 assessed applications and does not prove runtime parity or complete business scope.
 
-Latest completed validation: **177 tests run, 176 passed, 1 skipped** for Windows
-symlink permissions. Existing CodePulse health validation passed. Editor diagnostics
-and tracked whitespace checks passed. These results describe the 0.8 milestone,
-not acceptance of the unfinished release.
+Latest completed validation: **186 tests run, 185 passed, 1 skipped** for Windows
+symlink permissions (217.792 seconds). The nine focused enrichment tests also passed.
+Editor diagnostics found no errors. Existing CodePulse health validation last passed
+at 0.8; it was not rerun for 0.9 before the requested stop. These results describe
+the 0.9 engine milestone, not acceptance of the unfinished release.
 
 ### Available Commands
 
@@ -30,6 +32,8 @@ All commands use `python codepulse-shared/tools/feature-parity/cli.py parity`:
 - `requirements-review-template` and `cover-requirements`: separate human-approved
   requirement contracts, criterion mappings and static coverage.
 - `compare`: reviewed manifest-to-manifest comparison; repository inputs are not supported.
+- `enrichment-template` and `import-enrichment`: evidence-bound proposals imported
+  into a new needs-review manifest, with retained proposals and audit artifacts.
 
 See the [engine guide](../codepulse-shared/tools/feature-parity/README.md) for setup,
 command arguments, output artifacts, gates and supported syntax.
@@ -45,11 +49,13 @@ command arguments, output artifacts, gates and supported syntax.
 - **0.7:** marked text/Markdown proposals with source-line evidence and ambiguity.
 - **0.8:** separate reviewed requirements contracts, explicit criterion mappings,
   conservative target coverage, audited results and persisted opt-in gates.
+- **0.9:** persisted evidence/provenance-bound agent proposals,
+  stale-input rejection, provisional import, approval withdrawal and independent review.
 
 ### What Is Not Available Yet
 
 - Finder and Parity slash-command skills, HTML/Markdown reports and installation integration.
-- Persisted agent-enrichment proposals and their review/import workflow.
+- New-feature enrichment proposals and large-manifest enrichment template selection.
 - Approved alias/identity mappings, cross-scan identity reconciliation and split/merge lineage.
 - Intentional-change decisions, confirmed absence, all final parity statuses and high-risk gates.
 - Incremental scans, cache invalidation, checkpoint recovery and Windows/Linux CI.
@@ -61,16 +67,13 @@ workflow, not a promotion of imported requirement evidence into implementation p
 
 ### Next Delivery Order
 
-1. **Persisted enrichment:** add evidence-linked proposal/provenance contracts,
-  stale-input checks and import into reviewable proposals only. Agents cannot set
-  approvals, confidence or totals. Verify unapproved proposals receive no gate credit.
-2. **Approved mappings and decisions:** add digest-bound identity mappings, rename
+1. **Approved mappings and decisions:** add digest-bound identity mappings, rename
   reconciliation and intentional differences, then split/merge coverage without double counting.
-3. **Finder completeness:** improve supported adapters, consolidate evidence and
+2. **Finder completeness:** improve supported adapters, consolidate evidence and
   extend safe supporting-document extraction and redaction.
-4. **Incremental and recovery:** implement dependency-aware invalidation and validated
+3. **Incremental and recovery:** implement dependency-aware invalidation and validated
   checkpoints; compare full, incremental and resumed results.
-5. **Release integration:** add reports, skills, installation checks and CI while
+4. **Release integration:** add reports, skills, installation checks and CI while
   preserving existing health-skill contracts; finish remaining status/high-risk policies.
 
 This is the recommended backlog order, not a claim that these tasks are underway.
@@ -94,7 +97,7 @@ The source proposal remains unchanged. This document records the clarified
 implementation direction and delivery status, not a claim that all features
 below have been implemented.
 
-## Implemented Detail Through 0.8
+## Implemented Detail Through 0.9
 
 The following capabilities are implemented within the documented limits. This
 section is cumulative; the status summary above is the current delivery snapshot.
@@ -158,6 +161,13 @@ section is cumulative; the status summary above is the current delivery snapshot
 - Covered/partial/unresolved/SME outcomes, all-declared-requirement denominator,
   persisted opt-in gates, audited JSON outputs and real subprocess integration tests.
 
+- Enrichment schemas, deterministic templates and bounded import CLI with retained
+  provenance/rationale, manifest/inventory/contract/evidence hash checks and audit logs.
+- Whitelisted proposals for existing active features only; imports withdraw approvals,
+  preserve evidence/confidence/admission and require independent human review.
+- Focused tests for stale/conflicting inputs, agent privilege restrictions, no unapproved
+  gate credit, separate review, deterministic replay and persisted CLI outputs.
+
 This is version 0.8.0, not a completed MVP. The first schema contracts will be
 extended before release. No new slash-command skill is registered yet.
 
@@ -188,7 +198,9 @@ must remain provisional; never execute source repositories.
 ### 3. Reviews, Requirements and Enrichment (Partial)
 
 Feature reviews, requirements ingestion and reviewed static coverage are implemented.
-Enrichment is not started.
+Persisted enrichment for existing active features is implemented with separate human
+review, digest-bound provenance/evidence citations, approval withdrawal and audited
+outputs. New-feature proposals and large-manifest template selection remain deferred.
 
 Basic review import/reconciliation and within-manifest rename preservation are
 implemented. Add cross-scan identity mapping, split/merge lineage, new evidence
@@ -197,9 +209,10 @@ and explicitly marked text/Markdown ingestion are implemented; add broader prose
 interpretation and document collections. Resolved contracts and explicit criterion
 mappings now live in separate requirements reviews without rewriting original inputs.
 Unsupported binary formats
-require conversion. Ambiguity enters review, never invented requirements. Validate
-enrichment provenance, inventory/evidence hashes and references; proposals cannot
-set engine totals/confidence or human approval. Approved intentional differences
+require conversion. Ambiguity enters review, never invented requirements. Enrichment
+validates declared provenance, inventory/evidence hashes and references; proposals
+cannot set engine totals/confidence or human approval. Authenticated provenance and
+comprehensive content redaction remain deferred. Approved intentional differences
 retain underlying evidence and differences.
 
 ### 4. Full Comparison (Partial)

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-enrichment-log:1.0",
+  "title": "CodePulse Provisional Enrichment Import Audit",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "engineVersion", "inputManifestDigest", "enrichmentDigest", "outputManifestDigest", "changes", "statistics", "evidenceVerificationChanged", "confidenceChanged", "admissionChanged", "applicationCodeExecuted"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "engineVersion": {"type": "string", "minLength": 1},
+    "inputManifestDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "enrichmentDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "outputManifestDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "evidenceVerificationChanged": {"const": false},
+    "confidenceChanged": {"const": false},
+    "admissionChanged": {"const": false},
+    "applicationCodeExecuted": {"const": false},
+    "changes": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["proposalId", "featureId", "beforeDigest", "afterDigest", "approvalWithdrawn"],
+        "properties": {
+          "proposalId": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"},
+          "featureId": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"},
+          "beforeDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+          "afterDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+          "approvalWithdrawn": {"type": "boolean"}
+        }
+      }
+    },
+    "statistics": {
+      "type": "object", "additionalProperties": false,
+      "required": ["importedProposals", "approvalsWithdrawn", "reviewQueueItems"],
+      "properties": {
+        "importedProposals": {"type": "integer", "minimum": 1},
+        "approvalsWithdrawn": {"type": "integer", "minimum": 0},
+        "reviewQueueItems": {"type": "integer", "minimum": 1}
+      }
+    }
+  }
+}

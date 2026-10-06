@@ -1,10 +1,10 @@
 # Feature Parity Engine (Development Milestone)
 
-Version 0.8.0 implements configurable repository inventory, provisional OpenAPI,
+Version 0.9.0 implements configurable repository inventory, provisional OpenAPI,
 C#, Vue/AngularJS and ColdFusion discovery, manifest validation and conservative
 reviewed-contract comparison, digest-bound human review reconciliation and
 structured JSON and explicitly marked text/Markdown requirements ingestion, and
-separately reviewed static requirements coverage.
+separately reviewed static requirements coverage and persisted provisional agent enrichment.
 It is not the completed Finder or Parity release,
 and no new slash commands are installed yet.
 The existing CodePulse health skills are unchanged.
@@ -36,6 +36,38 @@ not a supported distribution layout. `pyproject.toml` records runtime metadata;
 `requirements.lock` pins the development/runtime dependency set.
 
 ## Commands
+
+### Agent Enrichment
+
+Export evidence-bound placeholders and import completed proposals using fresh
+output directories:
+
+```sh
+python codepulse-shared/tools/feature-parity/cli.py parity enrichment-template --manifest /path/to/feature-manifest.json --output /path/to/new-template
+python codepulse-shared/tools/feature-parity/cli.py parity import-enrichment --manifest /path/to/feature-manifest.json --enrichment /path/to/completed-proposals.json --output /path/to/new-enriched-results
+```
+
+Both accept `--dry-run`. The template is intentionally incomplete and cannot be
+imported unchanged. Supply agent/model/version provenance, a rationale and at least
+one permitted update per retained proposal; remove unused proposals. Import accepts
+at most 100 proposals, with one proposal per existing active feature. Template export
+requires 1-100 active features; larger template selection is not implemented.
+
+Import writes `feature-manifest.json`, `enrichment-proposals.json`,
+`review-queue.json` and `enrichment-log.json`. It validates manifest/inventory/contract
+digests and exact current/proposed evidence citations with content hashes and record
+digests. It creates no evidence or new features. Touched features become `needs-review`
+and lose any previous approval, even for name-only edits. Evidence verification,
+confidence, admission, identity and fingerprints remain unchanged. No application
+code or agent/model is executed by the engine.
+
+Use `review-template` on the imported manifest followed by independent human
+`reconcile`. The original manifest and retained proposals stay unchanged. An
+unapproved proposal cannot establish equivalence or verified gate credit. Provenance
+is declared metadata, not authenticated agent identity; independent human review
+remains an external responsibility. See the [enrichment contract](../../references/feature-enrichment.md).
+
+### Command Examples
 
 ```sh
 python codepulse-shared/tools/feature-parity/cli.py parity find --source codepulse-shared/tools/feature-parity/tests/fixtures/openapi-app --output ../codepulse-finder-results --application-name "Synthetic API"

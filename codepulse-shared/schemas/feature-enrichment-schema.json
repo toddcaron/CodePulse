@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-enrichment:1.0",
+  "title": "CodePulse Unapproved Agent Enrichment",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "baseManifestDigest", "inventoryDigest", "provenance", "proposals"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "baseManifestDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "inventoryDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "provenance": {
+      "type": "object", "additionalProperties": false,
+      "required": ["agent", "model", "version"],
+      "properties": {
+        "agent": {"$ref": "#/$defs/text"},
+        "model": {"$ref": "#/$defs/text"},
+        "version": {"$ref": "#/$defs/text"}
+      }
+    },
+    "proposals": {
+      "type": "array", "minItems": 1, "maxItems": 100,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "featureId", "expectedContractDigest", "evidence", "updates", "rationale"],
+        "properties": {
+          "id": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"},
+          "featureId": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"},
+          "expectedContractDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+          "rationale": {"$ref": "#/$defs/text"},
+          "updates": {"$ref": "urn:codepulse:feature-review-decisions:1.0#/properties/decisions/items/properties/updates", "minProperties": 1},
+          "evidence": {
+            "type": "array", "minItems": 1,
+            "items": {
+              "type": "object", "additionalProperties": false,
+              "required": ["id", "contentHash", "recordDigest"],
+              "properties": {
+                "id": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"},
+                "contentHash": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+                "recordDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {"text": {"type": "string", "pattern": "\\S", "maxLength": 4000}}
+}

@@ -28,7 +28,8 @@ Feature Parity is under development. The Python engine supports repository
 inventory, schema-validated discovery policy, provisional OpenAPI/C# HTTP,
 Vue/AngularJS UI/router and ColdFusion tag discovery, manifest validation,
 human review reconciliation, JSON and marked text/Markdown requirements ingestion and reviewed
-static-contract comparison, plus separately reviewed static requirements coverage. Full
+static-contract comparison, separately reviewed static requirements coverage and
+persisted evidence-linked agent enrichment that remains unapproved. Full
 framework analysis and new slash commands are not available yet.
 See the [engine setup and limitations](codepulse-shared/tools/feature-parity/README.md)
 and [agent implementation progress](docs/feature-parity-agent-implementation-plan.md).

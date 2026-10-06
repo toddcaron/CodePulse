@@ -9,6 +9,7 @@ from pathlib import Path
 from . import __version__
 from .comparison import compare_manifests, gate_failed
 from .config import ConfigurationError, resolve_policy
+from .enrichment import enrichment_template, import_enrichment
 from .identity import digest
 from .finder import find_repository
 from .inventory import InventoryPolicyError, source_root
@@ -65,6 +66,15 @@ def parser():
     reconcile.add_argument("--reviews", required=True)
     reconcile.add_argument("--output", required=True)
     reconcile.add_argument("--dry-run", action="store_true")
+    enrichment_export = commands.add_parser("enrichment-template", help="Export evidence-bound unapproved agent proposal placeholders")
+    enrichment_export.add_argument("--manifest", required=True)
+    enrichment_export.add_argument("--output", required=True)
+    enrichment_export.add_argument("--dry-run", action="store_true")
+    enrichment_import = commands.add_parser("import-enrichment", help="Import agent proposals into a new needs-review manifest")
+    enrichment_import.add_argument("--manifest", required=True)
+    enrichment_import.add_argument("--enrichment", required=True)
+    enrichment_import.add_argument("--output", required=True)
+    enrichment_import.add_argument("--dry-run", action="store_true")
     find = commands.add_parser("find", help="Discover provisional OpenAPI, C#, Vue/AngularJS and ColdFusion declarations")
     find.add_argument("--source", required=True)
     find.add_argument("--output", required=True)
@@ -191,6 +201,25 @@ def main(argv=None):
                 return 0
             _write_artifacts(output, artifacts)
             print(json.dumps(artifacts["requirements-log.json"]["statistics"], sort_keys=True))
+            return 0
+        if arguments.command in {"enrichment-template", "import-enrichment"}:
+            manifest_path, manifest = _input(arguments.manifest)
+            inputs = [manifest_path]
+            if arguments.command == "import-enrichment":
+                enrichment_path, enrichment = _json_input(arguments.enrichment)
+                inputs.append(enrichment_path)
+                artifacts = import_enrichment(manifest, enrichment)
+            else:
+                artifacts = {"enrichment-proposals.json": enrichment_template(manifest)}
+            output = _output(arguments.output, inputs)
+            if arguments.dry_run:
+                print("Enrichment operation validated; no artifacts written")
+                return 0
+            _write_artifacts(output, artifacts)
+            if arguments.command == "import-enrichment":
+                print(json.dumps(artifacts["enrichment-log.json"]["statistics"], sort_keys=True))
+            else:
+                print("Unapproved enrichment placeholders exported; complete provenance, rationale and proposed updates")
             return 0
         if arguments.command in {"review-template", "reconcile"}:
             manifest_path, manifest = _input(arguments.manifest)
