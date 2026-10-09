@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-identity-mappings:1.1",
+  "title": "CodePulse Approved Feature Identity Mappings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "baselineDigest", "targetDigest", "mappings"],
+  "properties": {
+    "schemaVersion": {"const": "1.1"},
+    "baselineDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "targetDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "mappings": {"type": "array", "items": {"$ref": "#/$defs/mapping"}}
+  },
+  "$defs": {
+    "mapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mappingType", "baselineFeatureIds", "targetFeatureIds", "decision", "rationale", "differences", "approvedReference"],
+      "properties": {
+        "mappingType": {"enum": ["one-to-one", "split", "merge"]},
+        "baselineFeatureIds": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs"},
+        "targetFeatureIds": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs"},
+        "decision": {"enum": ["same-capability", "intentional-difference"]},
+        "rationale": {"type": "string", "pattern": "\\S"},
+        "differences": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
+        "approvedReference": {"type": "string", "pattern": "\\S"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"mappingType": {"const": "one-to-one"}}},
+          "then": {
+            "properties": {
+              "baselineFeatureIds": {"minItems": 1, "maxItems": 1},
+              "targetFeatureIds": {"minItems": 1, "maxItems": 1}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"mappingType": {"const": "split"}}},
+          "then": {
+            "properties": {
+              "baselineFeatureIds": {"minItems": 1, "maxItems": 1},
+              "targetFeatureIds": {"minItems": 2}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"mappingType": {"const": "merge"}}},
+          "then": {
+            "properties": {
+              "baselineFeatureIds": {"minItems": 2},
+              "targetFeatureIds": {"minItems": 1, "maxItems": 1}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"decision": {"const": "same-capability"}}},
+          "then": {"properties": {"differences": {"maxItems": 0}}}
+        },
+        {
+          "if": {"properties": {"decision": {"const": "intentional-difference"}}},
+          "then": {"properties": {"differences": {"minItems": 1}}}
+        }
+      ]
+    }
+  }
+}

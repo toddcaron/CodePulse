@@ -2,24 +2,25 @@
 
 ## Current State
 
-Last updated: **2026-10-02**. Engine version: **0.9.0**.
+Last updated: **2026-10-09**. Engine version: **0.11.0**.
 
-**Latest completed milestone:** persisted provisional agent enrichment.
+**Latest completed milestone:** digest-bound split/merge lineage with per-baseline
+coverage accounting.
 **Release status:** development engine only; the first complete release is not finished.
-**Active implementation:** paused at user request after unittest completion.
-No implementation is currently in progress. The next recommended slice is approved
-identity mappings.
+**Active implementation:** one-to-one, split and merge mappings are implemented;
+cross-scan identity reconciliation and alias-assisted review remain open.
 
 The engine can discover provisional capabilities, reconcile human feature reviews,
 ingest requirements, compare reviewed feature manifests and assess separately
 reviewed requirements against supported target manifests. It does not build or run
 assessed applications and does not prove runtime parity or complete business scope.
 
-Latest completed validation: **186 tests run, 185 passed, 1 skipped** for Windows
-symlink permissions (217.792 seconds). The nine focused enrichment tests also passed.
-Editor diagnostics found no errors. Existing CodePulse health validation last passed
-at 0.8; it was not rerun for 0.9 before the requested stop. These results describe
-the 0.9 engine milestone, not acceptance of the unfinished release.
+Latest full-suite pass: **192 tests run, 191 passed, 1 skipped** for Windows symlink
+permissions (189.877 seconds). After final grouped-constraint hardening, the focused
+comparison, compare CLI and review CLI tests passed (**35 tests**). A later aggregate
+rerun was interrupted during the final review CLI test, with no assertion failure
+reported before interruption. The shared-contract validator passed during 0.11; these
+results describe development milestones, not acceptance of the unfinished release.
 
 ### Available Commands
 
@@ -32,6 +33,8 @@ All commands use `python codepulse-shared/tools/feature-parity/cli.py parity`:
 - `requirements-review-template` and `cover-requirements`: separate human-approved
   requirement contracts, criterion mappings and static coverage.
 - `compare`: reviewed manifest-to-manifest comparison; repository inputs are not supported.
+- `identity-mappings-template`: export a digest-bound lineage mapping template;
+  `compare --mappings` applies completed human decisions.
 - `enrichment-template` and `import-enrichment`: evidence-bound proposals imported
   into a new needs-review manifest, with retained proposals and audit artifacts.
 
@@ -51,13 +54,18 @@ command arguments, output artifacts, gates and supported syntax.
   conservative target coverage, audited results and persisted opt-in gates.
 - **0.9:** persisted evidence/provenance-bound agent proposals,
   stale-input rejection, provisional import, approval withdrawal and independent review.
+- **0.10:** digest-bound one-to-one renamed-identity mappings and intentional-difference
+  decisions; mapped candidates retain independent contract/evidence checks and
+  intentional differences receive no equivalent coverage credit.
+- **0.11:** grouped one-to-one, split and merge lineage mappings; split contracts are
+  compared against their children and merged targets retain one result per baseline ID.
 
 ### What Is Not Available Yet
 
 - Finder and Parity slash-command skills, HTML/Markdown reports and installation integration.
 - New-feature enrichment proposals and large-manifest enrichment template selection.
-- Approved alias/identity mappings, cross-scan identity reconciliation and split/merge lineage.
-- Intentional-change decisions, confirmed absence, all final parity statuses and high-risk gates.
+- Cross-scan identity reconciliation and automated alias matching.
+- Confirmed absence, remaining final parity statuses and business-configured high-risk gates.
 - Incremental scans, cache invalidation, checkpoint recovery and Windows/Linux CI.
 - Full framework semantics, duplicate consolidation, comprehensive redaction and broader document adapters.
 
@@ -67,8 +75,8 @@ workflow, not a promotion of imported requirement evidence into implementation p
 
 ### Next Delivery Order
 
-1. **Approved mappings and decisions:** add digest-bound identity mappings, rename
-  reconciliation and intentional differences, then split/merge coverage without double counting.
+1. **Mapping completeness:** add cross-scan identity reconciliation and alias-assisted
+  candidate suggestions without allowing automatic approval or parity credit.
 2. **Finder completeness:** improve supported adapters, consolidate evidence and
   extend safe supporting-document extraction and redaction.
 3. **Incremental and recovery:** implement dependency-aware invalidation and validated
@@ -90,14 +98,15 @@ Detailed work packages and final release acceptance checks follow below.
 - Static extraction with documented reachability limits. No application builds,
   repository script/test execution, live service calls or engine LLM calls.
 - Root-level distributable skill directories and sibling shared resources.
-- Exact IDs currently select candidates; aliases and approved mappings are planned.
-  Candidate matching alone never establishes behavioral parity.
+- Exact IDs select candidates by default; digest-bound one-to-one/split/merge groups can
+  nominate reviewed renamed candidates. Aliases do not auto-match, and candidate selection
+  alone never establishes behavioral parity.
 
 The source proposal remains unchanged. This document records the clarified
 implementation direction and delivery status, not a claim that all features
 below have been implemented.
 
-## Implemented Detail Through 0.9
+## Implemented Detail Through 0.11
 
 The following capabilities are implemented within the documented limits. This
 section is cumulative; the status summary above is the current delivery snapshot.
@@ -167,18 +176,28 @@ section is cumulative; the status summary above is the current delivery snapshot
   preserve evidence/confidence/admission and require independent human review.
 - Focused tests for stale/conflicting inputs, agent privilege restrictions, no unapproved
   gate credit, separate review, deterministic replay and persisted CLI outputs.
+- Digest-bound identity-mapping templates and `compare --mappings` for explicit
+  one-to-one, split and merge lineage groups; stale, inactive, overlapping and
+  exact-ID-conflicting groups are rejected. Candidate mapping never bypasses
+  contract/evidence checks.
+- Human-approved intentional differences remain a distinct status, retain declared
+  and detected differences, count in the coverage denominator without equivalent credit,
+  and fail the partial gate. Approval references remain unauthenticated attestations.
+- Split groups compare parent behavior and constraints against aggregate child contracts
+  while emitting one baseline match. Merge groups compare aggregate baseline contracts
+  against the target and emit one match per baseline, preserving the coverage denominator.
 
-This is version 0.8.0, not a completed MVP. The first schema contracts will be
-extended before release. No new slash-command skill is registered yet.
+This is a development engine, not a completed MVP. Contracts and release integration
+remain incomplete. No new slash-command skill is registered yet.
 
 ## Remaining Work Packages
 
 ### 1. Complete Contracts (Partial)
 
 Define invocation, candidates, enrichment,
-review actions, approved parity decisions, cache and run-state schemas. Extend
+review actions, split/merge decisions, cache and run-state schemas. Extend
 configuration and confidence models beyond their implemented initial subsets.
-Specify independent-evidence weights, review lineage, approved mappings,
+Specify independent-evidence weights, review lineage and mapping lineage,
 criticality, all nine statuses and final coverage/gate policies. Add invalid and
 positive fixtures before implementing consumers. Feature contracts are separate
 from health schema 2.0, health finding IDs and letter grades.
@@ -202,8 +221,9 @@ Persisted enrichment for existing active features is implemented with separate h
 review, digest-bound provenance/evidence citations, approval withdrawal and audited
 outputs. New-feature proposals and large-manifest template selection remain deferred.
 
-Basic review import/reconciliation and within-manifest rename preservation are
-implemented. Add cross-scan identity mapping, split/merge lineage, new evidence
+Basic review import/reconciliation, within-manifest rename preservation and explicit
+one-to-one/split/merge identity decisions across two fixed manifests are implemented.
+Add cross-scan identity reconciliation, new evidence
 creation/verification and authenticated approval authority. Structured JSON
 and explicitly marked text/Markdown ingestion are implemented; add broader prose
 interpretation and document collections. Resolved contracts and explicit criterion
@@ -217,14 +237,14 @@ retain underlying evidence and differences.
 
 ### 4. Full Comparison (Partial)
 
-Add aliases, explicit mappings, deterministic behavior candidates and approved
-enrichment. Every stage still checks outcomes, mandatory behaviors, actors,
-inputs/outputs, authorization and preconditions. One-to-many and many-to-one
-mappings retain per-baseline coverage. Missing requires adequate reviewed scope;
+One-to-one/split/merge mappings and intentional-difference decisions are implemented.
+Add cross-scan lineage and alias/semantic candidate suggestions; suggestions must
+remain separate from approved mappings. Every stage still checks outcomes, mandatory
+behaviors, actors, inputs/outputs, authorization and preconditions. Mapping groups
+retain per-baseline coverage. Missing requires adequate reviewed scope;
 incomplete scans stay unverified. Exact-ID reviewed requirements coverage is
 implemented; add advanced mappings and automated acceptance-criteria interpretation.
-Implement remaining modes, intentional decisions,
-all statuses, business-configured high-risk gates and internal repository
+Implement remaining statuses, business-configured high-risk gates and internal repository
 discovery. Persist results before gate failure; fatal engine failures remain fatal.
 
 ### 5. Incremental and Recovery (Not Started)

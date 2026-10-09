@@ -1,10 +1,11 @@
 # Feature Parity Engine (Development Milestone)
 
-Version 0.9.0 implements configurable repository inventory, provisional OpenAPI,
+Version 0.11.0 implements configurable repository inventory, provisional OpenAPI,
 C#, Vue/AngularJS and ColdFusion discovery, manifest validation and conservative
 reviewed-contract comparison, digest-bound human review reconciliation and
 structured JSON and explicitly marked text/Markdown requirements ingestion, and
-separately reviewed static requirements coverage and persisted provisional agent enrichment.
+separately reviewed static requirements coverage, persisted provisional agent
+enrichment and digest-bound one-to-one, split and merge identity mappings.
 It is not the completed Finder or Parity release,
 and no new slash commands are installed yet.
 The existing CodePulse health skills are unchanged.
@@ -81,6 +82,7 @@ python codepulse-shared/tools/feature-parity/cli.py parity requirements-review-t
 python codepulse-shared/tools/feature-parity/cli.py parity cover-requirements --baseline ../codepulse-requirements-results/requirements-baseline.json --reviews ../codepulse-requirements-review-template/requirements-reviews.json --target codepulse-shared/tools/feature-parity/tests/fixtures/baseline.json --output ../codepulse-requirements-coverage --fail-on unverified --dry-run
 python codepulse-shared/tools/feature-parity/cli.py parity review-template --manifest codepulse-shared/tools/feature-parity/tests/fixtures/target.json --output ../codepulse-review-template
 python codepulse-shared/tools/feature-parity/cli.py parity reconcile --manifest codepulse-shared/tools/feature-parity/tests/fixtures/target.json --reviews ../codepulse-review-template/review-decisions.json --output ../codepulse-reviewed-results --dry-run
+python codepulse-shared/tools/feature-parity/cli.py parity identity-mappings-template --source codepulse-shared/tools/feature-parity/tests/fixtures/baseline.json --target codepulse-shared/tools/feature-parity/tests/fixtures/target.json --output ../codepulse-identity-mappings
 python codepulse-shared/tools/feature-parity/cli.py parity compare --source codepulse-shared/tools/feature-parity/tests/fixtures/baseline.json --target codepulse-shared/tools/feature-parity/tests/fixtures/target.json --output /path/to/new-results
 ```
 
@@ -364,8 +366,23 @@ Comparison `--dry-run` validates inputs and output policy without writing anythi
 Manifest comparison `--fail-on` defaults to `never`. Supported gates:
 
 - `missing`: fails on verified missing records (this engine never asserts missing).
-- `partial`: fails on partial or missing records.
+- `partial`: fails on partial, missing or approved intentional-difference records.
 - `unverified`: also fails on unable-to-verify and needs-sme-validation records.
+
+`identity-mappings-template` exports `identity-mappings.json` bound to both
+manifest digests using schema version 1.1. Complete its `mappings` array with
+explicit feature ID arrays,
+`mappingType` (`one-to-one`, `split` or `merge`), a decision, rationale and human
+approval reference. One-to-one maps one baseline to one target, split maps one
+baseline to multiple targets, and merge maps multiple baselines to one target.
+There is no automatic alias or similarity matching. `compare --mappings` rejects
+stale, inactive, overlapping or exact-ID-conflicting groups. A `same-capability`
+mapping only selects candidates: the existing independent evidence and aggregated
+contract checks still determine equivalence. Results retain one record per baseline
+feature, so split children are assessed together and merged targets cover each
+baseline obligation once. `intentional-difference` records the approved divergence,
+retains detected and declared differences, receives no equivalent credit and fails
+the `partial` gate. Approval references are attestations, not authenticated identities.
 
 Exit codes: 0 completed, 1 invalid invocation/runtime, 2 filesystem access
 failure, 3 invalid artifact, 4 engine failure, 5 output/input policy restriction,
@@ -395,14 +412,14 @@ from an agent proposal and call them human approval.
 Equivalence is limited to reviewed static contracts. The engine cannot establish
 business completeness or runtime correctness. An unmatched feature remains
 unable-to-verify even when a manifest declares complete scan coverage. A
-new-in-target record means no exact-ID baseline match, not proof of a genuinely
-new capability; renamed features may remain unresolved.
+new-in-target record means no exact-ID or approved-mapping baseline match, not
+proof of a genuinely new capability; unmapped renamed features may remain unresolved.
 
-Coverage is equivalent / (equivalent + partial + missing). Unresolved baseline
+Coverage is equivalent / (equivalent + partial + changed-intentionally + missing). Unresolved baseline
 records and target-only records are excluded from the denominator and displayed
-separately. An empty denominator produces null, never 100%. Consumers must show
-unresolved counts next to percentages. Future intentional-decision statuses will
-extend this formula explicitly.
+separately. An intentional difference is in the denominator and receives no
+equivalent credit. An empty denominator produces null, never 100%. Consumers must
+show unresolved counts next to percentages.
 
 ## Safety and Limitations
 

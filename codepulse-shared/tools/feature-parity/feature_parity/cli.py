@@ -11,6 +11,7 @@ from .comparison import compare_manifests, gate_failed
 from .config import ConfigurationError, resolve_policy
 from .enrichment import enrichment_template, import_enrichment
 from .identity import digest
+from .identity_mappings import identity_mappings_template
 from .finder import find_repository
 from .inventory import InventoryPolicyError, source_root
 from .reviews import reconcile_manifest, review_template
@@ -89,8 +90,14 @@ def parser():
     compare.add_argument("--source", required=True)
     compare.add_argument("--target", required=True)
     compare.add_argument("--output", required=True)
+    compare.add_argument("--mappings", help="Approved digest-bound one-to-one identity mappings")
     compare.add_argument("--fail-on", choices=("never", "missing", "partial", "unverified"), default="never")
     compare.add_argument("--dry-run", action="store_true")
+    mapping_template = commands.add_parser("identity-mappings-template", help="Export a digest-bound template for reviewed identity mappings")
+    mapping_template.add_argument("--source", required=True)
+    mapping_template.add_argument("--target", required=True)
+    mapping_template.add_argument("--output", required=True)
+    mapping_template.add_argument("--dry-run", action="store_true")
     return root
 
 
@@ -221,6 +228,19 @@ def main(argv=None):
             else:
                 print("Unapproved enrichment placeholders exported; complete provenance, rationale and proposed updates")
             return 0
+        if arguments.command == "identity-mappings-template":
+            source_path, source = _input(arguments.source)
+            target_path, target = _input(arguments.target)
+            if source_path == target_path or os.path.samefile(source_path, target_path):
+                raise InvocationError("Source and target must be different manifests")
+            output = _output(arguments.output, [source_path, target_path])
+            artifact = identity_mappings_template(source, target)
+            if arguments.dry_run:
+                print("Identity-mapping template validated; no artifacts written")
+                return 0
+            _write_artifacts(output, {"identity-mappings.json": artifact})
+            print("Unapproved identity-mapping template exported; add explicit human-approved one-to-one decisions")
+            return 0
         if arguments.command in {"review-template", "reconcile"}:
             manifest_path, manifest = _input(arguments.manifest)
             inputs = [manifest_path]
@@ -267,8 +287,13 @@ def main(argv=None):
         target_path, target = _input(arguments.target)
         if source_path == target_path or os.path.samefile(source_path, target_path):
             raise InvocationError("Source and target must be different manifests")
-        output = _output(arguments.output, (source_path, target_path))
-        result = compare_manifests(source, target)
+        inputs = [source_path, target_path]
+        mappings = None
+        if arguments.mappings:
+            mapping_path, mappings = _json_input(arguments.mappings)
+            inputs.append(mapping_path)
+        output = _output(arguments.output, inputs)
+        result = compare_manifests(source, target, mappings)
         validate_schema(result, "feature-parity-result-schema.json")
         if arguments.dry_run:
             print("Inputs and output policy are valid; no artifacts written")

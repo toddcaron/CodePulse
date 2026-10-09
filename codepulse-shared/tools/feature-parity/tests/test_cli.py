@@ -42,6 +42,31 @@ class CliTests(unittest.TestCase):
         self.assertEqual(self.run_cli("--dry-run"), 0)
         self.assertEqual(before, set(self.root.iterdir()))
 
+    def test_mapping_template_and_compare_cli(self):
+        target = manifest()
+        target["features"][0]["id"] = "identity.register-user"
+        self.target.write_text(json.dumps(approve(target)), encoding="utf-8")
+        mapping_output = self.root / "mapping-template"
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(main([
+                "parity", "identity-mappings-template", "--source", str(self.source),
+                "--target", str(self.target), "--output", str(mapping_output),
+            ]), 0)
+        mappings = load_json(mapping_output / "identity-mappings.json")
+        mappings["mappings"].append({
+            "mappingType": "one-to-one", "baselineFeatureIds": ["identity.create-user"],
+            "targetFeatureIds": ["identity.register-user"],
+            "decision": "same-capability", "rationale": "Reviewed rename",
+            "differences": [], "approvedReference": "Review 12",
+        })
+        mapping_path = self.root / "mappings.json"
+        mapping_path.write_text(json.dumps(mappings), encoding="utf-8")
+
+        self.assertEqual(self.run_cli("--mappings", str(mapping_path)), 0)
+        result = load_json(self.output / "parity-results.json")
+        validate_schema(result, "feature-parity-result-schema.json")
+        self.assertEqual(result["matches"][0]["matchingStage"], "approved-mapping")
+
     def test_output_never_overwrites(self):
         self.output.mkdir()
         self.assertEqual(self.run_cli(), 5)
