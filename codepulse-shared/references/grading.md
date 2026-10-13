@@ -25,11 +25,10 @@ The CodePulse Full Assessment evaluates the following categories:
 
 | Category | Weight |
 |----------|----------|
-| Security Vulnerabilities | 30% |
-| MFA Implementation | 5% |
-| Code Quality | 25% |
-| Dead Code | 10% |
-| Dependency & Framework Health | 15% |
+| Security Vulnerabilities | 32% |
+| Code Quality | 26% |
+| Dead Code | 11% |
+| Dependency & Framework Health | 16% |
 | External Exposure | 10% |
 | Lines of Code & Maintainability Indicators | 5% |
 
@@ -69,54 +68,36 @@ Total Weight = 100%
 
 ---
 
-## MFA Implementation
-
-### Grade A
-
-- MFA enforced for all users
-- Authentication flows properly secured
-- No obvious bypass paths detected
-
-### Grade B
-
-- MFA implemented but coverage gaps exist
-- Administrative users protected
-
-### Grade C
-
-- Partial MFA implementation
-- Inconsistent enforcement
-
-### Grade D
-
-- MFA not detected
-- Authentication controls appear weak
-- Obvious bypass scenarios identified
-
----
-
 ## Code Quality
 
+Complexity means human readability and maintainability. Score Cyclomatic (10), Cognitive (15), and Accidental (15) Complexity, plus other quality signals (60), using `complexity-model.md`. Do not deduct for inherent domain complexity. Cap the grade at C when any Very High cyclomatic function exists in a core domain path or entry point.
+
 ### Grade A
 
-- Low complexity
+- Functions are predominantly within acceptable cyclomatic and cognitive thresholds
+- Little or no accidental complexity
 - Consistent architecture
 - Minimal duplication
 - Strong maintainability
 
 ### Grade B
 
+- Isolated cyclomatic or cognitive threshold breaches
+- Localized accidental complexity
 - Minor code smells
 - Some refactoring opportunities
 
 ### Grade C
 
-- Significant complexity
+- High cyclomatic or cognitive complexity in core paths
+- Recurring accidental complexity across modules
 - Architectural inconsistencies
 - Maintainability concerns
 
 ### Grade D
 
+- Widespread high or very high complexity
+- Pervasive accidental complexity that impedes change
 - Excessive technical debt
 - Poor maintainability
 - Widespread code quality issues
