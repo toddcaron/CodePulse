@@ -1,6 +1,6 @@
 # Feature Parity Engine (Development Milestone)
 
-Version 0.11.0 implements configurable repository inventory, provisional OpenAPI,
+Version 0.15.0 implements configurable repository inventory, provisional OpenAPI,
 C#, Vue/AngularJS and ColdFusion discovery, manifest validation and conservative
 reviewed-contract comparison, digest-bound human review reconciliation and
 structured JSON and explicitly marked text/Markdown requirements ingestion, and
@@ -83,6 +83,7 @@ python codepulse-shared/tools/feature-parity/cli.py parity cover-requirements --
 python codepulse-shared/tools/feature-parity/cli.py parity review-template --manifest codepulse-shared/tools/feature-parity/tests/fixtures/target.json --output ../codepulse-review-template
 python codepulse-shared/tools/feature-parity/cli.py parity reconcile --manifest codepulse-shared/tools/feature-parity/tests/fixtures/target.json --reviews ../codepulse-review-template/review-decisions.json --output ../codepulse-reviewed-results --dry-run
 python codepulse-shared/tools/feature-parity/cli.py parity identity-mappings-template --source codepulse-shared/tools/feature-parity/tests/fixtures/baseline.json --target codepulse-shared/tools/feature-parity/tests/fixtures/target.json --output ../codepulse-identity-mappings
+python codepulse-shared/tools/feature-parity/cli.py parity reconcile-identities --source /path/to/prior-manifest.json --target /path/to/current-manifest.json --mappings /path/to/approved-identity-mappings.json --output ../codepulse-reconciled-identities
 python codepulse-shared/tools/feature-parity/cli.py parity compare --source codepulse-shared/tools/feature-parity/tests/fixtures/baseline.json --target codepulse-shared/tools/feature-parity/tests/fixtures/target.json --output /path/to/new-results
 ```
 
@@ -370,12 +371,18 @@ Manifest comparison `--fail-on` defaults to `never`. Supported gates:
 - `unverified`: also fails on unable-to-verify and needs-sme-validation records.
 
 `identity-mappings-template` exports `identity-mappings.json` bound to both
-manifest digests using schema version 1.1. Complete its `mappings` array with
+manifest digests using schema version 1.1, plus a separate digest-bound
+`identity-suggestions.json` artifact using exact normalized name and alias matches,
+plus conservative shared contract-term hints. The hints expose matched terms and a
+Jaccard score; they do not understand synonyms or imply semantic equivalence. Suggestions
+only nominate cross-scan candidates; they are not imported by `compare` and cannot grant
+parity credit. Complete the mapping template's `mappings` array with
 explicit feature ID arrays,
 `mappingType` (`one-to-one`, `split` or `merge`), a decision, rationale and human
 approval reference. One-to-one maps one baseline to one target, split maps one
 baseline to multiple targets, and merge maps multiple baselines to one target.
-There is no automatic alias or similarity matching. `compare --mappings` rejects
+Name/alias suggestions use exact normalized labels; contract hints use exact token overlap
+only. No fuzzy, synonym or model-based semantic matching is implemented. `compare --mappings` rejects
 stale, inactive, overlapping or exact-ID-conflicting groups. A `same-capability`
 mapping only selects candidates: the existing independent evidence and aggregated
 contract checks still determine equivalence. Results retain one record per baseline
@@ -383,6 +390,15 @@ feature, so split children are assessed together and merged targets cover each
 baseline obligation once. `intentional-difference` records the approved divergence,
 retains detected and declared differences, receives no equivalent credit and fails
 the `partial` gate. Approval references are attestations, not authenticated identities.
+
+`reconcile-identities` accepts approved one-to-one, split or merge `same-capability`
+decisions and carries historical names and aliases into the current target manifest.
+For a split, prior labels are attached to each child; for a merge, labels from all
+baseline features are combined on the merged target. The command preserves target IDs,
+contracts, evidence, confidence, admission and review state, and writes an
+`identity-reconciliation-log.json` bound to inputs and output. Intentional-difference
+decisions are rejected. Reconciled aliases may yield multiple advisory candidates after
+a split, but never auto-match or earn parity credit.
 
 Exit codes: 0 completed, 1 invalid invocation/runtime, 2 filesystem access
 failure, 3 invalid artifact, 4 engine failure, 5 output/input policy restriction,

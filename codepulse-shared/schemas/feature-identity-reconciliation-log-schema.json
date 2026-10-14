@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-identity-reconciliation-log:1.0",
+  "title": "CodePulse Feature Identity Reconciliation Log",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "engineVersion", "baselineDigest", "targetDigest", "mappingDigest",
+    "outputManifestDigest", "changes", "statistics", "evidenceVerificationChanged",
+    "confidenceChanged", "applicationCodeExecuted"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "engineVersion": {"type": "string", "minLength": 1},
+    "baselineDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "targetDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "mappingDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "outputManifestDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "changes": {"type": "array", "items": {"$ref": "#/$defs/change"}},
+    "statistics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reconciledMappings", "addedAliases"],
+      "properties": {
+        "reconciledMappings": {"type": "integer", "minimum": 1},
+        "addedAliases": {"type": "integer", "minimum": 0}
+      }
+    },
+    "evidenceVerificationChanged": {"const": false},
+    "confidenceChanged": {"const": false},
+    "applicationCodeExecuted": {"const": false}
+  },
+  "$defs": {
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baselineFeatureIds", "targetChanges", "approvedReference"],
+      "properties": {
+        "baselineFeatureIds": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs"},
+        "targetChanges": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/targetChange"}},
+        "approvedReference": {"type": "string", "pattern": "\\S"}
+      }
+    },
+    "targetChange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["targetFeatureId", "addedAliases"],
+      "properties": {
+        "targetFeatureId": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"},
+        "addedAliases": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"}
+      }
+    }
+  }
+}

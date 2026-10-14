@@ -8,6 +8,7 @@ from pathlib import Path
 from test_comparison import approve
 from test_validation import manifest
 from feature_parity.cli import main
+from feature_parity.identity import digest
 from feature_parity.validation import load_json, validate_schema
 
 
@@ -66,6 +67,62 @@ class CliTests(unittest.TestCase):
         result = load_json(self.output / "parity-results.json")
         validate_schema(result, "feature-parity-result-schema.json")
         self.assertEqual(result["matches"][0]["matchingStage"], "approved-mapping")
+
+    def test_mapping_template_exports_schema_valid_identity_suggestions(self):
+        baseline = manifest()
+        baseline["features"][0]["aliases"] = ["Register User"]
+        self.source.write_text(json.dumps(approve(baseline)), encoding="utf-8")
+        target = manifest()
+        target["features"][0]["id"] = "identity.register-user"
+        target["features"][0]["name"] = "Register User"
+        self.target.write_text(json.dumps(approve(target)), encoding="utf-8")
+        mapping_output = self.root / "mapping-template-with-suggestions"
+
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(main([
+                "parity", "identity-mappings-template", "--source", str(self.source),
+                "--target", str(self.target), "--output", str(mapping_output),
+            ]), 0)
+
+        suggestions = load_json(mapping_output / "identity-suggestions.json")
+        validate_schema(suggestions, "feature-identity-suggestions-schema.json")
+        self.assertEqual(len(suggestions["suggestions"]), 1)
+        self.assertEqual(suggestions["suggestions"][0]["targetFeatureId"], "identity.register-user")
+
+    def test_reconcile_identities_writes_audited_manifest(self):
+        baseline = approve(manifest())
+        target = manifest()
+        target["features"][0]["id"] = "identity.register-user"
+        target["features"][0]["name"] = "Register User"
+        target = approve(target)
+        self.source.write_text(json.dumps(baseline), encoding="utf-8")
+        self.target.write_text(json.dumps(target), encoding="utf-8")
+        mappings = {
+            "schemaVersion": "1.1",
+            "baselineDigest": digest(baseline),
+            "targetDigest": digest(target),
+            "mappings": [{
+                "mappingType": "one-to-one", "baselineFeatureIds": ["identity.create-user"],
+                "targetFeatureIds": ["identity.register-user"], "decision": "same-capability",
+                "rationale": "Reviewed rename", "differences": [], "approvedReference": "Review 20",
+            }],
+        }
+        mappings_path = self.root / "approved-mappings.json"
+        mappings_path.write_text(json.dumps(mappings), encoding="utf-8")
+        output = self.root / "identity-reconciliation"
+
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(main([
+                "parity", "reconcile-identities", "--source", str(self.source),
+                "--target", str(self.target), "--mappings", str(mappings_path),
+                "--output", str(output),
+            ]), 0)
+
+        reconciled = load_json(output / "feature-manifest.json")
+        log = load_json(output / "identity-reconciliation-log.json")
+        validate_schema(log, "feature-identity-reconciliation-log-schema.json")
+        self.assertIn("Create User", reconciled["features"][0]["aliases"])
+        self.assertEqual(log["statistics"]["addedAliases"], 1)
 
     def test_output_never_overwrites(self):
         self.output.mkdir()

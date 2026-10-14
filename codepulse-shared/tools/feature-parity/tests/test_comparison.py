@@ -4,7 +4,9 @@ import unittest
 from test_validation import manifest
 from feature_parity.comparison import compare_manifests, gate_failed
 from feature_parity.identity import contract_digest, digest
-from feature_parity.identity_mappings import identity_mappings_template
+from feature_parity.identity_mappings import (
+    identity_mappings_template, identity_suggestions, reconcile_identity_aliases,
+)
 from feature_parity.validation import ArtifactError, validate_manifest
 
 
@@ -116,6 +118,150 @@ class ComparisonTests(unittest.TestCase):
         self.assertEqual(result["matches"][0]["targetFeatureIds"], ["identity.register-user"])
         self.assertEqual(result["statistics"]["byStatus"]["new-in-target"], 0)
         self.assertEqual(result["mappingDigest"], digest(mappings))
+
+    def test_alias_suggestion_is_digest_bound_and_never_grants_parity_credit(self):
+        baseline = manifest()
+        baseline["features"][0]["aliases"] = ["Register User"]
+        baseline = approve(baseline)
+        target = manifest()
+        target["features"][0]["id"] = "identity.register-user"
+        target["features"][0]["name"] = "Register User"
+        target = approve(target)
+
+        suggestions = identity_suggestions(baseline, target)
+        result = compare_manifests(baseline, target)
+
+        self.assertEqual(suggestions["baselineDigest"], digest(baseline))
+        self.assertEqual(suggestions["targetDigest"], digest(target))
+        self.assertEqual(suggestions["suggestions"][0]["matchBasis"], "shared-alias")
+        self.assertEqual(suggestions["suggestions"][0]["sharedLabels"], ["Register User"])
+        self.assertEqual(result["statistics"]["equivalentCount"], 0)
+        self.assertEqual(result["matches"][0]["matchingStage"], "unresolved")
+
+    def test_contract_term_suggestion_is_explanatory_and_advisory(self):
+        baseline = approve(manifest())
+        baseline["features"][0]["name"] = "Create User"
+        target = manifest()
+        target["features"][0]["id"] = "identity.register-member"
+        target["features"][0]["name"] = "Register Member"
+        target = approve(target)
+
+        suggestions = identity_suggestions(baseline, target)
+        result = compare_manifests(baseline, target)
+
+        self.assertEqual(len(suggestions["suggestions"]), 1)
+        self.assertEqual(suggestions["suggestions"][0]["matchBasis"], "shared-contract-terms")
+        self.assertGreaterEqual(len(suggestions["suggestions"][0]["sharedContractTerms"]), 2)
+        self.assertIsInstance(suggestions["suggestions"][0]["similarityScore"], float)
+        self.assertEqual(result["matches"][0]["matchingStage"], "unresolved")
+        self.assertEqual(result["statistics"]["equivalentCount"], 0)
+
+    def test_unrelated_contracts_do_not_receive_similarity_suggestions(self):
+        baseline = manifest()
+        target = copy.deepcopy(baseline)
+        target["features"][0].update({
+            "id": "inventory.restock-product", "name": "Restock Product", "domain": "Inventory",
+            "actors": ["Warehouse operator"], "inputs": ["Supplier shipment"],
+            "outputs": ["Stock quantity"], "preconditions": ["Shipment received"],
+            "behaviors": [{
+                "id": "restock", "description": "Adds delivered units to available inventory",
+                "mandatory": True, "evidenceRefs": ["evidence-1"],
+            }],
+        })
+
+        suggestions = identity_suggestions(baseline, target)
+
+        self.assertEqual(suggestions["suggestions"], [])
+
+    def test_approved_identity_aliases_persist_for_later_scans(self):
+        baseline = approve(manifest())
+        target = manifest()
+        target["features"][0]["id"] = "identity.register-user"
+        target["features"][0]["name"] = "Register User"
+        target = approve(target)
+        mappings = identity_mappings_template(baseline, target)
+        mappings["mappings"].append({
+            "mappingType": "one-to-one", "baselineFeatureIds": ["identity.create-user"],
+            "targetFeatureIds": ["identity.register-user"], "decision": "same-capability",
+            "rationale": "Reviewed rename", "differences": [], "approvedReference": "Review 18",
+        })
+
+        artifacts = reconcile_identity_aliases(baseline, target, mappings)
+        reconciled = artifacts["feature-manifest.json"]
+        later_scan = manifest()
+        later_scan["features"][0]["id"] = "identity.onboard-user"
+        later_scan["features"][0]["name"] = "Onboard Account"
+        later_scan["features"][0]["aliases"] = [baseline["features"][0]["name"]]
+
+        suggestions = identity_suggestions(reconciled, later_scan)
+
+        self.assertIn(baseline["features"][0]["name"], reconciled["features"][0]["aliases"])
+        self.assertEqual(reconciled["features"][0]["status"], "confirmed")
+        self.assertEqual(suggestions["suggestions"][0]["targetFeatureId"], "identity.onboard-user")
+        self.assertEqual(artifacts["identity-reconciliation-log.json"]["statistics"]["reconciledMappings"], 1)
+
+    def test_identity_reconciliation_rejects_intentional_differences(self):
+        baseline = approve(manifest())
+        target = manifest()
+        target["features"][0]["id"] = "identity.register-user"
+        target = approve(target)
+        mappings = identity_mappings_template(baseline, target)
+        mappings["mappings"].append({
+            "mappingType": "one-to-one", "baselineFeatureIds": ["identity.create-user"],
+            "targetFeatureIds": ["identity.register-user"], "decision": "intentional-difference",
+            "rationale": "Approved change", "differences": ["Behavior changed"],
+            "approvedReference": "Review 19",
+        })
+
+        with self.assertRaises(ArtifactError):
+            reconcile_identity_aliases(baseline, target, mappings)
+
+    def test_identity_reconciliation_carries_aliases_across_split_and_merge(self):
+        baseline = approve(manifest())
+        split_target = manifest()
+        split_target["features"][0]["id"] = "identity.create-account"
+        split_target["features"][0]["name"] = "Create Account"
+        child = copy.deepcopy(split_target["features"][0])
+        child["id"] = "identity.assign-permissions"
+        child["name"] = "Assign Permissions"
+        split_target["features"].append(child)
+        split_target = approve(split_target)
+        split_mappings = identity_mappings_template(baseline, split_target)
+        split_mappings["mappings"].append({
+            "mappingType": "split", "baselineFeatureIds": ["identity.create-user"],
+            "targetFeatureIds": ["identity.create-account", "identity.assign-permissions"],
+            "decision": "same-capability", "rationale": "Reviewed capability split",
+            "differences": [], "approvedReference": "Review 21",
+        })
+
+        split_artifacts = reconcile_identity_aliases(baseline, split_target, split_mappings)
+        split_result = split_artifacts["feature-manifest.json"]
+        self.assertTrue(all("Create User" in feature["aliases"] for feature in split_result["features"]))
+        self.assertEqual(split_artifacts["identity-reconciliation-log.json"]["statistics"]["addedAliases"], 2)
+
+        merge_baseline = copy.deepcopy(baseline)
+        second_baseline = copy.deepcopy(merge_baseline["features"][0])
+        second_baseline["id"] = "identity.assign-permissions"
+        second_baseline["name"] = "Assign Permissions"
+        merge_baseline["features"].append(second_baseline)
+        merge_target = manifest()
+        merge_target["features"][0]["id"] = "identity.manage-identity"
+        merge_target["features"][0]["name"] = "Manage Identity"
+        merge_baseline = approve(merge_baseline)
+        merge_target = approve(merge_target)
+        merge_mappings = identity_mappings_template(merge_baseline, merge_target)
+        merge_mappings["mappings"].append({
+            "mappingType": "merge",
+            "baselineFeatureIds": ["identity.create-user", "identity.assign-permissions"],
+            "targetFeatureIds": ["identity.manage-identity"],
+            "decision": "same-capability", "rationale": "Reviewed capability merge",
+            "differences": [], "approvedReference": "Review 22",
+        })
+
+        merge_artifacts = reconcile_identity_aliases(merge_baseline, merge_target, merge_mappings)
+        merged_feature = merge_artifacts["feature-manifest.json"]["features"][0]
+        self.assertEqual(set(merged_feature["aliases"]), {"Create User", "Assign Permissions"})
+        self.assertEqual(merge_artifacts["identity-reconciliation-log.json"]["statistics"]["addedAliases"], 2)
 
     def test_intentional_difference_is_not_equivalent_coverage(self):
         baseline = approve(manifest())

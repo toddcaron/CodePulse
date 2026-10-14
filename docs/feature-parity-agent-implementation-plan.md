@@ -2,13 +2,14 @@
 
 ## Current State
 
-Last updated: **2026-10-09**. Engine version: **0.11.0**.
+Last updated: **2026-10-13**. Engine version: **0.15.0**.
 
-**Latest completed milestone:** digest-bound split/merge lineage with per-baseline
-coverage accounting.
+**Latest completed milestone:** advisory contract-term similarity hints complement
+reviewed one-to-one, split and merge identity reconciliation.
 **Release status:** development engine only; the first complete release is not finished.
 **Active implementation:** one-to-one, split and merge mappings are implemented;
-cross-scan identity reconciliation and alias-assisted review remain open.
+pair-bound alias and lexical contract-term suggestions plus reviewed one-to-one/split/merge
+alias reconciliation are implemented; multi-generation registry and semantic matching remain open.
 
 The engine can discover provisional capabilities, reconcile human feature reviews,
 ingest requirements, compare reviewed feature manifests and assess separately
@@ -59,12 +60,22 @@ command arguments, output artifacts, gates and supported syntax.
   intentional differences receive no equivalent coverage credit.
 - **0.11:** grouped one-to-one, split and merge lineage mappings; split contracts are
   compared against their children and merged targets retain one result per baseline ID.
+- **0.12:** digest-bound exact normalized name/alias candidate suggestions exported
+  separately from approved mappings; suggestions cannot affect comparison results.
+- **0.13:** approved digest-bound one-to-one same-capability decisions carry prior
+  names and aliases into a current manifest with an audit log; reconciliation grants
+  no approval or parity credit.
+- **0.14:** approved digest-bound split and merge same-capability decisions reconcile
+  historical labels with per-target audit details; intentional differences remain rejected.
+- **0.15:** digest-bound suggestions include conservative shared contract-term hints with
+  matched terms and lexical overlap score; suggestions remain advisory and non-semantic.
 
 ### What Is Not Available Yet
 
 - Finder and Parity slash-command skills, HTML/Markdown reports and installation integration.
 - New-feature enrichment proposals and large-manifest enrichment template selection.
-- Cross-scan identity reconciliation and automated alias matching.
+- Multi-generation identity registry and semantic candidate suggestions; current contract
+  hints use exact token overlap only and do not resolve synonyms.
 - Confirmed absence, remaining final parity statuses and business-configured high-risk gates.
 - Incremental scans, cache invalidation, checkpoint recovery and Windows/Linux CI.
 - Full framework semantics, duplicate consolidation, comprehensive redaction and broader document adapters.
@@ -75,8 +86,9 @@ workflow, not a promotion of imported requirement evidence into implementation p
 
 ### Next Delivery Order
 
-1. **Mapping completeness:** add cross-scan identity reconciliation and alias-assisted
-  candidate suggestions without allowing automatic approval or parity credit.
+1. **Mapping completeness:** extend pairwise alias continuity into a multi-generation
+  identity registry. Any future semantic candidate reasoning remains advisory and must
+  never auto-approve or earn parity credit.
 2. **Finder completeness:** improve supported adapters, consolidate evidence and
   extend safe supporting-document extraction and redaction.
 3. **Incremental and recovery:** implement dependency-aware invalidation and validated
@@ -106,7 +118,7 @@ The source proposal remains unchanged. This document records the clarified
 implementation direction and delivery status, not a claim that all features
 below have been implemented.
 
-## Implemented Detail Through 0.11
+## Implemented Detail Through 0.14
 
 The following capabilities are implemented within the documented limits. This
 section is cumulative; the status summary above is the current delivery snapshot.
@@ -180,6 +192,15 @@ section is cumulative; the status summary above is the current delivery snapshot
   one-to-one, split and merge lineage groups; stale, inactive, overlapping and
   exact-ID-conflicting groups are rejected. Candidate mapping never bypasses
   contract/evidence checks.
+- Digest-bound exact normalized name/alias suggestions in a separate artifact;
+  suggestions are advisory, do not alter comparison candidates or parity credit,
+  and require human completion of the approved mapping artifact.
+- Conservative shared contract-term hints include matched tokens and lexical overlap
+  score; no synonym resolution, model inference or comparison credit is provided.
+- Approved one-to-one, split and merge same-capability decisions carry historical names
+  and aliases into a current target manifest with digest-bound per-target audit output.
+  Target IDs and review state remain unchanged; intentional-difference reconciliation is
+  unsupported.
 - Human-approved intentional differences remain a distinct status, retain declared
   and detected differences, count in the coverage denominator without equivalent credit,
   and fail the partial gate. Approval references remain unauthenticated attestations.
@@ -223,7 +244,9 @@ outputs. New-feature proposals and large-manifest template selection remain defe
 
 Basic review import/reconciliation, within-manifest rename preservation and explicit
 one-to-one/split/merge identity decisions across two fixed manifests are implemented.
-Add cross-scan identity reconciliation, new evidence
+Pair-bound exact name/alias suggestions are advisory only. Approved one-to-one, split and
+merge mappings can persist historical names and aliases into the current manifest. Add a
+multi-generation identity registry, new evidence
 creation/verification and authenticated approval authority. Structured JSON
 and explicitly marked text/Markdown ingestion are implemented; add broader prose
 interpretation and document collections. Resolved contracts and explicit criterion
@@ -238,8 +261,9 @@ retain underlying evidence and differences.
 ### 4. Full Comparison (Partial)
 
 One-to-one/split/merge mappings and intentional-difference decisions are implemented.
-Add cross-scan lineage and alias/semantic candidate suggestions; suggestions must
-remain separate from approved mappings. Every stage still checks outcomes, mandatory
+Exact name/alias and contract-term candidate suggestions and audited one-to-one/split/merge
+alias reconciliation are implemented and remain separate from comparison approval. Add
+multi-generation lineage; semantic interpretation remains unimplemented. Every stage still checks outcomes, mandatory
 behaviors, actors, inputs/outputs, authorization and preconditions. Mapping groups
 retain per-baseline coverage. Missing requires adequate reviewed scope;
 incomplete scans stay unverified. Exact-ID reviewed requirements coverage is

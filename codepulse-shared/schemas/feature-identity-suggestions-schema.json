@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-identity-suggestions:1.1",
+  "title": "CodePulse Advisory Feature Identity Suggestions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "baselineDigest", "targetDigest", "suggestions"],
+  "properties": {
+    "schemaVersion": {"const": "1.1"},
+    "baselineDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "targetDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "suggestions": {"type": "array", "items": {"$ref": "#/$defs/suggestion"}}
+  },
+  "$defs": {
+    "suggestion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baselineFeatureId", "targetFeatureId", "matchBasis", "sharedLabels", "sharedContractTerms", "similarityScore"],
+      "properties": {
+        "baselineFeatureId": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"},
+        "targetFeatureId": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"},
+        "matchBasis": {"enum": ["shared-name", "shared-alias", "shared-contract-terms"]},
+        "sharedLabels": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
+        "sharedContractTerms": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
+        "similarityScore": {"type": ["number", "null"], "minimum": 0, "maximum": 1}
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "matchBasis": {"enum": ["shared-name", "shared-alias"]},
+            "sharedLabels": {"minItems": 1},
+            "sharedContractTerms": {"maxItems": 0},
+            "similarityScore": {"type": "null"}
+          }
+        },
+        {
+          "properties": {
+            "matchBasis": {"const": "shared-contract-terms"},
+            "sharedLabels": {"maxItems": 0},
+            "sharedContractTerms": {"minItems": 2},
+            "similarityScore": {"type": "number", "minimum": 0.12}
+          }
+        }
+      ]
+    }
+  }
+}
