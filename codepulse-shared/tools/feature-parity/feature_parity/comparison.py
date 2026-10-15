@@ -133,11 +133,11 @@ def compare_manifests(baseline, target, identity_mappings=None):
 def gate_failed(result, policy):
     if policy == "never":
         return False
-    statuses = {"missing"}
+    if policy not in {"partial", "unverified"}:
+        raise ValueError("Unsupported gate policy")
+    statuses = set()
     if policy in {"partial", "unverified"}:
         statuses.update({"partial", "changed-intentionally"})
     if policy == "unverified":
         statuses.update({"unable-to-verify", "needs-sme-validation"})
-    if policy not in {"missing", "partial", "unverified"}:
-        raise ValueError("Unsupported gate policy")
     return any(record["status"] in statuses for record in result["matches"])

@@ -79,7 +79,8 @@ class ComparisonTests(unittest.TestCase):
         result = compare_manifests(approve(manifest()), target)
         self.assertEqual(result["matches"][0]["status"], "unable-to-verify")
         self.assertTrue(gate_failed(result, "unverified"))
-        self.assertFalse(gate_failed(result, "missing"))
+        with self.assertRaises(ValueError):
+            gate_failed(result, "missing")
 
     def test_stale_approval_rejected(self):
         document = approve(manifest())

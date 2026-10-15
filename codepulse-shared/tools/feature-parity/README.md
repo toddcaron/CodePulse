@@ -6,8 +6,8 @@ reviewed-contract comparison, digest-bound human review reconciliation and
 structured JSON and explicitly marked text/Markdown requirements ingestion, and
 separately reviewed static requirements coverage, persisted provisional agent
 enrichment and digest-bound one-to-one, split and merge identity mappings.
-It is not the completed Finder or Parity release,
-and no new slash commands are installed yet.
+It is not the completed Finder or Parity release. Early Finder and Parity skills
+cover the supported workflows below; prompt acceptance and feature reports remain open.
 The existing CodePulse health skills are unchanged.
 
 ## Setup
@@ -83,6 +83,7 @@ python codepulse-shared/tools/feature-parity/cli.py parity cover-requirements --
 python codepulse-shared/tools/feature-parity/cli.py parity review-template --manifest codepulse-shared/tools/feature-parity/tests/fixtures/target.json --output ../codepulse-review-template
 python codepulse-shared/tools/feature-parity/cli.py parity reconcile --manifest codepulse-shared/tools/feature-parity/tests/fixtures/target.json --reviews ../codepulse-review-template/review-decisions.json --output ../codepulse-reviewed-results --dry-run
 python codepulse-shared/tools/feature-parity/cli.py parity identity-mappings-template --source codepulse-shared/tools/feature-parity/tests/fixtures/baseline.json --target codepulse-shared/tools/feature-parity/tests/fixtures/target.json --output ../codepulse-identity-mappings
+python codepulse-shared/tools/feature-parity/cli.py parity reconcile-identities --source ../prior-manifest.json --target ../current-manifest.json --mappings ../approved-mappings.json --output ../codepulse-reconciled-identities
 python codepulse-shared/tools/feature-parity/cli.py parity reconcile-identities --source /path/to/prior-manifest.json --target /path/to/current-manifest.json --mappings /path/to/approved-identity-mappings.json --output ../codepulse-reconciled-identities
 python codepulse-shared/tools/feature-parity/cli.py parity compare --source codepulse-shared/tools/feature-parity/tests/fixtures/baseline.json --target codepulse-shared/tools/feature-parity/tests/fixtures/target.json --output /path/to/new-results
 ```
@@ -366,9 +367,11 @@ planned, not implemented.
 Comparison `--dry-run` validates inputs and output policy without writing anything.
 Manifest comparison `--fail-on` defaults to `never`. Supported gates:
 
-- `missing`: fails on verified missing records (this engine never asserts missing).
-- `partial`: fails on partial, missing or approved intentional-difference records.
+- `partial`: fails on partial or approved intentional-difference records.
 - `unverified`: also fails on unable-to-verify and needs-sme-validation records.
+
+The `missing` gate is not supported. Unmatched features remain unverified because
+complete-in-scope discovery does not establish confirmed absence.
 
 `identity-mappings-template` exports `identity-mappings.json` bound to both
 manifest digests using schema version 1.1, plus a separate digest-bound

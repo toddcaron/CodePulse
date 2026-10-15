@@ -29,10 +29,35 @@ foreach ($legacy in @('codepulse-shared/templates','codepulse-shared/schemas/fin
 
 $allSkills = Get-ChildItem -Directory -Filter 'codepulse-*' |
     Where-Object { Test-Path (Join-Path $_.FullName 'SKILL.md') }
-if ($allSkills.Count -ne 10) { throw "Expected 10 total skills (9 assessment + 1 shared), found $($allSkills.Count)" }
+if ($allSkills.Count -ne 12) { throw "Expected 12 total skills (9 assessment + 2 feature + 1 shared), found $($allSkills.Count)" }
 
-$skills = $allSkills | Where-Object { $_.Name -ne 'codepulse-shared' }
+$featureSkillNames = @('codepulse-feature-parity-finder','codepulse-feature-parity')
+$skills = $allSkills | Where-Object { $_.Name -ne 'codepulse-shared' -and $_.Name -notin $featureSkillNames }
 if ($skills.Count -ne 9) { throw "Expected 9 assessment skills, found $($skills.Count)" }
+$featureSkills = $allSkills | Where-Object { $_.Name -in $featureSkillNames }
+if ($featureSkills.Count -ne 2) { throw "Expected 2 feature-parity skills, found $($featureSkills.Count)" }
+
+$finderSkill = Get-Content 'codepulse-feature-parity-finder/SKILL.md' -Raw
+foreach ($requirement in @('parity find','feature-manifest.json','discovery-log.json','outside the scanned source tree','provisional')) {
+    if ($finderSkill.IndexOf($requirement, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
+        throw "Feature Finder skill is missing: $requirement"
+    }
+}
+$paritySkill = Get-Content 'codepulse-feature-parity/SKILL.md' -Raw
+foreach ($requirement in @('parity compare','cover-requirements','reviewed','`missing` gate is unsupported','runtime parity')) {
+    if ($paritySkill.IndexOf($requirement, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
+        throw "Feature Parity skill is missing: $requirement"
+    }
+}
+foreach ($skill in $featureSkills) {
+    $text = Get-Content (Join-Path $skill.FullName 'SKILL.md') -Raw
+    if ($text.IndexOf('../codepulse-shared/tools/feature-parity/README.md') -lt 0) {
+        throw "$($skill.Name) is missing the engine guide link"
+    }
+    if ($text -match 'codepulse-report-schema|assessment-result-schema|letter grade') {
+        throw "$($skill.Name) must not use health assessment schemas or grades"
+    }
+}
 
 $requiredLinks = @(
     '../codepulse-shared/references/runtime-contract.md',
@@ -150,7 +175,7 @@ $reportSchema = Get-Content 'codepulse-shared/schemas/codepulse-report-schema.js
 foreach ($field in @('schemaVersion','reportType','skillName','application','repository','assessmentDate')) {
     if ($reportSchema.required -notcontains $field) { throw "Report schema does not require field: $field" }
 }
-foreach ($skill in $allSkills | Where-Object { $_.Name -ne 'codepulse-shared' -and $_.Name -ne 'codepulse-full' -and $_.Name -ne 'codepulse-exec' }) {
+foreach ($skill in $skills | Where-Object { $_.Name -ne 'codepulse-full' -and $_.Name -ne 'codepulse-exec' }) {
     if ($resultSchema.properties.assessmentName.enum -notcontains $skill.Name) { throw "Assessment-result schema is missing assessmentName: $($skill.Name)" }
 }
 foreach ($skill in $skills) {

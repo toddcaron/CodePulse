@@ -38,6 +38,10 @@ class CliTests(unittest.TestCase):
     def test_default_does_not_gate(self):
         self.assertEqual(self.run_cli(), 0)
 
+    def test_unverified_missing_gate_is_rejected(self):
+        self.assertEqual(self.run_cli("--fail-on", "missing"), 1)
+        self.assertFalse(self.output.exists())
+
     def test_dry_run_writes_nothing(self):
         before = set(self.root.iterdir())
         self.assertEqual(self.run_cli("--dry-run"), 0)

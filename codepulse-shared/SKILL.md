@@ -1,6 +1,6 @@
 ---
 name: codepulse-shared
-description: Shared runtime contract, grading standards, severity ratings, recommendations library, report standards, JSON schemas, and report renderers for all CodePulse assessment skills. Required companion for any CodePulse skill installation.
+description: Shared resources for CodePulse health assessment skills and the separate Feature Parity profile. Health grading and report standards do not apply to feature-parity artifacts. Required sibling module for CodePulse skill installations.
 ---
 
 # CodePulse Shared Runtime and Standards
@@ -18,6 +18,12 @@ description: Shared runtime contract, grading standards, severity ratings, recom
 - `codepulse-plm`
 - `codepulse-ext`
 - `codepulse-exec`
+- `codepulse-feature-parity-finder`
+- `codepulse-feature-parity`
+
+Feature Parity is a separate profile from health assessment. Its skills use the
+Python engine and feature-specific schemas; do not apply health grades, finding
+contracts, or health-report renderers to feature-parity outputs.
 
 This shared module must be installed alongside any CodePulse skill in the same parent skills directory.
 

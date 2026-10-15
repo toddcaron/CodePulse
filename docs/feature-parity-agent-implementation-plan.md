@@ -2,7 +2,7 @@
 
 ## Current State
 
-Last updated: **2026-10-13**. Engine version: **0.15.0**.
+Last updated: **2026-10-14**. Engine version: **0.15.0**.
 
 **Latest completed milestone:** advisory contract-term similarity hints complement
 reviewed one-to-one, split and merge identity reconciliation.
@@ -10,18 +10,21 @@ reviewed one-to-one, split and merge identity reconciliation.
 **Active implementation:** one-to-one, split and merge mappings are implemented;
 pair-bound alias and lexical contract-term suggestions plus reviewed one-to-one/split/merge
 alias reconciliation are implemented; multi-generation registry and semantic matching remain open.
+Early Finder and Parity skills are available for prompt testing; reports and release
+integration remain open.
 
 The engine can discover provisional capabilities, reconcile human feature reviews,
 ingest requirements, compare reviewed feature manifests and assess separately
 reviewed requirements against supported target manifests. It does not build or run
 assessed applications and does not prove runtime parity or complete business scope.
 
-Latest full-suite pass: **192 tests run, 191 passed, 1 skipped** for Windows symlink
-permissions (189.877 seconds). After final grouped-constraint hardening, the focused
-comparison, compare CLI and review CLI tests passed (**35 tests**). A later aggregate
-rerun was interrupted during the final review CLI test, with no assertion failure
-reported before interruption. The shared-contract validator passed during 0.11; these
-results describe development milestones, not acceptance of the unfinished release.
+Latest full-suite pass: **201 tests run, 200 passed, 1 skipped** for Windows symlink
+permissions. The focused comparison/CLI suite passes **37 tests**, and the root
+shared-contract validator passes with separate health and feature profiles. These are
+development checks, not acceptance of the unfinished release.
+
+The unsupported `compare --fail-on missing` option has been removed until confirmed-
+absence semantics are defined and supported.
 
 ### Available Commands
 
@@ -36,6 +39,7 @@ All commands use `python codepulse-shared/tools/feature-parity/cli.py parity`:
 - `compare`: reviewed manifest-to-manifest comparison; repository inputs are not supported.
 - `identity-mappings-template`: export a digest-bound lineage mapping template;
   `compare --mappings` applies completed human decisions.
+- `reconcile-identities`: carry reviewed historical labels into one-to-one/split/merge targets.
 - `enrichment-template` and `import-enrichment`: evidence-bound proposals imported
   into a new needs-review manifest, with retained proposals and audit artifacts.
 
@@ -72,7 +76,7 @@ command arguments, output artifacts, gates and supported syntax.
 
 ### What Is Not Available Yet
 
-- Finder and Parity slash-command skills, HTML/Markdown reports and installation integration.
+- Prompt acceptance for the early Finder and Parity skills, HTML/Markdown reports and installation integration.
 - New-feature enrichment proposals and large-manifest enrichment template selection.
 - Multi-generation identity registry and semantic candidate suggestions; current contract
   hints use exact token overlap only and do not resolve synonyms.
@@ -86,15 +90,16 @@ workflow, not a promotion of imported requirement evidence into implementation p
 
 ### Next Delivery Order
 
-1. **Mapping completeness:** extend pairwise alias continuity into a multi-generation
-  identity registry. Any future semantic candidate reasoning remains advisory and must
-  never auto-approve or earn parity credit.
-2. **Finder completeness:** improve supported adapters, consolidate evidence and
-  extend safe supporting-document extraction and redaction.
+1. **Prompt acceptance:** exercise both early skills against synthetic discovery,
+  reviewed manifest/mapping, and requirements fixtures; make only reproducible contract
+  fixes and add regression tests.
+2. **Reports and integration:** add feature-specific safe HTML/Markdown reports,
+  installation smoke tests, and a separate feature profile while keeping existing health
+  assertions unchanged.
 3. **Incremental and recovery:** implement dependency-aware invalidation and validated
-  checkpoints; compare full, incremental and resumed results.
-4. **Release integration:** add reports, skills, installation checks and CI while
-  preserving existing health-skill contracts; finish remaining status/high-risk policies.
+  checkpoints; compare full, incremental and resumed semantic results.
+4. **Release gates:** add Windows/Linux CI, finish status/high-risk policy decisions,
+  then revisit multi-generation identity and broader Finder completeness.
 
 This is the recommended backlog order, not a claim that these tasks are underway.
 Detailed work packages and final release acceptance checks follow below.
@@ -118,7 +123,7 @@ The source proposal remains unchanged. This document records the clarified
 implementation direction and delivery status, not a claim that all features
 below have been implemented.
 
-## Implemented Detail Through 0.14
+## Implemented Detail Through 0.15
 
 The following capabilities are implemented within the documented limits. This
 section is cumulative; the status summary above is the current delivery snapshot.
@@ -208,8 +213,8 @@ section is cumulative; the status summary above is the current delivery snapshot
   while emitting one baseline match. Merge groups compare aggregate baseline contracts
   against the target and emit one match per baseline, preserving the coverage denominator.
 
-This is a development engine, not a completed MVP. Contracts and release integration
-remain incomplete. No new slash-command skill is registered yet.
+This is a development engine, not a completed MVP. Contracts, prompt acceptance,
+reports and release integration remain incomplete.
 
 ## Remaining Work Packages
 

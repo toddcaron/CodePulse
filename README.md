@@ -1,7 +1,7 @@
 # CodePulse
 AI-powered codebase assessment skills for GitHub Copilot that analyze security, code quality, technical debt, dependency lifecycle, and application exposure risks.
 
-CodePulse provides a collection of focused GitHub Copilot skills that can be run independently or together to perform a comprehensive application assessment. Each skill analyzes a specific area of the codebase and generates actionable findings, recommendations, and a letter grade.
+CodePulse provides focused GitHub Copilot skills for application health assessments and a separate Feature Parity profile. Health skills generate findings and grades; Feature Parity uses its own engine, schemas, and review workflow.
 
 ## Notes on Token Usage
 - Token usage will vary depending on the skill chosen, context and size of codebase.
@@ -22,15 +22,15 @@ CodePulse provides a collection of focused GitHub Copilot skills that can be run
 | **codepulse-plm**      | Reviews technology lifecycle health                   | Outdated frameworks, package versions, deprecated libraries, upgrade risk            | `Run codepulse-plm and identify unsupported technologies.`                 |
 | **codepulse-ext**      | Reviews external accessibility and exposure risks     | Public endpoints, APIs, webhooks, CORS, anonymous access, attack surface             | `Run codepulse-ext and analyze the application's external exposure.`       |
 | **codepulse-exec**      | Converts a JSON result into an executive-level summary.     | Per provided `*-result.json`. Attempts to answer leadership questions and provide investment and strength analysis.             | `/codepulse-exec <result-json-filepath>`       |
+| **codepulse-feature-parity-finder** | Discovers provisional capabilities from a local repository | Bounded static discovery, inventory, evidence, review queue | `Run codepulse-feature-parity-finder on this repository.` |
+| **codepulse-feature-parity** | Compares reviewed feature manifests or requirements | Static contracts, reviewed mappings, requirements coverage | `Compare these reviewed feature manifests.` |
 
 ## Common Assessment Scenarios
-Feature Parity is under development. The Python engine supports repository
-inventory, schema-validated discovery policy, provisional OpenAPI/C# HTTP,
-Vue/AngularJS UI/router and ColdFusion tag discovery, manifest validation,
-human review reconciliation, JSON and marked text/Markdown requirements ingestion and reviewed
-static-contract comparison, separately reviewed static requirements coverage and
-persisted evidence-linked agent enrichment that remains unapproved. Full
-framework analysis and new slash commands are not available yet.
+Feature Parity is under development. Its Finder and Parity skills support provisional
+repository discovery, reviewed manifest comparison, and separately reviewed requirements
+coverage using the Python engine. Discovery includes OpenAPI/C# HTTP, Vue/AngularJS
+UI/router, and ColdFusion tag declarations. Runtime parity, confirmed absence, full
+framework analysis, and HTML/Markdown feature reports are not supported.
 See the [engine setup and limitations](codepulse-shared/tools/feature-parity/README.md)
 and [agent implementation progress](docs/feature-parity-agent-implementation-plan.md).
 
@@ -45,6 +45,7 @@ and [agent implementation progress](docs/feature-parity-agent-implementation-pla
 | Pre-Acquisition Due Diligence   | `codepulse-full`                                           |
 | Pre-Production Readiness Review | `codepulse-full`, `codepulse-vuln`                         |
 | Legacy System Assessment        | `codepulse-plm`, `codepulse-deadcode`, `codepulse-quality` |
+| Static Feature Comparison       | `codepulse-feature-parity-finder`, `codepulse-feature-parity` |
 
 ## How CodePulse Measures Complexity
 
@@ -70,10 +71,11 @@ CodePulse is distributed as a collection of GitHub Copilot custom skills. Each s
 - Access to a repository that supports custom Copilot skills
 - Read/write access to the repository
 - Python 3.8 or later on `PATH` for the bundled Lizard Cyclomatic Complexity analyzer; CodePulse records a manual or ecosystem-specific fallback when Python is unavailable.
+- Python 3.11+ and the pinned dependencies in `codepulse-shared/tools/feature-parity/requirements.lock` for the Feature Parity skills; see the [engine setup](codepulse-shared/tools/feature-parity/README.md).
 
 ## Directory Structure
 
-Each CodePulse skill can be run independently when installed with the sibling `codepulse-shared/` directory. Shared references are authoritative and prevent grading, severity, recommendation, and reporting guidance from drifting between skills. Each skill retains its local `reports/` folder as the default output location.
+Each CodePulse skill can be run independently when installed with the sibling `codepulse-shared/` directory. Health skills use shared grading and report guidance. Feature Parity is a separate profile; its engine writes JSON artifacts to a fresh caller-selected output directory rather than the health `reports/` format.
 
 ```text
 ├── codepulse-full/
@@ -111,6 +113,10 @@ Each CodePulse skill can be run independently when installed with the sibling `c
 ├── codepulse-exec/
 │   ├── SKILL.md
 │   └── reports/
+├── codepulse-feature-parity-finder/
+│   └── SKILL.md
+├── codepulse-feature-parity/
+│   └── SKILL.md
 └── codepulse-shared/
         ├── SKILL.md
         ├── references/
