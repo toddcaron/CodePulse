@@ -2,25 +2,27 @@
 
 ## Current State
 
-Last updated: **2026-10-14**. Engine version: **0.15.0**.
+Last updated: **2026-10-27**. Engine version: **0.17.0**.
 
-**Latest completed milestone:** advisory contract-term similarity hints complement
-reviewed one-to-one, split and merge identity reconciliation.
+**Latest completed milestone:** deterministic feature reports with safe HTML and opt-in
+Markdown rendering, installed-layout smoke tests and separate health/feature validator profiles.
 **Release status:** development engine only; the first complete release is not finished.
 **Active implementation:** one-to-one, split and merge mappings are implemented;
 pair-bound alias and lexical contract-term suggestions plus reviewed one-to-one/split/merge
 alias reconciliation are implemented; multi-generation registry and semantic matching remain open.
-Early Finder and Parity skills are available for prompt testing; reports and release
-integration remain open.
+Finder and Parity skill prompt contracts are acceptance-tested, and feature reports and
+installation integration are implemented; incremental recovery and release gates remain open.
 
 The engine can discover provisional capabilities, reconcile human feature reviews,
-ingest requirements, compare reviewed feature manifests and assess separately
-reviewed requirements against supported target manifests. It does not build or run
-assessed applications and does not prove runtime parity or complete business scope.
+ingest requirements, compare reviewed feature manifests, assess separately
+reviewed requirements against supported target manifests and render reviewed results
+as reports. It does not build or run assessed applications and does not prove runtime
+parity or complete business scope.
 
-Latest full-suite pass: **201 tests run, 200 passed, 1 skipped** for Windows symlink
+Latest full-suite pass: **237 tests run, 236 passed, 1 skipped** for Windows symlink
 permissions. The focused comparison/CLI suite passes **37 tests**, and the root
-shared-contract validator passes with separate health and feature profiles. These are
+shared-contract validator passes with separate health and feature profiles
+(`validate-codepulse.ps1 [-Profile all|health|feature]`). These are
 development checks, not acceptance of the unfinished release.
 
 The unsupported `compare --fail-on missing` option has been removed until confirmed-
@@ -42,6 +44,8 @@ All commands use `python codepulse-shared/tools/feature-parity/cli.py parity`:
 - `reconcile-identities`: carry reviewed historical labels into one-to-one/split/merge targets.
 - `enrichment-template` and `import-enrichment`: evidence-bound proposals imported
   into a new needs-review manifest, with retained proposals and audit artifacts.
+- `report`: deterministic discovery, comparison or requirements-coverage report rendered
+  to a validated JSON object, safe HTML and opt-in Markdown.
 
 See the [engine guide](../codepulse-shared/tools/feature-parity/README.md) for setup,
 command arguments, output artifacts, gates and supported syntax.
@@ -73,10 +77,14 @@ command arguments, output artifacts, gates and supported syntax.
   historical labels with per-target audit details; intentional differences remain rejected.
 - **0.15:** digest-bound suggestions include conservative shared contract-term hints with
   matched terms and lexical overlap score; suggestions remain advisory and non-semantic.
+- **0.16:** reproducible prompt acceptance for the Finder and Parity skills across
+  synthetic discovery, reviewed mapping and requirements workflows.
+- **0.17:** deterministic feature reports rendered to safe HTML and opt-in Markdown from a
+  validated report object, installed-layout smoke tests, explicit feature-profile sections
+  in the shared runtime and report standards, and health/feature validator profiles.
 
 ### What Is Not Available Yet
 
-- Prompt acceptance for the early Finder and Parity skills, HTML/Markdown reports and installation integration.
 - New-feature enrichment proposals and large-manifest enrichment template selection.
 - Multi-generation identity registry and semantic candidate suggestions; current contract
   hints use exact token overlap only and do not resolve synonyms.
@@ -90,15 +98,9 @@ workflow, not a promotion of imported requirement evidence into implementation p
 
 ### Next Delivery Order
 
-1. **Prompt acceptance:** exercise both early skills against synthetic discovery,
-  reviewed manifest/mapping, and requirements fixtures; make only reproducible contract
-  fixes and add regression tests.
-2. **Reports and integration:** add feature-specific safe HTML/Markdown reports,
-  installation smoke tests, and a separate feature profile while keeping existing health
-  assertions unchanged.
-3. **Incremental and recovery:** implement dependency-aware invalidation and validated
+1. **Incremental and recovery:** implement dependency-aware invalidation and validated
   checkpoints; compare full, incremental and resumed semantic results.
-4. **Release gates:** add Windows/Linux CI, finish status/high-risk policy decisions,
+2. **Release gates:** add Windows/Linux CI, finish status/high-risk policy decisions,
   then revisit multi-generation identity and broader Finder completeness.
 
 This is the recommended backlog order, not a claim that these tasks are underway.
@@ -123,7 +125,7 @@ The source proposal remains unchanged. This document records the clarified
 implementation direction and delivery status, not a claim that all features
 below have been implemented.
 
-## Implemented Detail Through 0.15
+## Implemented Detail Through 0.17
 
 The following capabilities are implemented within the documented limits. This
 section is cumulative; the status summary above is the current delivery snapshot.
@@ -202,6 +204,27 @@ section is cumulative; the status summary above is the current delivery snapshot
   and require human completion of the approved mapping artifact.
 - Conservative shared contract-term hints include matched tokens and lexical overlap
   score; no synonym resolution, model inference or comparison credit is provided.
+- Finder and Parity skill discovery metadata and executable prompt contracts are covered
+  by regression scenarios for synthetic repository discovery, approved renamed-identity
+  mappings and separately reviewed requirements coverage.
+- `parity report` builds one presentation-independent report object validated against
+  `feature-report-schema.json` and renders it to safe HTML, with Markdown opt-in. The
+  report kind is detected from the artifact; supporting manifests are required and
+  digest-verified for comparison and coverage reports, so stale inputs are rejected
+  instead of presented. Reports are deterministic and emit no timestamps or other
+  volatile telemetry; provenance is recorded as artifact digests.
+- Rendered values are control-character stripped, whitespace-collapsed, truncated at
+  4000 characters and escaped for their format, with unresolved detail capped at 500
+  records and the truncation disclosed. Reports carry no findings, severities, grades,
+  scores or recommendations and never read the health schemas or renderers.
+- `runtime-contract.md` and `report-standard.md` carry explicit feature-profile sections,
+  `renderers/feature-report-template.md` documents the renderer contract, and
+  `validate-codepulse.ps1 -Profile all|health|feature` validates each profile with every
+  existing health assertion unchanged.
+- Installation smoke tests copy the engine, shared schemas and both skill directories
+  into a temporary installed layout and run discovery and reporting from an unrelated
+  working directory, asserting sibling schema resolution and that neither the scanned
+  source nor the installed engine is written to.
 - Approved one-to-one, split and merge same-capability decisions carry historical names
   and aliases into a current target manifest with digest-bound per-target audit output.
   Target IDs and review state remain unchanged; intentional-difference reconciliation is
@@ -213,8 +236,8 @@ section is cumulative; the status summary above is the current delivery snapshot
   while emitting one baseline match. Merge groups compare aggregate baseline contracts
   against the target and emit one match per baseline, preserving the coverage denominator.
 
-This is a development engine, not a completed MVP. Contracts, prompt acceptance,
-reports and release integration remain incomplete.
+This is a development engine, not a completed MVP. Contracts, incremental recovery
+and release gates remain incomplete.
 
 ## Remaining Work Packages
 
@@ -285,14 +308,13 @@ full scans when unknown. Retain approvals only while their evidence remains vali
 Track removed evidence/orphans. Validate checkpoints before resuming and preserve
 safe run-status output on partial failure.
 
-### 6. Skills, Reports and Integration (Not Started)
+### 6. Skills, Reports and Integration (Partial)
 
-Add Finder and Parity SKILL.md files with slot precedence, context inference,
-minimal questions, engine invocation and truthful completion summaries. Write
-JSON-driven HTML/Markdown reports with scope, revisions, review state, formulas,
-unresolved counts and limitations. Add explicit feature profiles to shared runtime
-and report guidance and to validate-codepulse.ps1, preserving every existing
-health assertion. Add installation smoke tests and Windows/Linux CI. Feature
+Finder and Parity SKILL.md files, reproducible prompt acceptance, JSON-driven
+HTML/Markdown reports with scope, revisions, review state, formulas, unresolved counts
+and limitations, explicit feature profiles in the shared runtime and report guidance and
+in validate-codepulse.ps1, and installed-layout smoke tests are implemented. Every
+existing health assertion is preserved. Add Windows/Linux CI. Feature
 results do not become inputs to codepulse-exec or codepulse-full in this release.
 
 ## Agent Ownership
@@ -312,7 +334,7 @@ executes source code without explicit authorization.
 
 These are release requirements, not a list of checks already completed. Current
 milestone validation is recorded at the top. Split/merge, incremental/resumed runs,
-comprehensive redaction, HTML and installation/CI acceptance remain pending.
+comprehensive redaction and CI acceptance remain pending.
 
 - Schema validation plus duplicate/dangling reference checks for every artifact.
 - Same-ID behavior/authorization differences cannot silently pass equivalence.

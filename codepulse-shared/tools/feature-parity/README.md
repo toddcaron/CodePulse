@@ -1,14 +1,15 @@
 # Feature Parity Engine (Development Milestone)
 
-Version 0.15.0 implements configurable repository inventory, provisional OpenAPI,
+Version 0.17.0 implements configurable repository inventory, provisional OpenAPI,
 C#, Vue/AngularJS and ColdFusion discovery, manifest validation and conservative
 reviewed-contract comparison, digest-bound human review reconciliation and
-structured JSON and explicitly marked text/Markdown requirements ingestion, and
+structured JSON and explicitly marked text/Markdown requirements ingestion,
 separately reviewed static requirements coverage, persisted provisional agent
-enrichment and digest-bound one-to-one, split and merge identity mappings.
-It is not the completed Finder or Parity release. Early Finder and Parity skills
-cover the supported workflows below; prompt acceptance and feature reports remain open.
-The existing CodePulse health skills are unchanged.
+enrichment and digest-bound one-to-one, split and merge identity mappings, and
+deterministic feature reports rendered to safe HTML and opt-in Markdown.
+It is not the completed Finder or Parity release. Finder and Parity prompt contracts
+are acceptance-tested against synthetic supported workflows, and the installed skill
+layout is smoke-tested end to end. The existing CodePulse health skills are unchanged.
 
 ## Setup
 
@@ -408,6 +409,38 @@ failure, 3 invalid artifact, 4 engine failure, 5 output/input policy restriction
 6 gate failure. Results are written before a gate failure. Execution failures
 are never converted into successful gate results.
 
+### Reports
+
+`report` renders a completed JSON result into a presentation-independent report
+object and safe human-readable files:
+
+```sh
+python codepulse-shared/tools/feature-parity/cli.py parity report --artifact /path/to/feature-manifest.json --output /path/to/new-report
+python codepulse-shared/tools/feature-parity/cli.py parity report --artifact /path/to/parity-results.json --source /path/to/baseline.json --target /path/to/target.json --output /path/to/new-report
+python codepulse-shared/tools/feature-parity/cli.py parity report --artifact /path/to/requirements-coverage.json --baseline /path/to/requirements-baseline.json --target /path/to/target.json --output /path/to/new-report
+```
+
+The report kind is detected from the supplied artifact: a feature manifest produces a
+discovery report, a comparison result produces a comparison report, and a coverage
+result produces a requirements-coverage report. A comparison requires `--source` and
+`--target`; a coverage report requires `--baseline` and `--target`; a discovery report
+accepts neither. Supplying an option that the detected kind does not accept is an
+invalid invocation. Supporting documents are digest-verified against the result, so a
+stale manifest is rejected as an invalid artifact instead of being presented.
+
+`report` always writes `feature-report.json`, validated against
+`../../schemas/feature-report-schema.json`, and renders `feature-report.html` by
+default. `--format markdown` writes `feature-report.md` instead of the HTML file, and
+`--format both` writes both. `--dry-run` validates inputs and output policy without
+writing. Reports are deterministic: identical inputs produce byte-identical artifacts,
+and no timestamps or other volatile telemetry are emitted. Rendered values are
+control-character stripped, whitespace-collapsed, truncated at 4000 characters and
+escaped for their format; unresolved detail is capped at 500 records with the
+truncation disclosed as a limitation. Reports contain no value absent from
+`feature-report.json`, and carry no findings, severities, grades, scores or
+recommendations. `../../renderers/feature-report-template.md` documents the
+presentation contract.
+
 ## What Equivalence Means Here
 
 Exact IDs nominate candidates only. An equivalent result requires both features
@@ -463,7 +496,7 @@ domain mappings/synonyms, comprehensive redaction, general prose requirements
 interpretation, advanced requirements mappings and runtime acceptance verification,
 review split/merge lineage, alias/semantic mappings, agent enrichment,
 intentional decisions, confirmed absence, high-risk gates, incremental scans,
-HTML/Markdown rendering, checkpoint recovery and skill orchestration.
+checkpoint recovery and skill orchestration.
 
 ## Tests
 
@@ -474,4 +507,9 @@ python -m unittest discover -s codepulse-shared/tools/feature-parity/tests -v
 Tests run analysis code and synthetic inputs only, never application code.
 The ui-legacy-summary.json snapshot locks candidate/evidence distribution without
 volatile timestamps, absolute paths or source hashes.
-The existing `validate-codepulse.ps1` remains the separate health-skill validator.
+`test_installation.py` copies the engine, the shared schemas and both installed skill
+directories into a temporary layout and runs discovery and reporting from an unrelated
+working directory, asserting that sibling schema resolution works and that neither the
+scanned source nor the installed engine is written to.
+`validate-codepulse.ps1 -Profile feature` validates the feature-profile contract,
+`-Profile health` validates the health skills, and the default `all` validates both.

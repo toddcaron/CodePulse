@@ -15,6 +15,7 @@ from .identity_mappings import identity_mappings_template, identity_suggestions,
 from .finder import find_repository
 from .inventory import InventoryPolicyError, source_root
 from .reviews import reconcile_manifest, review_template
+from .reports import report_artifacts, report_kind
 from .requirements import ingest_requirements, load_requirements_source, validate_requirements_baseline
 from .requirements_coverage import compare_requirements, coverage_gate_failed, requirements_review_template
 from .validation import ArtifactError, parse_json, validate_manifest, validate_schema
@@ -98,6 +99,14 @@ def parser():
     mapping_template.add_argument("--target", required=True)
     mapping_template.add_argument("--output", required=True)
     mapping_template.add_argument("--dry-run", action="store_true")
+    report = commands.add_parser("report", help="Render safe HTML or Markdown reports from engine JSON artifacts")
+    report.add_argument("--artifact", required=True, help="Feature manifest, parity results or requirements coverage JSON")
+    report.add_argument("--output", required=True)
+    report.add_argument("--source", help="Baseline manifest required by a comparison result")
+    report.add_argument("--target", help="Target manifest required by comparison and coverage results")
+    report.add_argument("--baseline", help="Requirements baseline required by a coverage result")
+    report.add_argument("--format", choices=("html", "markdown", "both"), default="html")
+    report.add_argument("--dry-run", action="store_true")
     identity_reconcile = commands.add_parser("reconcile-identities", help="Carry approved prior names and aliases into a new manifest")
     identity_reconcile.add_argument("--source", required=True)
     identity_reconcile.add_argument("--target", required=True)
@@ -154,7 +163,8 @@ def _write_artifacts(output, artifacts):
     staging = Path(tempfile.mkdtemp(prefix=".codepulse-parity-", dir=output.parent))
     try:
         for name, document in artifacts.items():
-            (staging / name).write_text(json.dumps(document, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+            content = document if isinstance(document, str) else json.dumps(document, indent=2, ensure_ascii=True) + "\n"
+            (staging / name).write_text(content, encoding="utf-8")
         output.mkdir()
         for artifact in staging.iterdir():
             os.rename(artifact, output / artifact.name)
@@ -233,6 +243,35 @@ def main(argv=None):
                 print(json.dumps(artifacts["enrichment-log.json"]["statistics"], sort_keys=True))
             else:
                 print("Unapproved enrichment placeholders exported; complete provenance, rationale and proposed updates")
+            return 0
+        if arguments.command == "report":
+            artifact_path, artifact = _json_input(arguments.artifact)
+            kind = report_kind(artifact)
+            required = {"discovery": (), "comparison": ("source", "target"),
+                        "requirements-coverage": ("baseline", "target")}[kind]
+            supporting = {}
+            inputs = [artifact_path]
+            for option in ("source", "target", "baseline"):
+                supplied = getattr(arguments, option)
+                if supplied is None:
+                    if option in required:
+                        raise InvocationError(
+                            f"A {kind} report requires --{' and --'.join(required)}"
+                        )
+                    continue
+                if option not in required:
+                    raise InvocationError(f"--{option} is not accepted for a {kind} report")
+                path, document = _json_input(supplied)
+                supporting[option] = document
+                inputs.append(path)
+            formats = ("html", "markdown") if arguments.format == "both" else (arguments.format,)
+            output = _output(arguments.output, inputs)
+            artifacts = report_artifacts(artifact, formats=formats, **supporting)
+            if arguments.dry_run:
+                print("Report inputs and output policy are valid; no artifacts written")
+                return 0
+            _write_artifacts(output, artifacts)
+            print(json.dumps({"reportType": kind, "artifacts": sorted(artifacts)}, sort_keys=True))
             return 0
         if arguments.command == "identity-mappings-template":
             source_path, source = _input(arguments.source)

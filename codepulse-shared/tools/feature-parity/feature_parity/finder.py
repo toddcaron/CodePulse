@@ -186,6 +186,7 @@ def find_repository(source, application_name=None, policy=None):
     validate_schema(records, "feature-repository-inventory-schema.json")
     validate_manifest(manifest)
     statistics = {
+        "candidateCount": len(features),
         "confirmedFeatures": 0, "probableFeatures": 0, "needsReview": len(features),
         "excludedCandidates": excluded_candidates, "inventoryEntries": len(records),
         "excludedEntries": sum(record["exclusionReason"] is not None for record in records),

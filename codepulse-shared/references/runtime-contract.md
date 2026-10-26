@@ -4,6 +4,8 @@
 
 This contract defines requirements shared by every CodePulse assessment skill. Skill-specific instructions define only their assessment scope and extensions.
 
+CodePulse ships two profiles. The **health profile** covers the `codepulse-*` assessment skills and is the default subject of this contract. The **feature profile** covers `codepulse-feature-parity-finder` and `codepulse-feature-parity`; see Feature Profile below for the requirements that replace the health-specific ones.
+
 ## Required Behavior
 
 Every assessment must:
@@ -31,6 +33,30 @@ Read and apply the shared files relevant to the active skill:
 - `../schemas/finding-schema.json`
 - `../schemas/assessment-result-schema.json`
 - `../schemas/codepulse-report-schema.json` and the matching `../renderers/` file when a report is written
+
+## Feature Profile
+
+The feature-parity skills analyze capabilities rather than application health. They inherit the evidence-fidelity, scope-disclosure, and negative-finding requirements of this contract and replace the health-specific ones.
+
+Feature-profile skills must:
+
+- Delegate all computation to the feature-parity engine under `../tools/feature-parity`. Never compute, estimate, or narrate manifests, matches, coverage, statistics, digests, or reports by hand.
+- Treat discovered features as provisional. Parity, equivalence, and coverage are credited only from human-approved review artifacts, never from discovery output or model judgment.
+- Report unresolved records as unresolved. Never close a record that the engine marked as requiring human validation.
+- Emit the engine's JSON artifacts as the authoritative result, and produce HTML or Markdown only through `parity report`.
+- Follow the feature profile in `report-standard.md` and the renderer contract in `../renderers/feature-report-template.md`.
+
+Feature-profile skills must not produce findings, severities, grades, scores, recommendations, or modernization opportunities, and must not read or write the health schemas. Feature parity is not an application health assessment, and a feature report never substitutes for one.
+
+Feature-profile shared files:
+
+- `runtime-contract.md`
+- `token-efficiency.md`
+- `report-standard.md`
+- `feature-confidence-model.md`, `feature-enrichment.md`, `feature-review-workflow.md`
+- `feature-requirements-model.md` and `feature-requirements-coverage.md` when requirements coverage is assessed
+- `../schemas/feature-*-schema.json`
+- `../renderers/feature-report-template.md` when a report is written
 
 ## Quality Precedence
 

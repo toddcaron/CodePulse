@@ -38,3 +38,17 @@ Read the renderer only after the report object is final. Rendered reports contai
 Keep existing user-facing skill names, report directories, and filename conventions. Focused reports continue under the installed skill's existing `codepulse-*/reports/` directory, beside that skill's `SKILL.md`. Full reports continue under the installed `codepulse-full/reports/` directory using `{skill_name}_{currentDate}-report.html`.
 
 Schema version is `2.0`. Version `1.0` results (Markdown schemas, optional provenance fields) are not accepted; rerun the assessment to produce a `2.0` result.
+
+## Feature Profile
+
+CodePulse ships two profiles. The sections above define the **health profile**, used by the `codepulse-*` assessment skills. The **feature profile** governs `codepulse-feature-parity-finder` and `codepulse-feature-parity`, and follows a separate output protocol.
+
+Feature-profile reports:
+
+1. Are produced only by the feature-parity engine's `parity report` command. Agents must never hand-author, restyle, or extend a feature report.
+2. Conform to `../schemas/feature-report-schema.json` and are rendered by `../renderers/feature-report-template.md`. They never use `../schemas/codepulse-report-schema.json`, `../schemas/assessment-result-schema.json`, `../schemas/finding-schema.json`, or the health renderers.
+3. Carry no findings, severities, grades, scores, recommendations, or modernization opportunities. Feature parity reports reviewed evidence and unresolved records; it does not score an application.
+4. Are written to a user-supplied `--output` directory as `feature-report.json`, `feature-report.html`, and, only when requested, `feature-report.md`. The `{skill_name}_{currentDate}-result.json` convention and the skill-local `reports/` directory do not apply.
+5. Are deterministic. Identical inputs produce byte-identical artifacts, and no timestamps or other volatile telemetry are emitted; provenance is recorded as artifact digests.
+
+A feature report presents only reviewed static evidence. Discovery output is provisional, parity is credited only from human-approved decisions, and unresolved records are reported rather than resolved by the report.

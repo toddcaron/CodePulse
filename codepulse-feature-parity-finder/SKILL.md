@@ -1,6 +1,6 @@
 ---
 name: codepulse-feature-parity-finder
-description: Runs bounded static discovery of provisional capabilities in a local repository using the CodePulse Feature Parity engine. Use when the user asks to inventory or discover application capabilities for a later human review.
+description: Runs bounded static discovery of provisional capabilities in a local repository using the CodePulse Feature Parity engine. Use when the user asks to discover or inventory application features and capabilities for later human review.
 ---
 
 # CodePulse Feature Parity Finder
@@ -37,12 +37,22 @@ The default scope is the engine's configured scope, otherwise all supported scop
 6. Read `discovery-log.json` and report its engine-produced statistics, scope/limitations, review-queue size, and exact artifact paths. Do not recompute or invent engine counts. If the command or validation fails, report failure without claiming a completed scan.
 7. Tell the user that findings remain provisional and require human review. If comparison is requested, stop here until a reviewed manifest is produced through `review-template` and `reconcile`.
 
+## Reports
+
+Render a discovery report only when the user asks for one. The engine is the only renderer; never hand-author or restyle HTML or Markdown.
+
+```text
+python <absolute-cli-path> parity report --artifact <output>/feature-manifest.json --output <fresh-external-directory> [--format html|markdown|both]
+```
+
+A discovery report takes no supporting manifests. `feature-report.json` is always written and `feature-report.html` is the default rendering; request Markdown only when the user asks for it. Report only values present in `feature-report.json`, and follow `../codepulse-shared/renderers/feature-report-template.md`. The report restates that candidates are provisional and carries no findings, severities, or grades.
+
 ## Safety and Claims
 
 - The engine reads bounded local source and writes only to a fresh external output directory.
 - Never run application scripts/tests or claim runtime behavior, complete business scope, or confirmed absence.
 - Do not treat a candidate, confidence threshold, or human confirmation as verified evidence or parity approval.
-- This workflow produces JSON only. Do not invent HTML/Markdown reports or health grades.
+- This workflow produces JSON; HTML and Markdown come only from `parity report`. Do not hand-author a report or assign health grades.
 
 ## Completion
 

@@ -1,6 +1,6 @@
 ---
 name: codepulse-feature-parity
-description: Compares human-reviewed CodePulse feature manifests or separately reviewed requirements against a supported target manifest. Use when the user asks for static feature parity or reviewed requirements coverage.
+description: Compares reviewed feature manifests or separately reviewed requirements against a supported target manifest. Use when the user asks for static feature parity, to compare reviewed feature manifests, or for reviewed requirements coverage.
 ---
 
 # CodePulse Feature Parity
@@ -53,6 +53,18 @@ The `compare` command accepts manifests, not repository paths. If inputs are amb
 4. Verify `requirements-coverage.json`, `review-queue.json`, and `requirements-comparison-log.json`. Summarize engine-produced counts, unresolved criteria, and scope limitations.
 5. If only raw requirements text/JSON is supplied, use `ingest-requirements` and `requirements-review-template` to prepare provisional inputs, then pause for a human to review the requirement contracts and criterion mappings. Do not claim coverage until that separate review is complete.
 
+## Reports
+
+Render a report only when the user asks for one. The engine is the only renderer; never hand-author or restyle HTML or Markdown.
+
+```text
+python <absolute-cli-path> parity report --artifact <parity-results.json> --source <baseline-manifest> --target <target-manifest> --output <fresh-output-directory> [--format html|markdown|both]
+```
+
+For requirements coverage, supply `--artifact <requirements-coverage.json> --baseline <baseline.json> --target <target-manifest.json>` instead. The supporting manifests are digest-verified against the result; exit code 3 means they are stale for that result, so rerun the workflow rather than editing artifacts.
+
+`feature-report.json` is always written and `feature-report.html` is the default rendering; request Markdown only when the user asks for it. Report only values present in `feature-report.json`, and follow `../codepulse-shared/renderers/feature-report-template.md`. Feature reports carry no findings, severities, grades, scores, or recommendations.
+
 ## Review Boundaries
 
 - Discovery candidates and identity suggestions do not establish equivalence.
@@ -60,7 +72,7 @@ The `compare` command accepts manifests, not repository paths. If inputs are amb
 - Unmatched features remain unverified. Complete scan scope does not prove absence.
 - Requirements coverage is a separate workflow and does not promote requirements evidence into implementation proof.
 - Do not claim runtime parity, complete business scope, or confirmed absence. Do not assign health grades.
-- This workflow currently emits JSON artifacts only; do not invent HTML/Markdown reports.
+- This workflow emits JSON artifacts; HTML and Markdown come only from `parity report`. Do not hand-author a report.
 
 ## Completion
 
