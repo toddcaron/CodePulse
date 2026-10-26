@@ -71,7 +71,7 @@ CodePulse is distributed as a collection of GitHub Copilot custom skills. Each s
 - Access to a repository that supports custom Copilot skills
 - Read/write access to the repository
 - Python 3.8 or later on `PATH` for the bundled Lizard Cyclomatic Complexity analyzer; CodePulse records a manual or ecosystem-specific fallback when Python is unavailable.
-- Python 3.11+ and the pinned dependencies in `codepulse-shared/tools/feature-parity/requirements.lock` for the Feature Parity skills; see the [engine setup](codepulse-shared/tools/feature-parity/README.md).
+- Python 3.11+ for the Feature Parity skills. They reuse a verified isolated environment or create one outside the assessed repository and install the engine's pinned dependencies, subject to package-index access and host permissions. No global or assessed-project packages are changed; see the [engine setup](codepulse-shared/tools/feature-parity/README.md).
 
 ## Directory Structure
 

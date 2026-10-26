@@ -13,24 +13,77 @@ layout is smoke-tested end to end. The existing CodePulse health skills are unch
 
 ## Setup
 
-Python 3.11+ is required. Provision an isolated environment explicitly before
-running the engine. From the CodePulse repository root on Windows:
+Python 3.11+ is required. The Finder and Parity skills may provision their own
+isolated environment when a verified one is not available. Do not stop just
+because a documented temporary path or project-local venv is absent. A default
+Python with the pinned packages is a valid base interpreter for creating a venv,
+but is not a substitute for isolation.
+
+Resolve the engine directory from the installed skill's sibling
+`codepulse-shared/tools/feature-parity`, not from the assessed repository's
+working directory. The lock file and CLI must come from that same installation.
+
+1. Reuse an environment only after verifying Python is 3.11+, `sys.prefix !=
+   sys.base_prefix`, and every distribution in the installed `requirements.lock`
+   has exactly the pinned version (use `importlib.metadata.version`). Run
+   `<environment-python> -m pip check` as well. A particular environment name or
+   location is not required.
+2. Otherwise create a fresh dedicated venv in an OS temporary or user-cache
+   directory outside the assessed repository. Do not overwrite an existing
+   environment, install into global Python, enable system site packages, or
+   modify a project-local environment. Select an available Python 3.11+ base
+   interpreter; do not assume a newer interpreter is unsupported solely because
+   it is newer than 3.11.
+3. Install only the installed engine's lock file into that venv. This setup step
+   may access the configured package index subject to host permissions/network
+   policy; it must not upload repository content or install the assessed
+   application's dependencies. Honor required tool approvals; do not bypass
+   restrictions.
+4. Check every setup command's exit status. Verify the interpreter, exact pins,
+   `pip check`, and `cli.py --help` before continuing with the requested workflow.
+   On failure or denied setup, stop and report the failed command, error, and
+   actionable recovery command. Never fall back to global package installation
+   or claim discovery completed.
+
+Example creation on Windows (replace `$EngineDir` with the absolute installed
+engine directory and `python` with the selected Python 3.11+ interpreter):
 
 ```powershell
-python -m venv "$env:TEMP/codepulse-feature-parity-venv"
-& "$env:TEMP/codepulse-feature-parity-venv/Scripts/python.exe" -m pip install -r codepulse-shared/tools/feature-parity/requirements.lock
+$EngineDir = 'C:\absolute\installed\codepulse-shared\tools\feature-parity'
+$VenvDir = Join-Path ([System.IO.Path]::GetTempPath()) ("codepulse-feature-parity-" + [guid]::NewGuid().ToString('N'))
+python -m venv "$VenvDir"
+if ($LASTEXITCODE -ne 0) { throw 'Feature Parity venv creation failed' }
+$EnginePython = Join-Path $VenvDir 'Scripts\python.exe'
+& $EnginePython -m pip install -r (Join-Path $EngineDir 'requirements.lock')
+if ($LASTEXITCODE -ne 0) { throw 'Feature Parity dependency installation failed' }
+& $EnginePython -m pip check
+if ($LASTEXITCODE -ne 0) { throw 'Feature Parity dependency verification failed' }
+& $EnginePython (Join-Path $EngineDir 'cli.py') --help
+if ($LASTEXITCODE -ne 0) { throw 'Feature Parity engine startup failed' }
 ```
 
-On Linux/macOS:
+On Linux/macOS (replace `ENGINE_DIR` and select a Python 3.11+ interpreter):
 
 ```sh
-python3 -m venv /tmp/codepulse-feature-parity-venv
-/tmp/codepulse-feature-parity-venv/bin/python -m pip install -r codepulse-shared/tools/feature-parity/requirements.lock
+ENGINE_DIR='/absolute/installed/codepulse-shared/tools/feature-parity'
+VENV_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codepulse-feature-parity-XXXXXXXX")" || exit 1
+python3 -m venv "$VENV_DIR" || exit 1
+ENGINE_PYTHON="$VENV_DIR/bin/python"
+"$ENGINE_PYTHON" -m pip install -r "$ENGINE_DIR/requirements.lock" || exit 1
+"$ENGINE_PYTHON" -m pip check || exit 1
+"$ENGINE_PYTHON" "$ENGINE_DIR/cli.py" --help || exit 1
 ```
 
-Use the environment's Python for subsequent commands (abbreviated below as
-`python`). No runtime command installs packages, calls a model, builds the
-application, executes its scripts or tests, or contacts its services.
+Use the environment's absolute Python path for all subsequent commands
+(abbreviated below as `python`); shell activation is unnecessary. Record that
+path for reuse during the workflow. These examples create an environment only,
+not a Finder output directory; engine output must still be a fresh external path.
+If dry-run was requested, setup may still be needed, but invoke only the engine's
+dry-run afterward and do not generate scan artifacts.
+
+Environment provisioning is separate from runtime: no engine command installs
+packages, calls a model, builds the application, executes its scripts or tests,
+or contacts its services.
 
 Keep this directory with the sibling `codepulse-shared/schemas/` assets. Run
 `cli.py` by its installed path; `pip install` of an isolated engine directory is

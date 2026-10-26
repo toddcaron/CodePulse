@@ -64,6 +64,14 @@ if ($featureProfile) {
         if ($text.IndexOf('../codepulse-shared/tools/feature-parity/README.md') -lt 0) {
             throw "$($skill.Name) is missing the engine guide link"
         }
+        foreach ($requirement in @('create an isolated environment outside the assessed repository','requirements.lock','Never install into global Python','absolute Python path','setup/verification fails or is denied')) {
+            if ($text.IndexOf($requirement, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
+                throw "$($skill.Name) is missing the isolated setup requirement: $requirement"
+            }
+        }
+        if ($text -match 'already provisioned|Do not install packages') {
+            throw "$($skill.Name) must allow isolated engine dependency setup"
+        }
         if ($text -match 'codepulse-report-schema|assessment-result-schema|letter grade') {
             throw "$($skill.Name) must not use health assessment schemas or grades"
         }

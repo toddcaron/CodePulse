@@ -11,9 +11,11 @@ Run the supported manifest comparison or reviewed-requirements coverage workflow
 
 ## Setup
 
-Before running the engine, read `../codepulse-shared/tools/feature-parity/README.md` for pinned Python setup, command contracts, output policy, gates, and limitations. Resolve `../codepulse-shared/tools/feature-parity/cli.py` as a sibling of this installed skill and use its absolute path. Use an already provisioned Python 3.11+ environment with the pinned requirements. Do not install packages, execute application code, build repositories, or contact services.
+Before running the engine, read `../codepulse-shared/tools/feature-parity/README.md` for pinned Python setup, command contracts, output policy, gates, and limitations. Resolve `../codepulse-shared/tools/feature-parity/cli.py` as a sibling of this installed skill and use its absolute path.
 
-If the shared engine or pinned Python environment is unavailable, stop and report the setup requirement. Do not search an assessed repository for another engine copy.
+Reuse a verified isolated Python 3.11+ environment with the pinned requirements, or create an isolated environment outside the assessed repository and install only the installed engine's `requirements.lock`, following the README's Setup procedure. A missing temporary environment is not a blocker: provision one and continue. Never install into global Python or modify the assessed repository's environment. Use the isolated environment's absolute Python path for every engine command.
+
+Package installation is allowed only for this engine setup, subject to host permissions and network policy. Do not execute application code, build repositories, or contact application services. If the shared engine is missing, Python 3.11+ is unavailable, or setup/verification fails or is denied, stop and report the exact blocker and recovery command; do not claim a completed run. Do not search an assessed repository for another engine copy.
 
 ## Supported Workflows
 
