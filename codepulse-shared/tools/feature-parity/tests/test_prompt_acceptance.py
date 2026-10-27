@@ -63,6 +63,10 @@ class PromptAcceptanceTests(unittest.TestCase):
                        "prepared", "latest imported manifest", "observed", "inferred", "not instructions"):
             self.assertIn(phrase, finder_body.lower())
         self.assertIn("partial or unresolved semantic analysis", parity_body.lower())
+        for phrase in ("business meaning is the core output", "--require-business-meaning",
+                       "businessmeaning", "usergoal", "never automatically add",
+                       "business discovery incomplete", "human approval is separate"):
+            self.assertIn(phrase, finder_body.lower())
 
     def test_finder_prompt_contract_discovers_and_validates_synthetic_repository(self):
         with tempfile.TemporaryDirectory() as directory:

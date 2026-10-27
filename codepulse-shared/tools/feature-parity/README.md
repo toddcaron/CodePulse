@@ -10,7 +10,8 @@ deterministic feature reports rendered to safe HTML and opt-in Markdown.
 Finder now defaults to host-model semantic enrichment after technical discovery:
 Python prepares hash-checked source context and validates proposals; the model
 describes readable capabilities and evidence-backed business rules. No engine
-command calls a model. Explicit inventory-only skill runs skip interpretation.
+command calls a model. Business meaning is the required core deliverable: normal
+discovery reports fail without it. Explicit inventory-only runs skip interpretation.
 It is not the completed Finder or Parity release. Finder and Parity prompt contracts
 are acceptance-tested against synthetic supported workflows, and the installed skill
 layout is smoke-tested end to end. The existing CodePulse health skills are unchanged.
@@ -150,14 +151,32 @@ use the latest imported manifest and original inventory for each next batch, adv
 the offset, and regenerate templates after every import. No stale parallel batch
 can be imported. Preserve each batch's proposal and import log for provenance.
 
-Updates may include `semanticAnalysis`: `status` (`complete`, `partial`, `unresolved`),
+Intermediate updates may include `semanticAnalysis`: `status` (`complete`, `partial`, `unresolved`),
 a plain-language `summary`, supporting `evidenceRefs`, `businessRules` and
 `unresolvedQuestions`. Every rule records its ID, condition, outcome, observed/inferred
 basis, rationale and supporting citations within the analysis evidence. Incomplete
 analysis requires specific questions; complete analysis must have none. "Complete"
 means the candidate's analysis pass finished, not exhaustive business discovery.
 An empty rule list means no rule was established, not that rules are absent.
-Unanalyzed legacy manifests remain valid and are reported as inventory-only.
+Normal delivery requires `semanticAnalysis.businessMeaning` with `purpose`,
+`userGoal`, `trigger`, `outcome`, and `basis` (`observed` or `inferred`), supported by
+analysis evidenceRefs. The model must explain why the capability matters and what
+people or the business accomplish, not merely rename an endpoint. Business intent
+inference is expected and should be labeled, not deferred until human approval.
+Source-preparation templates include these fields as deliberately invalid blanks
+that the host model must complete after reading source; naming-only enrichment does
+not satisfy the delivery contract.
+
+Run `parity validate --manifest <latest-enriched-manifest> --require-business-meaning`
+before delivery. This gate checks every active candidate, not just displayed detail:
+readable non-placeholder names/domains, non-declaration-only behaviors, complete or
+partial analysis, and structured businessMeaning. Partial analysis retains explicit
+questions; missing/unresolved business meaning blocks delivery. Empty inventories
+are not business-ready. Do not fabricate meaning to pass: investigate more source
+or report business discovery incomplete with intermediate artifacts.
+Unanalyzed legacy manifests remain structurally valid but require explicit
+`report --inventory-only` to render a technical inventory. There is no automatic
+inventory-only fallback after a normal report failure.
 Readable business naming and interpretation quality require model/human review;
 schema validation cannot prove semantic correctness.
 
@@ -518,7 +537,9 @@ are never converted into successful gate results.
 ### Reports
 
 `report` renders a completed JSON result into a presentation-independent report
-object and safe human-readable files:
+object and safe human-readable files. For discovery, business meaning is required
+by default, including in dry-run. Exit code 3 and no report output are produced
+when the business-delivery gate fails.
 
 ```sh
 python codepulse-shared/tools/feature-parity/cli.py parity report --artifact /path/to/feature-manifest.json --output /path/to/new-report
@@ -534,7 +555,15 @@ accepts neither. Supplying an option that the detected kind does not accept is a
 invalid invocation. Supporting documents are digest-verified against the result, so a
 stale manifest is rejected as an invalid artifact instead of being presented.
 
-`report` always writes `feature-report.json`, validated against
+An explicitly requested technical inventory can be rendered with `--inventory-only`
+(discovery only). Its title and `discoveryMode` identify it as a technical inventory,
+not a completed business feature report. Do not add this flag automatically on failure.
+Normal reports have `discoveryMode: business` and lead with capability descriptions,
+business purpose, user goal, trigger, outcome, inference basis, rule conditions and
+consequences, questions and evidence. Technical counts and provenance follow.
+Uncertainty remains visible; business-ready does not mean approved or runtime-verified.
+
+On success, `report` always writes `feature-report.json`, validated against
 `../../schemas/feature-report-schema.json`, and renders `feature-report.html` by
 default. `--format markdown` writes `feature-report.md` instead of the HTML file, and
 `--format both` writes both. `--dry-run` validates inputs and output policy without
@@ -571,7 +600,8 @@ admission and semantic analysis when present. Partial/unresolved semantic analys
 cannot earn verified contract credit. Rule conditions, outcomes and observed/inferred
 bases must agree for equivalent semantic contracts; missing analysis on one side
 requires review. Legacy manifests without semantic analysis retain existing comparison
-behavior, but discovery reports identify them as inventory-only.
+behavior, but they cannot be delivered as normal business discovery reports without
+business analysis. Explicit inventory-only reporting remains available.
 Renaming a display label does not revoke the approval or change identity. Changes
 to behavior, authorization or evidence revoke the supplied approval. Review
 references are attestations, not authenticated identities; approval authority

@@ -18,7 +18,7 @@ from feature_parity.identity import digest
 from feature_parity.identity_mappings import identity_mappings_template
 from feature_parity.reports import build_report, render_html, render_markdown
 from feature_parity.source_context import MAX_CONTEXT_BYTES, prepare_enrichment
-from feature_parity.validation import ArtifactError, validate_manifest
+from feature_parity.validation import ArtifactError, validate_business_meaning, validate_manifest
 
 
 SOURCE = """class PromotionController {
@@ -35,6 +35,13 @@ def analysis(ref="evidence-1"):
     return {
         "status": "complete",
         "summary": "Assign a promotion to an active location, rejecting inactive locations.",
+        "businessMeaning": {
+            "purpose": "Control which locations receive a promotion",
+            "userGoal": "A promotion manager assigns a campaign to an eligible location",
+            "trigger": "A promotion and target location are submitted for assignment",
+            "outcome": "An eligible location receives the promotion; inactive locations are rejected",
+            "basis": "inferred",
+        },
         "evidenceRefs": [ref],
         "businessRules": [{
             "id": "active-location", "condition": "The selected location is inactive",
@@ -118,7 +125,7 @@ class SemanticContractTests(unittest.TestCase):
             template = enrichment_template(document, offset=offset, limit=100)
             identifiers.extend(item["featureId"] for item in template["proposals"])
         self.assertEqual(identifiers, sorted(item["id"] for item in document["features"]))
-        report = build_report(document)
+        report = build_report(document, inventory_only=True)
         self.assertEqual(len(report["capabilities"]), 500)
         self.assertIn({"label": "Semantic analysis not-started", "value": 568}, report["metrics"])
         self.assertTrue(any("Capability detail is truncated" in item for item in report["limitations"]))
@@ -151,7 +158,7 @@ class SemanticContractTests(unittest.TestCase):
 
     def test_report_contains_context_rules_citations_and_semantic_counts(self):
         document = manifest()
-        report = build_report(document)
+        report = build_report(document, inventory_only=True)
         self.assertEqual(report["semanticStatus"], "inventory-only")
         document["features"][0]["semanticAnalysis"] = analysis()
         report = build_report(document)
@@ -161,6 +168,11 @@ class SemanticContractTests(unittest.TestCase):
             self.assertIn("Reject the promotion assignment", rendered)
             self.assertIn("observed", rendered)
             self.assertIn("src/users.cs:1-4", rendered)
+            self.assertIn("Control which locations receive a promotion", rendered)
+        self.assertLess(render_html(report).index("<h2>Capabilities and business context"),
+                        render_html(report).index("<h2>Scope"))
+        self.assertLess(render_markdown(report).index("## Capabilities and business context"),
+                        render_markdown(report).index("## Scope"))
         document["features"][0]["semanticAnalysis"].update(status="partial", unresolvedQuestions=["Missing callee"])
         self.assertEqual(build_report(document)["semanticStatus"], "incomplete")
         document["features"][0]["semanticAnalysis"]["summary"] = '<script>alert("x")</script> | rule'
@@ -168,6 +180,39 @@ class SemanticContractTests(unittest.TestCase):
         self.assertNotIn("<script>", render_html(report))
         self.assertIn("&lt;script&gt;", render_html(report))
         self.assertIn("\\|", render_markdown(report))
+
+    def test_business_delivery_rejects_missing_context_and_syntax_only_contracts(self):
+        changes = [
+            lambda feature: feature.pop("semanticAnalysis"),
+            lambda feature: feature["semanticAnalysis"].pop("businessMeaning"),
+            lambda feature: feature["semanticAnalysis"]["businessMeaning"].update(purpose=" "),
+            lambda feature: feature["semanticAnalysis"].update(status="unresolved", unresolvedQuestions=["Unknown intent"]),
+            lambda feature: feature.update(name="POST API operation 006fe9d9"),
+            lambda feature: feature.update(domain="Unclassified"),
+            lambda feature: feature["behaviors"][0].update(description="Declares POST HTTP syntax"),
+        ]
+        for change in changes:
+            document = manifest()
+            document["features"][0]["semanticAnalysis"] = analysis()
+            change(document["features"][0])
+            with self.subTest(change=change), self.assertRaises(ArtifactError):
+                validate_business_meaning(document)
+        empty = manifest()
+        empty["features"] = []
+        with self.assertRaises(ArtifactError):
+            validate_business_meaning(empty)
+
+    def test_partial_business_meaning_is_deliverable_with_explicit_questions(self):
+        document = manifest()
+        document["features"][0]["semanticAnalysis"] = analysis()
+        document["features"][0]["semanticAnalysis"].update(
+            status="partial", unresolvedQuestions=["Confirm the promotion manager role with the product owner"],
+        )
+        validate_business_meaning(document)
+        report = build_report(document)
+        self.assertEqual(report["discoveryMode"], "business")
+        self.assertEqual(report["semanticStatus"], "incomplete")
+        self.assertIn("Confirm the promotion manager role", render_html(report))
 
 
 class SourcePreparationTests(unittest.TestCase):
@@ -196,6 +241,7 @@ class SourcePreparationTests(unittest.TestCase):
         self.assertIn("class Eligibility", source_text)
         self.assertEqual(artifacts["source-context.json"]["baseManifestDigest"], digest(prepared))
         self.assertEqual(artifacts["enrichment-proposals.json"]["baseManifestDigest"], digest(prepared))
+        self.assertIn("businessMeaning", artifacts["enrichment-proposals.json"]["proposals"][0]["updates"]["semanticAnalysis"])
         refs = prepared["features"][0]["evidenceRefs"]
         contexts = [item for item in prepared["evidence"] if item["type"] == "source-context"]
         self.assertEqual(len(contexts), 2)

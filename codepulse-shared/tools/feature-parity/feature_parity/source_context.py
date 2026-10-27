@@ -98,6 +98,17 @@ def prepare_enrichment(manifest, inventory, source, feature_ids=None, offset=0, 
     result["evidence"] = sorted(result_evidence.values(), key=lambda item: item["id"])
     result["reviewQueue"].sort(key=lambda item: (item["featureId"], item["reason"]))
     validate_manifest(result)
+    template = enrichment_template(result, sorted(selected_ids))
+    for proposal in template["proposals"]:
+        refs = [citation["id"] for citation in proposal["evidence"]]
+        proposal["updates"] = {
+            "name": "", "domain": "", "behaviors": [],
+            "semanticAnalysis": {
+                "status": "unresolved", "summary": "",
+                "businessMeaning": {"purpose": "", "userGoal": "", "trigger": "", "outcome": "", "basis": "inferred"},
+                "evidenceRefs": refs, "businessRules": [], "unresolvedQuestions": [],
+            },
+        }
     return {
         "feature-manifest.json": result,
         "evidence-index.json": result["evidence"], "review-queue.json": result["reviewQueue"],
@@ -105,5 +116,5 @@ def prepare_enrichment(manifest, inventory, source, feature_ids=None, offset=0, 
             "baseManifestDigest": digest(result), "inventoryDigest": digest(inventory),
             "featureIds": sorted(selected_ids), "sourceBytes": total_bytes, "files": files,
         },
-        "enrichment-proposals.json": enrichment_template(result, sorted(selected_ids)),
+        "enrichment-proposals.json": template,
     }

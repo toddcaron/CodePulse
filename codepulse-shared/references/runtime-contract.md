@@ -48,6 +48,12 @@ Feature-profile skills must:
   Explicit inventory-only runs skip interpretation and must be labeled accordingly.
   Unfinished or unsupported interpretation remains incomplete; observed logic and
   inferred intent must be distinguished. The engine owns artifacts, counts and digests.
+- Business meaning is Finder's required core deliverable. Before normal delivery,
+  run `validate --require-business-meaning` on the final manifest; default `report`
+  enforces the same gate. Each active candidate needs business purpose, user goal,
+  trigger, outcome and observed/inferred basis with source-backed contracts.
+  Do not deliver raw scan artifacts as the requested final manifest or automatically
+  bypass the gate with `--inventory-only`. That mode requires an explicit user request.
 - Treat discovered features as provisional. Parity, equivalence, and coverage are credited only from human-approved review artifacts, never from discovery output or model judgment.
 - Report unresolved records as unresolved. Never close a record that the engine marked as requiring human validation.
 - Emit the engine's JSON artifacts as the authoritative result, and produce HTML or Markdown only through `parity report`.

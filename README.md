@@ -31,8 +31,10 @@ repository discovery, reviewed manifest comparison, and separately reviewed requ
 coverage using the Python engine. Discovery includes OpenAPI/C# HTTP, Vue/AngularJS
 UI/router, and ColdFusion tag declarations. Finder then uses the host AI model by default
 to interpret hash-checked source context into readable capabilities and provisional
-business rules; explicit inventory-only mode skips that stage. HTML reports and opt-in
-Markdown include semantic progress and business context. Runtime parity, confirmed
+business rules. Business purpose, user goal, trigger and outcome are required for
+normal delivery; a missing business analysis blocks report generation instead of
+silently returning an inventory. Explicit inventory-only mode skips that stage.
+HTML reports and opt-in Markdown lead with business meaning and rules. Runtime parity, confirmed
 absence and full framework analysis are not supported.
 See the [engine setup and limitations](codepulse-shared/tools/feature-parity/README.md)
 and [agent implementation progress](docs/feature-parity-agent-implementation-plan.md).

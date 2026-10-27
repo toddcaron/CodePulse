@@ -12,6 +12,7 @@
     "title": {"$ref": "#/$defs/text"},
     "methodology": {"$ref": "#/$defs/text"},
     "semanticStatus": {"enum": ["inventory-only", "incomplete", "complete"]},
+    "discoveryMode": {"enum": ["business", "inventory-only"]},
     "capabilities": {
       "type": "array", "maxItems": 500,
       "items": {
@@ -23,6 +24,8 @@
           "domain": {"$ref": "#/$defs/text"},
           "status": {"enum": ["not-started", "complete", "partial", "unresolved"]},
           "summary": {"$ref": "#/$defs/text"},
+          "businessMeaning": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/businessMeaning"},
+          "evidence": {"type": "array", "items": {"$ref": "#/$defs/text"}},
           "unresolvedQuestions": {"$ref": "#/$defs/texts"},
           "businessRules": {
             "type": "array", "maxItems": 100,

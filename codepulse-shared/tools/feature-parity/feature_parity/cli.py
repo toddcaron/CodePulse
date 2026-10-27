@@ -19,7 +19,7 @@ from .reviews import reconcile_manifest, review_template
 from .reports import report_artifacts, report_kind
 from .requirements import ingest_requirements, load_requirements_source, validate_requirements_baseline
 from .requirements_coverage import compare_requirements, coverage_gate_failed, requirements_review_template
-from .validation import ArtifactError, parse_json, validate_manifest, validate_schema
+from .validation import ArtifactError, parse_json, validate_business_meaning, validate_manifest, validate_schema
 
 
 class InvocationError(ValueError):
@@ -44,6 +44,8 @@ def parser():
     validation_input = validate.add_mutually_exclusive_group(required=True)
     validation_input.add_argument("--manifest")
     validation_input.add_argument("--requirements-baseline")
+    validate.add_argument("--require-business-meaning", action="store_true",
+                          help="Require business-ready discovery analysis before delivery")
     requirements = commands.add_parser("ingest-requirements", help="Import JSON or explicitly marked text/Markdown requirement proposals")
     requirements.add_argument("--source", required=True)
     requirements.add_argument("--output", required=True)
@@ -118,6 +120,8 @@ def parser():
     report.add_argument("--target", help="Target manifest required by comparison and coverage results")
     report.add_argument("--baseline", help="Requirements baseline required by a coverage result")
     report.add_argument("--format", choices=("html", "markdown", "both"), default="html")
+    report.add_argument("--inventory-only", action="store_true",
+                        help="Explicitly render a technical discovery inventory without business readiness")
     report.add_argument("--dry-run", action="store_true")
     identity_reconcile = commands.add_parser("reconcile-identities", help="Carry approved prior names and aliases into a new manifest")
     identity_reconcile.add_argument("--source", required=True)
@@ -190,12 +194,17 @@ def main(argv=None):
         arguments = parser().parse_args(argv)
         if arguments.command == "validate":
             if arguments.requirements_baseline:
+                if arguments.require_business_meaning:
+                    raise InvocationError("--require-business-meaning requires --manifest")
                 _, baseline = _json_input(arguments.requirements_baseline)
                 validate_requirements_baseline(baseline)
                 print("Requirements baseline is valid (schema, digests and reference integrity)")
             else:
-                _input(arguments.manifest)
-                print("Feature manifest is valid (schema and reference integrity)")
+                _, document = _input(arguments.manifest)
+                if arguments.require_business_meaning:
+                    validate_business_meaning(document)
+                print("Feature manifest has business meaning (provisional; human review required)"
+                      if arguments.require_business_meaning else "Feature manifest is valid (schema and reference integrity)")
             return 0
         if arguments.command in {"requirements-review-template", "cover-requirements"}:
             baseline_path, baseline = _json_input(arguments.baseline)
@@ -272,6 +281,8 @@ def main(argv=None):
         if arguments.command == "report":
             artifact_path, artifact = _json_input(arguments.artifact)
             kind = report_kind(artifact)
+            if arguments.inventory_only and kind != "discovery":
+                raise InvocationError("--inventory-only is accepted only for discovery reports")
             required = {"discovery": (), "comparison": ("source", "target"),
                         "requirements-coverage": ("baseline", "target")}[kind]
             supporting = {}
@@ -291,7 +302,7 @@ def main(argv=None):
                 inputs.append(path)
             formats = ("html", "markdown") if arguments.format == "both" else (arguments.format,)
             output = _output(arguments.output, inputs)
-            artifacts = report_artifacts(artifact, formats=formats, **supporting)
+            artifacts = report_artifacts(artifact, formats=formats, inventory_only=arguments.inventory_only, **supporting)
             if arguments.dry_run:
                 print("Report inputs and output policy are valid; no artifacts written")
                 return 0

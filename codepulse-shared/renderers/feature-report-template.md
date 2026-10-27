@@ -50,11 +50,11 @@ Both renderers emit the same sections in the same order.
 | # | Section | Source |
 |---|---|---|
 | 0 | header | `title`, `reportType`, `engineVersion`, `methodology` |
+| 0a | Capabilities and business context (discovery only) | `discoveryMode`, `semanticStatus`, `capabilities[]`: readable name and summary, then business purpose, user goal, trigger, outcome, basis, domain, analysis status, questions, citations and identifier; provisional business-rule condition/outcome/basis/rationale/evidence table |
 | 1 | Scope | `applications[]`: Role, Application, Source type, Revision, Scan coverage, plus a per-application scope-limitations list when present |
 | 2 | Provenance | `digests[]`: Artifact, Digest |
 | 3 | Review state | `reviewState[]`: Measure, Count |
 | 4 | Results | `metrics[]`: Measure, Count |
-| 4a | Capabilities and business context (discovery only) | `semanticStatus`, `capabilities[]`: readable name, domain, analysis status, summary, questions and identifier; provisional business-rule condition/outcome/basis/rationale/evidence table |
 | 5 | Formulas | `formulas[]`: Measure, Formula, Value |
 | 6 | Unresolved items (`unresolvedCount`) | `unresolvedItems[]`: Identifier, Status, Detail, or an explicit no-records statement |
 | 7 | Limitations | `limitations[]` |
@@ -75,3 +75,14 @@ Discovery reports distinguish inventory-only (no active candidate analyzed), inc
 analyzed without unresolved questions). An empty inventory is inventory-only, not
 vacuously complete. Semantic completion is not approval, runtime correctness or business
 completeness. Technical-only manifests never masquerade as analyzed business capabilities.
+
+Normal discovery reports require business meaning before rendering. The engine checks
+every active feature, not just the first 500 displayed. Capabilities lead the report:
+each has a heading, summary and a readable two-column business-context detail table,
+not a wide endpoint inventory. HTML and Markdown preserve the same ordering.
+
+`discoveryMode: business` is the default and requires structured businessMeaning plus
+complete/partial candidate analysis and business contracts. Missing/unresolved meaning
+fails without publishing a report. `--inventory-only` is an explicit discovery-only
+opt-out; the title and mode identify technical inventory output. It is not a fallback
+for failed analysis. Business readiness checks cannot establish correctness of intent.

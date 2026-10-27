@@ -99,8 +99,21 @@ class InstallationSmokeTests(unittest.TestCase):
         proposals["provenance"] = {"agent": "Smoke fixture", "model": "Synthetic", "version": "1"}
         for proposal in proposals["proposals"]:
             proposal["rationale"] = "OpenAPI declarations lack implementation bodies"
-            proposal["updates"] = {"semanticAnalysis": {
+            proposal["updates"] = {
+                "name": "Manage user accounts", "domain": "Identity",
+                "behaviors": [{
+                    "id": "declared-user-contract", "description": "Documents user account management",
+                    "mandatory": False, "evidenceRefs": [item["id"] for item in proposal["evidence"]],
+                }],
+                "semanticAnalysis": {
                 "status": "partial", "summary": "Declared API capability; implementation requires review",
+                "businessMeaning": {
+                    "purpose": "Provide user account administration",
+                    "userGoal": "An account administrator manages application users",
+                    "trigger": "The declared user operations are requested",
+                    "outcome": "User account management is exposed as a documented API contract",
+                    "basis": "inferred",
+                },
                 "evidenceRefs": [item["id"] for item in proposal["evidence"]],
                 "businessRules": [], "unresolvedQuestions": ["Implementation is not present in this fixture"],
             }}
@@ -140,7 +153,7 @@ class InstallationSmokeTests(unittest.TestCase):
         self.assertEqual(found.returncode, 0, found.stderr)
         rendered = self.run_installed(
             "report", "--artifact", str(discovery / "feature-manifest.json"),
-            "--output", str(self.workspace / "isolation-report"),
+            "--output", str(self.workspace / "isolation-report"), "--inventory-only",
         )
         self.assertEqual(rendered.returncode, 0, rendered.stderr)
         self.assertEqual(tree_digest(self.installation), before)

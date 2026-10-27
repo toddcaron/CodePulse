@@ -6,7 +6,7 @@ from collections import Counter
 
 from . import __version__
 from .identity import digest
-from .validation import ArtifactError, validate_manifest, validate_schema
+from .validation import ArtifactError, validate_business_meaning, validate_manifest, validate_schema
 
 
 TEXT_LIMIT = 4000
@@ -81,8 +81,10 @@ def report_kind(artifact):
     )
 
 
-def _discovery_report(manifest):
+def _discovery_report(manifest, inventory_only=False):
     validate_manifest(manifest)
+    if not inventory_only:
+        validate_business_meaning(manifest)
     statuses = Counter(feature["status"] for feature in manifest["features"])
     features = manifest["features"]
     active = [feature for feature in features if feature["status"] in {"discovered", "confirmed", "needs-review"}]
@@ -93,7 +95,7 @@ def _discovery_report(manifest):
     capabilities = []
     for feature in active[:UNRESOLVED_LIMIT]:
         analysis = feature.get("semanticAnalysis", {})
-        capabilities.append({
+        capability = {
             "identifier": _text(feature["id"]), "name": _text(feature["name"]), "domain": _text(feature["domain"]),
             "status": analysis.get("status", "not-started"),
             "summary": _text(analysis.get("summary", "Technical candidate only; business meaning has not been analyzed")),
@@ -104,7 +106,14 @@ def _discovery_report(manifest):
                 "evidence": [_text(f"{evidence[ref]['location']}:{evidence[ref]['lineStart']}-{evidence[ref]['lineEnd']} ({ref})")
                              for ref in rule["evidenceRefs"]],
             } for rule in analysis.get("businessRules", [])],
-        })
+            "evidence": [_text(f"{evidence[ref]['location']}:{evidence[ref]['lineStart']}-{evidence[ref]['lineEnd']} ({ref})")
+                         for ref in analysis.get("evidenceRefs", [])],
+        }
+        if "businessMeaning" in analysis:
+            capability["businessMeaning"] = {
+                key: _text(value) for key, value in analysis["businessMeaning"].items()
+            }
+        capabilities.append(capability)
     admission_recorded = any("admitted" in feature for feature in features)
     metrics = [("Candidate features", len(features)), ("Evidence records", len(manifest["evidence"]))]
     metrics.extend((f"Semantic analysis {status}", semantic_counts[status])
@@ -136,10 +145,15 @@ def _discovery_report(manifest):
         limitations.append("This manifest does not record confidence admission; admitted counts are not reported")
     if truncated:
         limitations.append(f"Unresolved detail is truncated to the first {UNRESOLVED_LIMIT} records; the JSON artifacts remain complete")
+    if inventory_only:
+        limitations.append("Explicit inventory-only report; not a completed business feature discovery deliverable")
     return {
         "reportType": "discovery",
-        "title": f"Provisional capability discovery: {_text(manifest['application']['name'])}",
-        "methodology": "Bounded static discovery of provisional capabilities; no application build or execution",
+        "title": (f"Technical candidate inventory: {_text(manifest['application']['name'])}" if inventory_only
+                  else f"Business feature discovery: {_text(manifest['application']['name'])}"),
+        "methodology": ("Explicit technical inventory; business analysis is not required in this mode" if inventory_only
+                        else "Source-grounded business meaning and provisional rules; no application build or execution"),
+        "discoveryMode": "inventory-only" if inventory_only else "business",
         "semanticStatus": semantic_status, "capabilities": capabilities,
         "applications": [_application(manifest, "scanned")],
         "digests": [
@@ -272,10 +286,12 @@ def _coverage_report(artifact, baseline, target):
     }
 
 
-def build_report(artifact, source=None, target=None, baseline=None):
+def build_report(artifact, source=None, target=None, baseline=None, inventory_only=False):
     kind = report_kind(artifact)
+    if inventory_only and kind != "discovery":
+        raise ArtifactError("Inventory-only mode is accepted only for discovery reports")
     if kind == "discovery":
-        report = _discovery_report(artifact)
+        report = _discovery_report(artifact, inventory_only=inventory_only)
     elif kind == "comparison":
         report = _comparison_report(artifact, source, target)
     else:
@@ -327,10 +343,19 @@ def _html_table(headers, rows):
     return f"<table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>"
 
 
-def _capability_rows(report):
-    return [[item["name"], item["domain"], item["status"], item["summary"],
-             "; ".join(item["unresolvedQuestions"]) or "(none recorded)", item["identifier"]]
-            for item in report.get("capabilities", [])]
+def _capability_details(item):
+    meaning = item.get("businessMeaning", {})
+    return [
+        ("Business purpose", meaning.get("purpose", "(not analyzed)")),
+        ("User goal", meaning.get("userGoal", "(not analyzed)")),
+        ("Trigger", meaning.get("trigger", "(not analyzed)")),
+        ("Business outcome", meaning.get("outcome", "(not analyzed)")),
+        ("Basis", meaning.get("basis", "(not analyzed)")),
+        ("Domain", item["domain"]), ("Analysis", item["status"]),
+        ("Unresolved questions", "; ".join(item["unresolvedQuestions"]) or "(none recorded)"),
+        ("Evidence", "; ".join(item.get("evidence", [])) or "(none recorded)"),
+        ("Identifier", item["identifier"]),
+    ]
 
 
 def _rule_rows(report):
@@ -387,11 +412,13 @@ def render_html(report):
         ) + "</ul></section>",
     ]
     if "capabilities" in report:
-        sections.insert(4, "<section><h2>Capabilities and business context</h2>"
+        sections.insert(0, "<section><h2>Capabilities and business context</h2>"
                         f"<p>Semantic enrichment: {_escape(report['semanticStatus'])}</p>"
-                        + _html_table(
-                            ["Capability", "Domain", "Analysis", "Purpose and outcome", "Unresolved questions", "Identifier"],
-                            [[_escape(cell) for cell in row] for row in _capability_rows(report)],
+                        + "".join(
+                            f"<article><h3>{_escape(item['name'])}</h3><p>{_escape(item['summary'])}</p>"
+                            + _html_table(["Business context", "Meaning"],
+                                          [[_escape(label), _escape(value)] for label, value in _capability_details(item)])
+                            + "</article>" for item in report["capabilities"]
                         ) + "<h3>Business rules (provisional)</h3>" + _html_table(
                             ["Capability", "Basis", "When", "Then", "Rationale", "Evidence"],
                             [[_escape(cell) for cell in row] for row in _rule_rows(report)],
@@ -468,22 +495,21 @@ def render_markdown(report):
         "\n".join(f"- {_cell(item)}" for item in report["limitations"]),
     ]
     if "capabilities" in report:
-        position = blocks.index("## Formulas")
+        position = blocks.index("## Scope")
         blocks[position:position] = [
             "## Capabilities and business context",
             f"Semantic enrichment: {report['semanticStatus']}",
-            _markdown_table(
-                ["Capability", "Domain", "Analysis", "Purpose and outcome", "Unresolved questions", "Identifier"],
-                _capability_rows(report),
-            ),
+            *[f"### {_cell(item['name'])}\n\n{_cell(item['summary'])}\n\n"
+              + _markdown_table(["Business context", "Meaning"], _capability_details(item))
+              for item in report["capabilities"]],
             "### Business rules (provisional)",
             _markdown_table(["Capability", "Basis", "When", "Then", "Rationale", "Evidence"], _rule_rows(report)),
         ]
     return "\n\n".join(blocks) + "\n"
 
 
-def report_artifacts(artifact, source=None, target=None, baseline=None, formats=("html",)):
-    report = build_report(artifact, source=source, target=target, baseline=baseline)
+def report_artifacts(artifact, source=None, target=None, baseline=None, formats=("html",), inventory_only=False):
+    report = build_report(artifact, source=source, target=target, baseline=baseline, inventory_only=inventory_only)
     artifacts = {"feature-report.json": report}
     if "html" in formats:
         artifacts["feature-report.html"] = render_html(report)

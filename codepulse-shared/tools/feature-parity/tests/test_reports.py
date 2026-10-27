@@ -15,6 +15,22 @@ from feature_parity.validation import ArtifactError, validate_schema
 HOSTILE = '<script>alert("x")</script> | injected'
 
 
+def business_manifest():
+    document = manifest()
+    document["features"][0]["semanticAnalysis"] = {
+        "status": "complete", "summary": "Administrators provision accounts so people can access the application.",
+        "businessMeaning": {
+            "purpose": "Give approved people access to the application",
+            "userGoal": "An administrator provisions a user account",
+            "trigger": "The administrator submits a user profile",
+            "outcome": "A user account is created",
+            "basis": "inferred",
+        },
+        "evidenceRefs": ["evidence-1"], "businessRules": [], "unresolvedQuestions": [],
+    }
+    return document
+
+
 def comparison_inputs():
     source = approve(manifest())
     target = copy.deepcopy(source)
@@ -35,7 +51,7 @@ class DiscoveryReportTests(unittest.TestCase):
             "featureId": "identity.create-user", "reason": "Below confidence threshold",
             "evidenceRefs": ["evidence-1"],
         }]
-        report = build_report(document)
+        report = build_report(document, inventory_only=True)
 
         self.assertEqual(report["reportType"], "discovery")
         self.assertEqual(report["applications"][0]["role"], "scanned")
@@ -47,7 +63,7 @@ class DiscoveryReportTests(unittest.TestCase):
         self.assertEqual(report["unresolvedItems"][0]["detail"], "Below confidence threshold")
 
     def test_manifest_without_admission_omits_admitted_counts(self):
-        report = build_report(manifest())
+        report = build_report(manifest(), inventory_only=True)
         labels = [item["label"] for item in report["metrics"]]
         self.assertNotIn("Admitted candidates", labels)
         self.assertIn(
@@ -67,7 +83,7 @@ class DiscoveryReportTests(unittest.TestCase):
             document["reviewQueue"].append({
                 "featureId": feature["id"], "reason": "Synthetic review", "evidenceRefs": ["evidence-1"],
             })
-        report = build_report(document)
+        report = build_report(document, inventory_only=True)
 
         self.assertEqual(report["unresolvedCount"], UNRESOLVED_LIMIT + 1)
         self.assertEqual(len(report["unresolvedItems"]), UNRESOLVED_LIMIT)
@@ -142,7 +158,7 @@ class RendererSafetyTests(unittest.TestCase):
         document["reviewQueue"] = [{
             "featureId": "identity.create-user", "reason": HOSTILE, "evidenceRefs": ["evidence-1"],
         }]
-        return build_report(document)
+        return build_report(document, inventory_only=True)
 
     def test_html_escapes_artifact_values_and_embeds_no_scripts(self):
         rendered = render_html(self.hostile_report())
@@ -162,7 +178,7 @@ class RendererSafetyTests(unittest.TestCase):
     def test_control_characters_are_removed_from_rendered_values(self):
         document = manifest()
         document["application"]["name"] = "Injected\u0000\u001b[31mName"
-        report = build_report(document)
+        report = build_report(document, inventory_only=True)
         self.assertEqual(report["applications"][0]["name"], "Injected [31mName")
         self.assertNotIn("\u0000", render_html(report))
         self.assertNotIn("\u001b", render_markdown(report))
@@ -177,7 +193,7 @@ class RendererSafetyTests(unittest.TestCase):
 
 class ReportArtifactTests(unittest.TestCase):
     def test_requested_formats_control_rendered_artifacts(self):
-        document = manifest()
+        document = business_manifest()
         self.assertEqual(sorted(report_artifacts(document)), ["feature-report.html", "feature-report.json"])
         self.assertEqual(
             sorted(report_artifacts(document, formats=("markdown",))),

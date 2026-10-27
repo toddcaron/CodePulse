@@ -1,6 +1,7 @@
 """Offline schema validation and evidence reference integrity."""
 
 import json
+import re
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
 from jsonschema import Draft202012Validator
@@ -125,4 +126,34 @@ def validate_manifest(document):
         if item["featureId"] not in feature_ids:
             raise ArtifactError("Dangling review feature reference")
         _check_refs(item["evidenceRefs"], evidence_ids)
+    return document
+
+
+def validate_business_meaning(document):
+    """Gate business discovery delivery, not intermediate inventory persistence."""
+    validate_manifest(document)
+    active = [feature for feature in document["features"]
+              if feature["status"] in {"discovered", "confirmed", "needs-review"}]
+    missing = 0
+    for feature in active:
+        analysis = feature.get("semanticAnalysis", {})
+        placeholder_name = re.search(
+            r"\b(?:API operation|declaration)\s+[a-f0-9]{8}$", feature["name"], re.IGNORECASE,
+        )
+        declaration_only = all(behavior["description"].startswith("Declares ")
+                               for behavior in feature["behaviors"])
+        if (analysis.get("status") not in {"complete", "partial"} or "businessMeaning" not in analysis
+                or not feature["name"].strip() or placeholder_name
+                or feature["domain"].strip().casefold() in {"", "unclassified"}
+                or declaration_only):
+            missing += 1
+    if not active or missing:
+        raise ArtifactError(
+            f"Business meaning is required for discovery delivery: {missing} of {len(active)} active "
+            "candidates lack a business-ready analysis (an empty inventory is not business-ready). "
+            "Use prepare-enrichment and import-enrichment to record businessMeaning "
+            "(purpose, userGoal, trigger, outcome, basis), readable names/domains and evidence-backed "
+            "behaviors. Keep unresolved work incomplete; use report --inventory-only only when "
+            "the user explicitly requests a technical inventory."
+        )
     return document

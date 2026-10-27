@@ -39,6 +39,14 @@ calculations, state changes, persistence, integrations and tests. It updates rea
 names, domain and contracts, with `semanticAnalysis` recording a purpose/outcome
 summary, evidenceRefs, businessRules and unresolvedQuestions.
 
+Business meaning is the core deliverable. A normal discovery report requires
+`semanticAnalysis.businessMeaning`: purpose (business reason), userGoal (who seeks
+what), trigger, outcome and basis (observed/inferred), supported by analysis citations.
+Infer supported intent from source even when no business prose exists in code;
+do not confuse "not explicitly named" with "cannot be analyzed." Mark inference
+and uncertainty rather than inventing facts or waiting for human approval to analyze.
+Prepared templates contain these fields as invalid blanks for model completion.
+
 Each rule has an ID, condition, outcome, basis (`observed` or `inferred`), rationale
 and evidenceRefs drawn from the analysis evidence, itself within the feature evidence.
 Observed means logic visible in the cited source, not a runtime guarantee.
@@ -56,6 +64,23 @@ not business completeness, evidence verification or approval.
 Reports derive `semanticStatus` as inventory-only, incomplete or complete, show
 per-status counts, and display readable capabilities, provisional rules and citations.
 Schema validity cannot establish readability or interpretation correctness.
+
+## Required business-delivery gate
+
+`parity validate --manifest <final-manifest> --require-business-meaning` and default
+`parity report` check all active candidates for structured businessMeaning,
+complete/partial analysis, non-placeholder naming/domain and non-declaration-only
+behavior contracts. A failed gate returns an artifact error and writes no report,
+including on dry-run. Partial analysis can be delivered with substantive business
+meaning and specific questions; missing/unresolved meaning cannot. Empty inventories
+do not count as business-ready.
+
+Legacy/intermediate manifests remain valid for storage and batch processing.
+Only an explicit user request for technical-only output permits `report --inventory-only`.
+It produces a labeled technical inventory, never an automatic success-shaped fallback.
+Normal reports lead with business context and rules, before technical inventory metrics.
+These deterministic checks enforce presence and basic readiness, not semantic truth;
+the model and independent reviewer still evaluate the explanation against source.
 
 Semantic analysis participates in contract digests, so editing it invalidates a
 prior approval. Partial/unresolved analysis cannot earn verified contract credit;

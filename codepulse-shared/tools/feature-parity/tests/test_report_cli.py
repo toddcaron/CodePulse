@@ -10,6 +10,7 @@ from pathlib import Path
 from test_comparison import approve
 from test_requirements_coverage import reviewed_baseline
 from test_validation import manifest
+from test_reports import business_manifest
 from feature_parity.cli import main
 from feature_parity.comparison import compare_manifests
 from feature_parity.requirements_coverage import compare_requirements
@@ -25,7 +26,7 @@ class ReportCliTests(unittest.TestCase):
         self.addCleanup(self.directory.cleanup)
         self.root = Path(self.directory.name)
         self.manifest = self.root / "feature-manifest.json"
-        self.manifest.write_text(json.dumps(manifest()), encoding="utf-8")
+        self.manifest.write_text(json.dumps(business_manifest()), encoding="utf-8")
         self.output = self.root / "report"
 
     def run_cli(self, *arguments):
@@ -61,6 +62,43 @@ class ReportCliTests(unittest.TestCase):
         )
         validate_schema(load_json(self.output / "feature-report.json"), "feature-report-schema.json")
         self.assertTrue((self.output / "feature-report.html").read_text(encoding="utf-8").startswith("<!doctype html>"))
+
+    def test_default_discovery_report_rejects_inventory_without_business_meaning(self):
+        self.manifest.write_text(json.dumps(manifest()), encoding="utf-8")
+        error = io.StringIO()
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(error):
+            code = main(["parity", "report", "--artifact", str(self.manifest), "--output", str(self.output)])
+        self.assertEqual(code, 3)
+        self.assertIn("business meaning", error.getvalue().lower())
+        self.assertFalse(self.output.exists())
+
+    def test_inventory_only_requires_explicit_opt_out_and_is_labeled(self):
+        self.manifest.write_text(json.dumps(manifest()), encoding="utf-8")
+        self.assertEqual(self.run_manifest_report("--inventory-only"), 0)
+        report = load_json(self.output / "feature-report.json")
+        self.assertEqual(report["discoveryMode"], "inventory-only")
+        self.assertTrue(report["title"].startswith("Technical candidate inventory:"))
+
+    def test_business_validation_is_a_separate_delivery_gate(self):
+        arguments = ["parity", "validate", "--manifest", str(self.manifest), "--require-business-meaning"]
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(main(arguments), 0)
+            self.manifest.write_text(json.dumps(manifest()), encoding="utf-8")
+            self.assertEqual(main(arguments), 3)
+            self.assertEqual(main(arguments[:-1]), 0)
+
+    def test_dry_run_also_rejects_missing_business_meaning(self):
+        self.manifest.write_text(json.dumps(manifest()), encoding="utf-8")
+        self.assertEqual(self.run_manifest_report("--dry-run"), 3)
+        self.assertFalse(self.output.exists())
+
+    def test_inventory_only_is_not_accepted_for_comparisons(self):
+        source, target, result = self.comparison_files()
+        self.assertEqual(self.run_cli(
+            "--artifact", str(result), "--source", str(source), "--target", str(target),
+            "--output", str(self.output), "--inventory-only",
+        ), 1)
+        self.assertFalse(self.output.exists())
 
     def test_markdown_is_opt_in(self):
         self.assertEqual(self.run_manifest_report("--format", "markdown"), 0)
