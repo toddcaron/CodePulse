@@ -494,6 +494,13 @@ truncation disclosed as a limitation. Reports contain no value absent from
 recommendations. `../../renderers/feature-report-template.md` documents the
 presentation contract.
 
+The CLI keeps report generation as an explicit `parity report` command. The
+`codepulse-feature-parity-finder` and `codepulse-feature-parity` skills invoke it
+automatically after a successful, validated discovery, comparison, or requirements
+coverage run, using a separate fresh output directory. They do not render reports
+for dry-runs, preparation-only commands, or failed runs without result artifacts.
+The skills use the default HTML format unless the user requests Markdown or both.
+
 ## What Equivalence Means Here
 
 Exact IDs nominate candidates only. An equivalent result requires both features

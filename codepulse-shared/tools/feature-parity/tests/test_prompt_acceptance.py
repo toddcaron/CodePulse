@@ -54,9 +54,9 @@ class PromptAcceptanceTests(unittest.TestCase):
         for phrase in ("feature parity", "compare", "reviewed feature manifests", "requirements coverage"):
             self.assertIn(phrase, parity_metadata["description"].lower())
 
-        for phrase in ("parity find", "parity validate", "discovery-log.json", "provisional"):
+        for phrase in ("parity find", "parity validate", "discovery-log.json", "provisional", "parity report", "by default"):
             self.assertIn(phrase, finder_body.lower())
-        for phrase in ("parity compare", "cover-requirements", "approved mappings", "runtime parity"):
+        for phrase in ("parity compare", "cover-requirements", "approved mappings", "runtime parity", "parity report", "automatically"):
             self.assertIn(phrase, parity_body.lower())
 
     def test_finder_prompt_contract_discovers_and_validates_synthetic_repository(self):

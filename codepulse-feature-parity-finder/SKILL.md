@@ -37,25 +37,26 @@ The default scope is the engine's configured scope, otherwise all supported scop
    Repeat `--include` or `--exclude` for each pattern. Add `--dry-run` only when requested. Preserve path quoting for the user's shell.
 5. On success, verify the output contains `feature-manifest.json`, `repository-inventory.json`, `evidence-index.json`, `review-queue.json`, and `discovery-log.json`. Validate the manifest by invoking `parity validate --manifest <output>/feature-manifest.json` with the same engine.
 6. Read `discovery-log.json` and report its engine-produced statistics, scope/limitations, review-queue size, and exact artifact paths. Do not recompute or invent engine counts. If the command or validation fails, report failure without claiming a completed scan.
-7. Tell the user that findings remain provisional and require human review. If comparison is requested, stop here until a reviewed manifest is produced through `review-template` and `reconcile`.
+7. After a successful scan and manifest validation, select a second fresh output directory outside the scanned source and invoke `parity report` to render the discovery report. Use the manifest as `--artifact`; discovery reports take no supporting manifests. By default, omit `--format` to produce HTML. Use `--format markdown` or `--format both` only if the user requests that format. Verify `feature-report.json` and `feature-report.html` (and `feature-report.md` when requested) exist. If rendering fails, report the scan and its artifacts as completed but state clearly that report generation failed.
+8. Tell the user that findings remain provisional and require human review. If comparison is requested, stop here until a reviewed manifest is produced through `review-template` and `reconcile`.
 
 ## Reports
 
-Render a discovery report only when the user asks for one. The engine is the only renderer; never hand-author or restyle HTML or Markdown.
+Every successful, validated discovery run produces a discovery report by default. Dry-runs and failed or invalid scans do not produce reports. The report output must be a separate fresh directory outside the scanned source; never reuse or overwrite the scan output. The engine is the only renderer; never hand-author or restyle HTML or Markdown.
 
 ```text
 python <absolute-cli-path> parity report --artifact <output>/feature-manifest.json --output <fresh-external-directory> [--format html|markdown|both]
 ```
 
-A discovery report takes no supporting manifests. `feature-report.json` is always written and `feature-report.html` is the default rendering; request Markdown only when the user asks for it. Report only values present in `feature-report.json`, and follow `../codepulse-shared/renderers/feature-report-template.md`. The report restates that candidates are provisional and carries no findings, severities, or grades.
+A discovery report takes no supporting manifests. Omit `--format` for the default HTML report; request Markdown or both formats only when the user asks. `feature-report.json` is always written. Verify the report files before claiming report generation succeeded. Report only values present in `feature-report.json`, and follow `../codepulse-shared/renderers/feature-report-template.md`. The report restates that candidates are provisional and carries no findings, severities, or grades.
 
 ## Safety and Claims
 
 - The engine reads bounded local source and writes only to a fresh external output directory.
 - Never run application scripts/tests or claim runtime behavior, complete business scope, or confirmed absence.
 - Do not treat a candidate, confidence threshold, or human confirmation as verified evidence or parity approval.
-- This workflow produces JSON; HTML and Markdown come only from `parity report`. Do not hand-author a report or assign health grades.
+- Discovery produces JSON; the skill then runs `parity report` by default to create HTML. HTML and optional Markdown come only from the engine. Do not hand-author a report or assign health grades.
 
 ## Completion
 
-State whether discovery completed, the source/scope used, the engine-reported candidate and review counts, material limitations, and artifact paths. Distinguish provisional discovery from human-reviewed comparison. Avoid claiming that any capability is absent.
+State whether discovery and report generation completed, the source/scope used, the engine-reported candidate and review counts, material limitations, and paths to both scan and report artifacts. Distinguish provisional discovery from human-reviewed comparison. Avoid claiming that any capability is absent.

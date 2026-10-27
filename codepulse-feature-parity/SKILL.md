@@ -40,8 +40,16 @@ The `compare` command accepts manifests, not repository paths. If inputs are amb
 
    Default to `--fail-on never` unless the user requested a supported gate. The `missing` gate is unsupported. Add `--dry-run` only when requested.
 5. Verify `parity-results.json`, `review-queue.json`, and `comparison-log.json` exist. Report results from the engine's `parity-results.json` statistics and match records. A gate exit code 6 means artifacts were written and the requested gate failed; inspect and report those artifacts rather than calling the comparison itself an engine failure.
+6. Once the comparison artifacts are verified, choose a second fresh report output directory that does not overlap the inputs or comparison output, then run `parity report` with `parity-results.json` as `--artifact`, and the same baseline and target manifests as `--source` and `--target`. Omit `--format` by default to render HTML. Use `--format markdown` or `--format both` only if the user requests that format. This also applies when the compare command returns gate exit code 6 because the result artifacts still exist.
+7. Verify `feature-report.json` and `feature-report.html` (and `feature-report.md` when requested). If report generation fails, state separately whether the comparison completed and that the report failed.
 
 ## Requirements Coverage
+
+If only raw requirements text/JSON is supplied, use `ingest-requirements` and
+`requirements-review-template` to prepare provisional inputs, then pause for a human
+to review the requirement contracts and criterion mappings. Do not claim coverage or
+render a report until that separate review is complete and `cover-requirements` has
+produced a result.
 
 1. Validate the requirements baseline with `parity validate --requirements-baseline <baseline.json>` and confirm the separate reviewed requirements artifact is available.
 2. Validate the target with `parity validate --manifest <target-manifest.json>`.
@@ -53,11 +61,11 @@ The `compare` command accepts manifests, not repository paths. If inputs are amb
 
    The default gate is `never`; use another supported gate only when requested. `missing` and high-risk gates are not supported.
 4. Verify `requirements-coverage.json`, `review-queue.json`, and `requirements-comparison-log.json`. Summarize engine-produced counts, unresolved criteria, and scope limitations.
-5. If only raw requirements text/JSON is supplied, use `ingest-requirements` and `requirements-review-template` to prepare provisional inputs, then pause for a human to review the requirement contracts and criterion mappings. Do not claim coverage until that separate review is complete.
-
+5. After the coverage result is verified, choose a second fresh report output directory that does not overlap the inputs or coverage output, then run `parity report` with `requirements-coverage.json` as `--artifact`, the same requirements baseline as `--baseline`, and the same target manifest as `--target`. Omit `--format` by default to render HTML. Use `--format markdown` or `--format both` only if the user requests that format.
+6. Verify `feature-report.json` and `feature-report.html` (and `feature-report.md` when requested). If report generation fails, state separately whether coverage completed and that the report failed.
 ## Reports
 
-Render a report only when the user asks for one. The engine is the only renderer; never hand-author or restyle HTML or Markdown.
+Render a report automatically after every successful completed comparison or requirements-coverage run, including a comparison whose requested gate fails after writing its result artifacts. Do not render reports for dry-runs, failed runs without result artifacts, or preparation-only commands such as validation, ingestion, template export, or identity reconciliation. Use a separate fresh output directory that does not overlap the inputs or the workflow's JSON output. The engine is the only renderer; never hand-author or restyle HTML or Markdown.
 
 ```text
 python <absolute-cli-path> parity report --artifact <parity-results.json> --source <baseline-manifest> --target <target-manifest> --output <fresh-output-directory> [--format html|markdown|both]
@@ -65,7 +73,7 @@ python <absolute-cli-path> parity report --artifact <parity-results.json> --sour
 
 For requirements coverage, supply `--artifact <requirements-coverage.json> --baseline <baseline.json> --target <target-manifest.json>` instead. The supporting manifests are digest-verified against the result; exit code 3 means they are stale for that result, so rerun the workflow rather than editing artifacts.
 
-`feature-report.json` is always written and `feature-report.html` is the default rendering; request Markdown only when the user asks for it. Report only values present in `feature-report.json`, and follow `../codepulse-shared/renderers/feature-report-template.md`. Feature reports carry no findings, severities, grades, scores, or recommendations.
+Omit `--format` for the default HTML report; request Markdown or both formats only when the user asks. `feature-report.json` is always written. Verify the report files before claiming report generation succeeded. Report only values present in `feature-report.json`, and follow `../codepulse-shared/renderers/feature-report-template.md`. Feature reports carry no findings, severities, grades, scores, or recommendations.
 
 ## Review Boundaries
 
@@ -74,8 +82,8 @@ For requirements coverage, supply `--artifact <requirements-coverage.json> --bas
 - Unmatched features remain unverified. Complete scan scope does not prove absence.
 - Requirements coverage is a separate workflow and does not promote requirements evidence into implementation proof.
 - Do not claim runtime parity, complete business scope, or confirmed absence. Do not assign health grades.
-- This workflow emits JSON artifacts; HTML and Markdown come only from `parity report`. Do not hand-author a report.
+- The comparison and coverage commands emit JSON; the skill then runs `parity report` by default to create HTML. HTML and optional Markdown come only from the engine. Do not hand-author a report.
 
 ## Completion
 
-State the workflow and inputs used, engine-produced counts and statuses, gate outcome, unresolved review items, limitations, and artifact paths. Distinguish candidate selection, human review, and contract equivalence. Never claim stronger evidence than the result records support.
+State the workflow and inputs used, engine-produced counts and statuses, gate outcome, unresolved review items, limitations, and paths to both workflow and report artifacts. Distinguish candidate selection, human review, and contract equivalence. If report generation fails, report that separately from workflow completion. Never claim stronger evidence than the result records support.
