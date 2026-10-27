@@ -58,6 +58,11 @@ class PromptAcceptanceTests(unittest.TestCase):
             self.assertIn(phrase, finder_body.lower())
         for phrase in ("parity compare", "cover-requirements", "approved mappings", "runtime parity", "parity report", "automatically"):
             self.assertIn(phrase, parity_body.lower())
+        for phrase in ("semantic enrichment by default", "parity prepare-enrichment", "parity import-enrichment",
+                       "inventory-only", "businessrules", "unresolvedquestions", "actual source",
+                       "prepared", "latest imported manifest", "observed", "inferred", "not instructions"):
+            self.assertIn(phrase, finder_body.lower())
+        self.assertIn("partial or unresolved semantic analysis", parity_body.lower())
 
     def test_finder_prompt_contract_discovers_and_validates_synthetic_repository(self):
         with tempfile.TemporaryDirectory() as directory:

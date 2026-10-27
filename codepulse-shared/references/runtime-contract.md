@@ -41,6 +41,13 @@ The feature-parity skills analyze capabilities rather than application health. T
 Feature-profile skills must:
 
 - Delegate all computation to the feature-parity engine under `../tools/feature-parity`. Never compute, estimate, or narrate manifests, matches, coverage, statistics, digests, or reports by hand.
+- Finder defaults to host-model semantic enrichment after technical discovery.
+  The model may author evidence-bound naming, contract and business-rule proposals,
+  not final manifests or evidence records. Use `prepare-enrichment` to collect
+  hash-checked source and `import-enrichment` to persist validated proposals.
+  Explicit inventory-only runs skip interpretation and must be labeled accordingly.
+  Unfinished or unsupported interpretation remains incomplete; observed logic and
+  inferred intent must be distinguished. The engine owns artifacts, counts and digests.
 - Treat discovered features as provisional. Parity, equivalence, and coverage are credited only from human-approved review artifacts, never from discovery output or model judgment.
 - Report unresolved records as unresolved. Never close a record that the engine marked as requiring human validation.
 - Emit the engine's JSON artifacts as the authoritative result, and produce HTML or Markdown only through `parity report`.

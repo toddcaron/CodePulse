@@ -39,6 +39,9 @@ Every string the engine renders originates from scanned repositories or human re
 - HTML escapes `&`, `<`, `>`, `"`, and `'`. No raw HTML, `<script>`, event handler, `style` attribute, external font, image, stylesheet, or link is ever emitted from artifact content.
 - Markdown escapes `\` and `|` so no value can break out of a table cell.
 - `unresolvedItems` is capped at 500 records; truncation is disclosed as a limitation rather than silently applied.
+- Discovery `capabilities` detail is capped at 500 active features with a disclosed
+  limitation; semantic counts always cover all active features. The full manifest
+  retains every feature and rule.
 
 ## Section Order
 
@@ -51,12 +54,13 @@ Both renderers emit the same sections in the same order.
 | 2 | Provenance | `digests[]`: Artifact, Digest |
 | 3 | Review state | `reviewState[]`: Measure, Count |
 | 4 | Results | `metrics[]`: Measure, Count |
+| 4a | Capabilities and business context (discovery only) | `semanticStatus`, `capabilities[]`: readable name, domain, analysis status, summary, questions and identifier; provisional business-rule condition/outcome/basis/rationale/evidence table |
 | 5 | Formulas | `formulas[]`: Measure, Formula, Value |
 | 6 | Unresolved items (`unresolvedCount`) | `unresolvedItems[]`: Identifier, Status, Detail, or an explicit no-records statement |
 | 7 | Limitations | `limitations[]` |
 | 8 | footer | `engineVersion` plus the static-evidence disclaimer |
 
-Unavailable optional values render as `unavailable`, and digests that were not supplied render as `not supplied`. Sections are never omitted, so an empty measure set is visible rather than hidden.
+Unavailable optional values render as `unavailable`, and digests that were not supplied render as `not supplied`. Standard sections are never omitted, so an empty measure set is visible rather than hidden. The capability section appears only in discovery reports.
 
 ## Limitations Disclosure
 
@@ -65,3 +69,9 @@ Every report carries the limitations recorded in its source artifacts plus two s
 Conditional limitations are added when a discovery manifest records no confidence admission, when the reviewed-requirements digest is carried from the coverage result rather than re-verified, and when unresolved detail was truncated. Discovery reports additionally state that candidates are provisional and carry no human review, approval, or parity credit.
 
 Empty strings render as `(not recorded)` rather than as blank cells, so missing evidence stays visible.
+
+Discovery reports distinguish inventory-only (no active candidate analyzed), incomplete
+(some candidates not-started, partial or unresolved), and complete (all active candidates
+analyzed without unresolved questions). An empty inventory is inventory-only, not
+vacuously complete. Semantic completion is not approval, runtime correctness or business
+completeness. Technical-only manifests never masquerade as analyzed business capabilities.

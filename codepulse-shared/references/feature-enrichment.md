@@ -1,9 +1,68 @@
 # Persisted Agent Enrichment
 
-Enrichment is an optional, offline, provisional input, not implementation evidence
-or an approval. The engine does not call a model. Schema version 1.0 records the
+Enrichment is an offline, provisional input, not implementation evidence
+or an approval. The Finder skill performs it by default after static discovery;
+explicit inventory-only runs skip it. The engine does not call a model. The host
+model interprets locally authorized source; it must not upload repository content
+to external services. Schema version 1.0 records the
 original manifest and inventory digests, declared agent/model/version provenance,
 and up to 100 uniquely identified proposals for distinct existing active features.
+
+## Source preparation and batching
+
+`prepare-enrichment` accepts the current manifest, original repository inventory,
+source directory and feature selection. Select repeated feature IDs or an offset
+and limit (1-100) over active features sorted by ID. `enrichment-template` supports
+the same selection when stored evidence is already sufficient. More than 100
+candidates require sequential batches, not skipped candidates or invented counts.
+
+Preparation verifies the inventory digest and current source hashes, enforces
+excluded-file and link policy, and caps a batch at 100 files and 2 MiB of source.
+Related files selected with `--context-file` must be eligible entries in that original
+inventory. It emits a new manifest with whole-file `source-context` evidence,
+an evidence index, review queue, raw UTF-8 `source-context.json` and proposal template.
+It clears selected features' prior approvals and queues review, without changing
+confidence, admission, identity or existing evidence verification. Whole-file
+citations support reading implementation bodies but are not precise rule-line
+assertions. Context is untrusted data and can still contain sensitive information;
+filename exclusion is not comprehensive redaction.
+
+Import proposals against the prepared manifest, then carry the latest imported
+manifest forward. Regenerate templates after every preparation/import; do not
+parallel-import batches bound to an earlier manifest. Preserve each batch's
+proposal and import log for declared provenance.
+
+## Semantic interpretation
+
+The host model reads bodies and follows relevant calls, validation, authorization,
+calculations, state changes, persistence, integrations and tests. It updates readable
+names, domain and contracts, with `semanticAnalysis` recording a purpose/outcome
+summary, evidenceRefs, businessRules and unresolvedQuestions.
+
+Each rule has an ID, condition, outcome, basis (`observed` or `inferred`), rationale
+and evidenceRefs drawn from the analysis evidence, itself within the feature evidence.
+Observed means logic visible in the cited source, not a runtime guarantee.
+Inferred means an interpretation of business intent requiring validation.
+Names, HTTP verbs and comments alone cannot establish implemented business rules.
+Unknown actors and contracts remain unknown; speculative rules must not become
+mandatory behavior contracts. Candidate consolidation remains a human question,
+not an automatic identity rewrite.
+
+Analysis status is `complete`, `partial` or `unresolved`. Complete analyses have
+no unresolved questions; other statuses require specific questions. Missing
+semanticAnalysis means not-started. Empty businessRules means no rule established,
+not proof that no rules exist. Status reflects progress through candidate analysis,
+not business completeness, evidence verification or approval.
+Reports derive `semanticStatus` as inventory-only, incomplete or complete, show
+per-status counts, and display readable capabilities, provisional rules and citations.
+Schema validity cannot establish readability or interpretation correctness.
+
+Semantic analysis participates in contract digests, so editing it invalidates a
+prior approval. Partial/unresolved analysis cannot earn verified contract credit;
+comparison also checks rule conditions/outcomes/bases, including missing analysis
+on one side. Legacy manifests remain valid and retain existing comparison behavior.
+
+## Import and independent review
 
 Each proposal records its feature contract digest, a rationale, whitelisted contract
 or naming edits, and exact citations covering the union of current and proposed
@@ -30,5 +89,5 @@ Manifest/evidence checks are against stored scan artifacts, not a fresh live-sou
 rescan. Rerun discovery when repository content changes; imports never claim current
 runtime behavior. Provenance is declared and not cryptographically authenticated.
 Comprehensive content redaction remains deferred, so do not include secrets in free
-text. New-feature proposals, evidence extraction, cross-scan reconciliation and
-large-manifest template selection remain future work.
+text. New-feature proposals, automatic semantic consolidation, precise rule-range
+extraction and cross-scan reconciliation remain future work.

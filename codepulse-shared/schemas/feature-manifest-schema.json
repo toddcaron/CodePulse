@@ -59,7 +59,7 @@
       "required": ["id", "type", "location", "lineStart", "lineEnd", "summary", "contentHash", "verification"],
       "properties": {
         "id": {"$ref": "#/$defs/id"},
-        "type": {"enum": ["route", "ui", "endpoint", "service", "handler", "job", "integration", "authorization", "data-operation", "test", "requirement", "documentation", "feature-flag", "report", "configuration"]},
+        "type": {"enum": ["route", "ui", "endpoint", "service", "handler", "job", "integration", "authorization", "data-operation", "test", "requirement", "documentation", "feature-flag", "report", "configuration", "source-context"]},
         "location": {"type": "string", "minLength": 1},
         "lineStart": {"type": "integer", "minimum": 1},
         "lineEnd": {"type": "integer", "minimum": 1},
@@ -78,6 +78,35 @@
         "evidenceRefs": {"$ref": "#/$defs/refs", "minItems": 1}
       }
     },
+    "semanticAnalysis": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "summary", "evidenceRefs", "businessRules", "unresolvedQuestions"],
+      "properties": {
+        "status": {"enum": ["complete", "partial", "unresolved"]},
+        "summary": {"$ref": "#/$defs/semanticText"},
+        "evidenceRefs": {"$ref": "#/$defs/refs", "minItems": 1},
+        "businessRules": {
+          "type": "array", "maxItems": 100,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "condition", "outcome", "basis", "rationale", "evidenceRefs"],
+            "properties": {
+              "id": {"$ref": "#/$defs/id"},
+              "condition": {"$ref": "#/$defs/semanticText"},
+              "outcome": {"$ref": "#/$defs/semanticText"},
+              "basis": {"enum": ["observed", "inferred"]},
+              "rationale": {"$ref": "#/$defs/semanticText"},
+              "evidenceRefs": {"$ref": "#/$defs/refs", "minItems": 1}
+            }
+          }
+        },
+        "unresolvedQuestions": {
+          "type": "array", "uniqueItems": true, "maxItems": 100,
+          "items": {"$ref": "#/$defs/semanticText"}
+        }
+      }
+    },
+    "semanticText": {"type": "string", "pattern": "\\S", "maxLength": 4000},
     "feature": {
       "type": "object", "additionalProperties": false,
       "required": ["id", "name", "domain", "capabilityType", "fingerprint", "status", "aliases", "actors", "inputs", "outputs", "preconditions", "behaviors", "evidenceRefs", "confidence", "requiresHumanValidation"],
@@ -97,6 +126,7 @@
         "evidenceRefs": {"$ref": "#/$defs/refs", "minItems": 1},
         "confidence": {"$ref": "#/$defs/confidence"},
         "requiresHumanValidation": {"type": "boolean"},
+        "semanticAnalysis": {"$ref": "#/$defs/semanticAnalysis"},
         "admitted": {"type": "boolean"},
         "reviewerNote": {"type": "string", "maxLength": 4000},
         "review": {

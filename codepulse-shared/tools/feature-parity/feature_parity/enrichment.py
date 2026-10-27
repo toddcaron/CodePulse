@@ -7,11 +7,28 @@ from .identity import contract_digest, digest
 from .validation import ArtifactError, validate_manifest, validate_schema
 
 
-def enrichment_template(manifest):
+def select_features(manifest, feature_ids=None, offset=0, limit=None):
     validate_manifest(manifest)
-    active = [item for item in manifest["features"] if item["status"] in {"discovered", "confirmed", "needs-review"}]
+    active = sorted((item for item in manifest["features"]
+                     if item["status"] in {"discovered", "confirmed", "needs-review"}), key=lambda item: item["id"])
+    if offset < 0 or limit is not None and not 1 <= limit <= 100:
+        raise ArtifactError("Enrichment offset must be nonnegative and limit between 1 and 100")
+    if feature_ids is not None:
+        if offset or limit is not None:
+            raise ArtifactError("Select feature IDs or offset/limit, not both")
+        requested = set(feature_ids)
+        if len(requested) != len(feature_ids) or not requested.issubset({item["id"] for item in active}):
+            raise ArtifactError("Feature selection contains duplicate, unknown or inactive IDs")
+        active = [item for item in active if item["id"] in requested]
+    else:
+        active = active[offset:offset + limit] if limit is not None else active[offset:]
     if not active or len(active) > 100:
-        raise ArtifactError("Enrichment template requires between 1 and 100 active features")
+        raise ArtifactError("Select between 1 and 100 active features using --feature-id or --offset/--limit")
+    return active
+
+
+def enrichment_template(manifest, feature_ids=None, offset=0, limit=None):
+    active = select_features(manifest, feature_ids, offset, limit)
     evidence = {item["id"]: item for item in manifest["evidence"]}
     return {
         "schemaVersion": "1.0", "baseManifestDigest": digest(manifest),

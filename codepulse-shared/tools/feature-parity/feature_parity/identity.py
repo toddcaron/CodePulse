@@ -16,5 +16,7 @@ def contract_digest(feature, evidence):
     for field in ("actors", "inputs", "outputs", "preconditions"):
         contract[field] = sorted(contract[field])
     contract["behaviors"] = sorted(feature["behaviors"], key=lambda behavior: behavior["id"])
+    if "semanticAnalysis" in feature:
+        contract["semanticAnalysis"] = feature["semanticAnalysis"]
     contract["evidence"] = [evidence_by_id[identifier] for identifier in sorted(feature["evidenceRefs"])]
     return digest(contract)

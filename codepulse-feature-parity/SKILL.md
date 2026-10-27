@@ -30,6 +30,10 @@ The `compare` command accepts manifests, not repository paths. If inputs are amb
 ## Feature Comparison
 
 1. Validate both manifests with `parity validate --manifest <path>`. Ensure source and target are distinct files.
+   Schema-valid does not mean semantically analyzed. For newly discovered syntax-only
+   inventories, use Finder's default semantic enrichment before human reconciliation.
+   Partial or unresolved semantic analysis cannot earn verified contract credit;
+   model interpretations never replace independent human approval.
 2. Select a fresh output directory that does not exist and does not overlap an input. Preserve the input manifests and mappings unchanged.
 3. If renamed candidates need review and no mapping file was supplied, offer `identity-mappings-template` for these exact manifests. Its `identity-mappings.json` requires human decisions; `identity-suggestions.json` is advisory. Do not fill or approve mappings on the user's behalf. `reconcile-identities` may carry historical aliases only from already approved same-capability mappings.
 4. Run:

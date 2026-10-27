@@ -22,15 +22,18 @@ CodePulse provides focused GitHub Copilot skills for application health assessme
 | **codepulse-plm**      | Reviews technology lifecycle health                   | Outdated frameworks, package versions, deprecated libraries, upgrade risk            | `Run codepulse-plm and identify unsupported technologies.`                 |
 | **codepulse-ext**      | Reviews external accessibility and exposure risks     | Public endpoints, APIs, webhooks, CORS, anonymous access, attack surface             | `Run codepulse-ext and analyze the application's external exposure.`       |
 | **codepulse-exec**      | Converts a JSON result into an executive-level summary.     | Per provided `*-result.json`. Attempts to answer leadership questions and provide investment and strength analysis.             | `/codepulse-exec <result-json-filepath>`       |
-| **codepulse-feature-parity-finder** | Discovers provisional capabilities from a local repository | Bounded static discovery, inventory, evidence, review queue | `Run codepulse-feature-parity-finder on this repository.` |
+| **codepulse-feature-parity-finder** | Discovers provisional capabilities and interprets business logic from a local repository | Static inventory, source-grounded AI enrichment, readable features, business rules, evidence and review queue | `Run codepulse-feature-parity-finder on this repository.` |
 | **codepulse-feature-parity** | Compares reviewed feature manifests or requirements | Static contracts, reviewed mappings, requirements coverage | `Compare these reviewed feature manifests.` |
 
 ## Common Assessment Scenarios
 Feature Parity is under development. Its Finder and Parity skills support provisional
 repository discovery, reviewed manifest comparison, and separately reviewed requirements
 coverage using the Python engine. Discovery includes OpenAPI/C# HTTP, Vue/AngularJS
-UI/router, and ColdFusion tag declarations. Runtime parity, confirmed absence, full
-framework analysis, and HTML/Markdown feature reports are not supported.
+UI/router, and ColdFusion tag declarations. Finder then uses the host AI model by default
+to interpret hash-checked source context into readable capabilities and provisional
+business rules; explicit inventory-only mode skips that stage. HTML reports and opt-in
+Markdown include semantic progress and business context. Runtime parity, confirmed
+absence and full framework analysis are not supported.
 See the [engine setup and limitations](codepulse-shared/tools/feature-parity/README.md)
 and [agent implementation progress](docs/feature-parity-agent-implementation-plan.md).
 

@@ -85,8 +85,30 @@ def _discovery_report(manifest):
     validate_manifest(manifest)
     statuses = Counter(feature["status"] for feature in manifest["features"])
     features = manifest["features"]
+    active = [feature for feature in features if feature["status"] in {"discovered", "confirmed", "needs-review"}]
+    semantic_counts = Counter(feature.get("semanticAnalysis", {}).get("status", "not-started") for feature in active)
+    semantic_status = ("inventory-only" if semantic_counts["not-started"] == len(active)
+                       else "complete" if semantic_counts["complete"] == len(active) else "incomplete")
+    evidence = {item["id"]: item for item in manifest["evidence"]}
+    capabilities = []
+    for feature in active[:UNRESOLVED_LIMIT]:
+        analysis = feature.get("semanticAnalysis", {})
+        capabilities.append({
+            "identifier": _text(feature["id"]), "name": _text(feature["name"]), "domain": _text(feature["domain"]),
+            "status": analysis.get("status", "not-started"),
+            "summary": _text(analysis.get("summary", "Technical candidate only; business meaning has not been analyzed")),
+            "unresolvedQuestions": _texts(analysis.get("unresolvedQuestions", [])),
+            "businessRules": [{
+                "condition": _text(rule["condition"]), "outcome": _text(rule["outcome"]),
+                "basis": rule["basis"], "rationale": _text(rule["rationale"]),
+                "evidence": [_text(f"{evidence[ref]['location']}:{evidence[ref]['lineStart']}-{evidence[ref]['lineEnd']} ({ref})")
+                             for ref in rule["evidenceRefs"]],
+            } for rule in analysis.get("businessRules", [])],
+        })
     admission_recorded = any("admitted" in feature for feature in features)
     metrics = [("Candidate features", len(features)), ("Evidence records", len(manifest["evidence"]))]
+    metrics.extend((f"Semantic analysis {status}", semantic_counts[status])
+                   for status in ("complete", "partial", "unresolved", "not-started"))
     if admission_recorded:
         admitted = sum(bool(feature.get("admitted")) for feature in features)
         metrics.extend([("Admitted candidates", admitted), ("Below confidence threshold", len(features) - admitted)])
@@ -106,7 +128,10 @@ def _discovery_report(manifest):
     } for item in manifest["reviewQueue"]])
     limitations = list(manifest["scan"]["limitations"]) + [
         "Discovered candidates are provisional and carry no human review, approval or parity credit",
+        f"Semantic enrichment status: {semantic_status}; analysis completion is not business completeness or approval",
     ]
+    if len(active) > UNRESOLVED_LIMIT:
+        limitations.append(f"Capability detail is truncated to the first {UNRESOLVED_LIMIT} active features; the manifest remains complete")
     if not admission_recorded:
         limitations.append("This manifest does not record confidence admission; admitted counts are not reported")
     if truncated:
@@ -115,6 +140,7 @@ def _discovery_report(manifest):
         "reportType": "discovery",
         "title": f"Provisional capability discovery: {_text(manifest['application']['name'])}",
         "methodology": "Bounded static discovery of provisional capabilities; no application build or execution",
+        "semanticStatus": semantic_status, "capabilities": capabilities,
         "applications": [_application(manifest, "scanned")],
         "digests": [
             {"label": "Repository inventory", "value": manifest["scan"]["inventoryDigest"]},
@@ -301,6 +327,18 @@ def _html_table(headers, rows):
     return f"<table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>"
 
 
+def _capability_rows(report):
+    return [[item["name"], item["domain"], item["status"], item["summary"],
+             "; ".join(item["unresolvedQuestions"]) or "(none recorded)", item["identifier"]]
+            for item in report.get("capabilities", [])]
+
+
+def _rule_rows(report):
+    return [[item["name"], rule["basis"], rule["condition"], rule["outcome"], rule["rationale"],
+             "; ".join(rule["evidence"])]
+            for item in report.get("capabilities", []) for rule in item["businessRules"]]
+
+
 def render_html(report):
     validate_schema(report, "feature-report-schema.json")
     scope_limitations = "".join(
@@ -348,6 +386,16 @@ def render_html(report):
             f"<li>{_escape(item)}</li>" for item in report["limitations"]
         ) + "</ul></section>",
     ]
+    if "capabilities" in report:
+        sections.insert(4, "<section><h2>Capabilities and business context</h2>"
+                        f"<p>Semantic enrichment: {_escape(report['semanticStatus'])}</p>"
+                        + _html_table(
+                            ["Capability", "Domain", "Analysis", "Purpose and outcome", "Unresolved questions", "Identifier"],
+                            [[_escape(cell) for cell in row] for row in _capability_rows(report)],
+                        ) + "<h3>Business rules (provisional)</h3>" + _html_table(
+                            ["Capability", "Basis", "When", "Then", "Rationale", "Evidence"],
+                            [[_escape(cell) for cell in row] for row in _rule_rows(report)],
+                        ) + "</section>")
     return (
         "<!doctype html>\n"
         '<html lang="en"><head><meta charset="utf-8">'
@@ -419,6 +467,18 @@ def render_markdown(report):
         "## Limitations",
         "\n".join(f"- {_cell(item)}" for item in report["limitations"]),
     ]
+    if "capabilities" in report:
+        position = blocks.index("## Formulas")
+        blocks[position:position] = [
+            "## Capabilities and business context",
+            f"Semantic enrichment: {report['semanticStatus']}",
+            _markdown_table(
+                ["Capability", "Domain", "Analysis", "Purpose and outcome", "Unresolved questions", "Identifier"],
+                _capability_rows(report),
+            ),
+            "### Business rules (provisional)",
+            _markdown_table(["Capability", "Basis", "When", "Then", "Rationale", "Evidence"], _rule_rows(report)),
+        ]
     return "\n\n".join(blocks) + "\n"
 
 

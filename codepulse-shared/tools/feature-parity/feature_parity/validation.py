@@ -104,6 +104,16 @@ def validate_manifest(document):
         _unique_records(feature["behaviors"], "behavior")
         for behavior in feature["behaviors"]:
             _check_refs(behavior["evidenceRefs"], set(feature["evidenceRefs"]))
+        analysis = feature.get("semanticAnalysis")
+        if analysis is not None:
+            _check_refs(analysis["evidenceRefs"], set(feature["evidenceRefs"]))
+            _unique_records(analysis["businessRules"], "business rule")
+            for rule in analysis["businessRules"]:
+                _check_refs(rule["evidenceRefs"], set(analysis["evidenceRefs"]))
+            if analysis["status"] == "complete" and analysis["unresolvedQuestions"]:
+                raise ArtifactError("Complete semantic analysis cannot contain unresolved questions")
+            if analysis["status"] != "complete" and not analysis["unresolvedQuestions"]:
+                raise ArtifactError("Incomplete semantic analysis must explain unresolved questions")
         if feature["status"] != "confirmed" and not feature["requiresHumanValidation"]:
             raise ArtifactError("Unconfirmed feature must require human validation")
         if feature["status"] == "confirmed":

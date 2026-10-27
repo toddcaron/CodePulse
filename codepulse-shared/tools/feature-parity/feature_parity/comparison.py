@@ -16,10 +16,18 @@ VERIFIED = {"verified-original", "verified-tool-output"}
 CONSTRAINTS = ("actors", "inputs", "outputs", "preconditions")
 
 
+def _business_rules(features):
+    present = ["semanticAnalysis" in feature for feature in features]
+    rules = frozenset((rule["condition"], rule["outcome"], rule["basis"])
+                      for feature in features for rule in feature.get("semanticAnalysis", {}).get("businessRules", []))
+    return any(present), all(present), rules
+
+
 def _supported(feature, manifest):
     evidence = {item["id"]: item for item in manifest["evidence"]}
     return (
         feature["status"] == "confirmed"
+        and feature.get("semanticAnalysis", {}).get("status", "complete") == "complete"
         and feature.get("admitted", True)
         and not feature["requiresHumanValidation"]
         and all(feature[field] for field in CONSTRAINTS)
@@ -79,6 +87,8 @@ def compare_manifests(baseline, target, identity_mappings=None):
                     expected_values = set(feature[field])
                     if any(expected_values != set(candidate[field]) for candidate in candidates):
                         record["differences"].append(f"{field} differ")
+                if _business_rules(group_baselines) != _business_rules(candidates):
+                    record["differences"].append("Business rules differ or semantic analysis is missing")
                 if descriptions - baseline_descriptions:
                     record["differences"].append("Target has additional behaviors requiring review")
                 if record["differences"]:

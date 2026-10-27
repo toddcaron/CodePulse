@@ -13,6 +13,7 @@ from .enrichment import enrichment_template, import_enrichment
 from .identity import digest
 from .identity_mappings import identity_mappings_template, identity_suggestions, reconcile_identity_aliases
 from .finder import find_repository
+from .source_context import prepare_enrichment
 from .inventory import InventoryPolicyError, source_root
 from .reviews import reconcile_manifest, review_template
 from .reports import report_artifacts, report_kind
@@ -72,6 +73,17 @@ def parser():
     enrichment_export.add_argument("--manifest", required=True)
     enrichment_export.add_argument("--output", required=True)
     enrichment_export.add_argument("--dry-run", action="store_true")
+    prepare = commands.add_parser("prepare-enrichment", help="Prepare hash-checked source context and model proposal placeholders")
+    prepare.add_argument("--manifest", required=True)
+    prepare.add_argument("--inventory", required=True)
+    prepare.add_argument("--source", required=True)
+    prepare.add_argument("--context-file", action="append", default=[], help="Additional eligible source-relative POSIX path")
+    prepare.add_argument("--output", required=True)
+    prepare.add_argument("--dry-run", action="store_true")
+    for selection in (enrichment_export, prepare):
+        selection.add_argument("--feature-id", action="append", help="Repeat for each active feature in the batch")
+        selection.add_argument("--offset", type=int, default=0, help="Offset in active features sorted by ID")
+        selection.add_argument("--limit", type=int, help="Explicit batch size, 1-100")
     enrichment_import = commands.add_parser("import-enrichment", help="Import agent proposals into a new needs-review manifest")
     enrichment_import.add_argument("--manifest", required=True)
     enrichment_import.add_argument("--enrichment", required=True)
@@ -225,15 +237,28 @@ def main(argv=None):
             _write_artifacts(output, artifacts)
             print(json.dumps(artifacts["requirements-log.json"]["statistics"], sort_keys=True))
             return 0
-        if arguments.command in {"enrichment-template", "import-enrichment"}:
+        if arguments.command in {"enrichment-template", "prepare-enrichment", "import-enrichment"}:
             manifest_path, manifest = _input(arguments.manifest)
             inputs = [manifest_path]
             if arguments.command == "import-enrichment":
                 enrichment_path, enrichment = _json_input(arguments.enrichment)
                 inputs.append(enrichment_path)
                 artifacts = import_enrichment(manifest, enrichment)
+            elif arguments.command == "prepare-enrichment":
+                inventory_path, inventory = _json_input(arguments.inventory)
+                source = source_root(arguments.source)
+                inputs.extend([inventory_path, source])
+                output_path = Path(arguments.output).resolve()
+                if output_path.is_relative_to(source):
+                    raise PolicyError("Enrichment output must be outside the assessed source")
+                artifacts = prepare_enrichment(
+                    manifest, inventory, source, arguments.feature_id, arguments.offset, arguments.limit,
+                    arguments.context_file,
+                )
             else:
-                artifacts = {"enrichment-proposals.json": enrichment_template(manifest)}
+                artifacts = {"enrichment-proposals.json": enrichment_template(
+                    manifest, arguments.feature_id, arguments.offset, arguments.limit,
+                )}
             output = _output(arguments.output, inputs)
             if arguments.dry_run:
                 print("Enrichment operation validated; no artifacts written")

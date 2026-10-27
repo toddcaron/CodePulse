@@ -87,9 +87,33 @@ class InstallationSmokeTests(unittest.TestCase):
         validated = self.run_installed("validate", "--manifest", str(discovery / "feature-manifest.json"))
         self.assertEqual(validated.returncode, 0, validated.stderr)
 
+        context = self.workspace / "prepared"
+        prepared = self.run_installed(
+            "prepare-enrichment", "--manifest", str(discovery / "feature-manifest.json"),
+            "--inventory", str(discovery / "repository-inventory.json"), "--source", str(source),
+            "--limit", "20", "--output", str(context),
+        )
+        self.assertEqual(prepared.returncode, 0, prepared.stderr)
+        proposal_path = context / "enrichment-proposals.json"
+        proposals = json.loads(proposal_path.read_text(encoding="utf-8"))
+        proposals["provenance"] = {"agent": "Smoke fixture", "model": "Synthetic", "version": "1"}
+        for proposal in proposals["proposals"]:
+            proposal["rationale"] = "OpenAPI declarations lack implementation bodies"
+            proposal["updates"] = {"semanticAnalysis": {
+                "status": "partial", "summary": "Declared API capability; implementation requires review",
+                "evidenceRefs": [item["id"] for item in proposal["evidence"]],
+                "businessRules": [], "unresolvedQuestions": ["Implementation is not present in this fixture"],
+            }}
+        proposal_path.write_text(json.dumps(proposals), encoding="utf-8")
+        enriched = self.workspace / "enriched"
+        imported = self.run_installed(
+            "import-enrichment", "--manifest", str(context / "feature-manifest.json"),
+            "--enrichment", str(proposal_path), "--output", str(enriched),
+        )
+        self.assertEqual(imported.returncode, 0, imported.stderr)
         report = self.workspace / "discovery-report"
         rendered = self.run_installed(
-            "report", "--artifact", str(discovery / "feature-manifest.json"),
+            "report", "--artifact", str(enriched / "feature-manifest.json"),
             "--output", str(report), "--format", "both",
         )
         self.assertEqual(rendered.returncode, 0, rendered.stderr)
@@ -100,6 +124,8 @@ class InstallationSmokeTests(unittest.TestCase):
         document = json.loads((report / "feature-report.json").read_text(encoding="utf-8"))
         self.assertEqual(document["reportType"], "discovery")
         self.assertEqual(document["applications"][0]["name"], "Installation Smoke API")
+        self.assertEqual(document["semanticStatus"], "incomplete")
+        self.assertEqual(len(document["capabilities"]), 2)
         self.assertTrue((report / "feature-report.html").read_text(encoding="utf-8").startswith("<!doctype html>"))
 
         self.assertEqual(tree_digest(source), before)

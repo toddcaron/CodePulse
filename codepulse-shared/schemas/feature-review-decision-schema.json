@@ -28,6 +28,7 @@
               "inputs": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
               "outputs": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
               "preconditions": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"},
+              "semanticAnalysis": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/semanticAnalysis"},
               "evidenceRefs": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs", "minItems": 1},
               "behaviors": {"type": "array", "minItems": 1, "items": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/behavior"}}
             }
