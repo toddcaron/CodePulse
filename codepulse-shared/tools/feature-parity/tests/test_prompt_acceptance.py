@@ -67,6 +67,10 @@ class PromptAcceptanceTests(unittest.TestCase):
                        "businessmeaning", "usergoal", "never automatically add",
                        "business discovery incomplete", "human approval is separate"):
             self.assertIn(phrase, finder_body.lower())
+        for phrase in ("a batch is not a run", "parity enrichment-status", "--pending",
+                       "enrichment-progress.json", "pendingcount > 0", "loop, do not finalize",
+                       "do not voluntarily stop", "resume from these artifacts"):
+            self.assertIn(phrase, finder_body.lower())
 
     def test_finder_prompt_contract_discovers_and_validates_synthetic_repository(self):
         with tempfile.TemporaryDirectory() as directory:

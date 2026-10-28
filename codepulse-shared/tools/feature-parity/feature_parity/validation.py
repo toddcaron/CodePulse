@@ -129,24 +129,31 @@ def validate_manifest(document):
     return document
 
 
+def business_meaning_gaps(feature):
+    """Return delivery gaps for an already schema-validated feature."""
+    analysis = feature.get("semanticAnalysis", {})
+    gaps = []
+    if analysis.get("status") not in {"complete", "partial"}:
+        gaps.append("Business analysis not started" if not analysis else "Business meaning remains unresolved")
+    if "businessMeaning" not in analysis:
+        gaps.append("Structured business meaning is missing")
+    if not feature["name"].strip() or re.search(
+        r"\b(?:API operation|declaration)\s+[a-f0-9]{8}$", feature["name"], re.IGNORECASE,
+    ):
+        gaps.append("Business-readable feature name is missing")
+    if feature["domain"].strip().casefold() in {"", "unclassified"}:
+        gaps.append("Business domain is missing")
+    if all(behavior["description"].startswith("Declares ") for behavior in feature["behaviors"]):
+        gaps.append("Behavior contract still describes declarations only")
+    return gaps
+
+
 def validate_business_meaning(document):
     """Gate business discovery delivery, not intermediate inventory persistence."""
     validate_manifest(document)
     active = [feature for feature in document["features"]
               if feature["status"] in {"discovered", "confirmed", "needs-review"}]
-    missing = 0
-    for feature in active:
-        analysis = feature.get("semanticAnalysis", {})
-        placeholder_name = re.search(
-            r"\b(?:API operation|declaration)\s+[a-f0-9]{8}$", feature["name"], re.IGNORECASE,
-        )
-        declaration_only = all(behavior["description"].startswith("Declares ")
-                               for behavior in feature["behaviors"])
-        if (analysis.get("status") not in {"complete", "partial"} or "businessMeaning" not in analysis
-                or not feature["name"].strip() or placeholder_name
-                or feature["domain"].strip().casefold() in {"", "unclassified"}
-                or declaration_only):
-            missing += 1
+    missing = sum(bool(business_meaning_gaps(feature)) for feature in active)
     if not active or missing:
         raise ArtifactError(
             f"Business meaning is required for discovery delivery: {missing} of {len(active)} active "
@@ -154,6 +161,9 @@ def validate_business_meaning(document):
             "Use prepare-enrichment and import-enrichment to record businessMeaning "
             "(purpose, userGoal, trigger, outcome, basis), readable names/domains and evidence-backed "
             "behaviors. Keep unresolved work incomplete; use report --inventory-only only when "
-            "the user explicitly requests a technical inventory."
+            "the user explicitly requests a technical inventory. "
+            "Run enrichment-status against the latest imported manifest, then continue "
+            "prepare-enrichment --pending and import-enrichment while pendingCount is nonzero. "
+            "A batch size of 20 is not the scope of the whole assessment."
         )
     return document

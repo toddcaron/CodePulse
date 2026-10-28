@@ -54,6 +54,11 @@ Feature-profile skills must:
   trigger, outcome and observed/inferred basis with source-backed contracts.
   Do not deliver raw scan artifacts as the requested final manifest or automatically
   bypass the gate with `--inventory-only`. That mode requires an explicit user request.
+- Continue Finder's prepare/analyze/import loop while `enrichment-status` reports
+  pending candidates. Batch size is a context limit, not run scope. Preserve the
+  latest imported manifest and use `prepare-enrichment --pending` to resume without
+  repeating completed business context. Not-started work is not a blocker; a
+  premature delivery-gate failure must not end a run after one successful batch.
 - Treat discovered features as provisional. Parity, equivalence, and coverage are credited only from human-approved review artifacts, never from discovery output or model judgment.
 - Report unresolved records as unresolved. Never close a record that the engine marked as requiring human validation.
 - Emit the engine's JSON artifacts as the authoritative result, and produce HTML or Markdown only through `parity report`.

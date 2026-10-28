@@ -62,7 +62,7 @@ class EnrichmentTests(unittest.TestCase):
                 self.assertEqual(main(arguments), 0)
                 self.assertEqual(main(arguments), 5)
             artifacts = {item.name: json.loads(item.read_text(encoding="utf-8")) for item in (root / "imported").iterdir()}
-            self.assertEqual(set(artifacts), {"feature-manifest.json", "enrichment-proposals.json", "enrichment-log.json", "review-queue.json"})
+            self.assertEqual(set(artifacts), {"feature-manifest.json", "enrichment-proposals.json", "enrichment-log.json", "review-queue.json", "enrichment-progress.json"})
             self.assertEqual(artifacts["enrichment-proposals.json"], enrichment_batch(document))
             self.assertEqual(artifacts["feature-manifest.json"]["features"][0]["status"], "needs-review")
             self.assertEqual(json.loads(source.read_text(encoding="utf-8")), document)

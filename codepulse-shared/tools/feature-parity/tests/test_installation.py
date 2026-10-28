@@ -86,12 +86,15 @@ class InstallationSmokeTests(unittest.TestCase):
 
         validated = self.run_installed("validate", "--manifest", str(discovery / "feature-manifest.json"))
         self.assertEqual(validated.returncode, 0, validated.stderr)
+        status = self.run_installed("enrichment-status", "--manifest", str(discovery / "feature-manifest.json"))
+        self.assertEqual(status.returncode, 0, status.stderr)
+        self.assertEqual(json.loads(status.stdout)["completionState"], "continue")
 
         context = self.workspace / "prepared"
         prepared = self.run_installed(
             "prepare-enrichment", "--manifest", str(discovery / "feature-manifest.json"),
             "--inventory", str(discovery / "repository-inventory.json"), "--source", str(source),
-            "--limit", "20", "--output", str(context),
+            "--pending", "--limit", "20", "--output", str(context),
         )
         self.assertEqual(prepared.returncode, 0, prepared.stderr)
         proposal_path = context / "enrichment-proposals.json"
@@ -124,6 +127,10 @@ class InstallationSmokeTests(unittest.TestCase):
             "--enrichment", str(proposal_path), "--output", str(enriched),
         )
         self.assertEqual(imported.returncode, 0, imported.stderr)
+        self.assertEqual(json.loads(imported.stdout)["businessAnalysis"]["completionState"], "ready")
+        status = self.run_installed("enrichment-status", "--manifest", str(enriched / "feature-manifest.json"))
+        self.assertEqual(status.returncode, 0, status.stderr)
+        self.assertEqual(json.loads(status.stdout)["statistics"]["pendingCount"], 0)
         report = self.workspace / "discovery-report"
         rendered = self.run_installed(
             "report", "--artifact", str(enriched / "feature-manifest.json"),

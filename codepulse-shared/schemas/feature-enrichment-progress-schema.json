@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:codepulse:feature-enrichment-progress:1.0",
+  "title": "CodePulse Business Enrichment Progress",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "manifestDigest", "completionState", "statistics", "nextFeatureIds", "pending", "blocked", "nextAction"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "manifestDigest": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/hash"},
+    "completionState": {"enum": ["continue", "blocked", "ready", "empty"]},
+    "statistics": {
+      "type": "object", "additionalProperties": false,
+      "required": ["activeCount", "businessReadyCount", "pendingCount", "blockedCount"],
+      "properties": {
+        "activeCount": {"type": "integer", "minimum": 0},
+        "businessReadyCount": {"type": "integer", "minimum": 0},
+        "pendingCount": {"type": "integer", "minimum": 0},
+        "blockedCount": {"type": "integer", "minimum": 0}
+      }
+    },
+    "nextFeatureIds": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/refs", "maxItems": 100},
+    "pending": {"type": "array", "items": {"$ref": "#/$defs/workItem"}},
+    "blocked": {"type": "array", "items": {"$ref": "#/$defs/workItem"}},
+    "nextAction": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/semanticText"}
+  },
+  "$defs": {
+    "workItem": {
+      "type": "object", "additionalProperties": false,
+      "required": ["featureId", "reasons", "unresolvedQuestions"],
+      "properties": {
+        "featureId": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/id"},
+        "reasons": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings", "minItems": 1},
+        "unresolvedQuestions": {"$ref": "urn:codepulse:feature-manifest:1.0#/$defs/strings"}
+      }
+    }
+  }
+}

@@ -4,7 +4,44 @@ import copy
 
 from . import __version__
 from .identity import contract_digest, digest
-from .validation import ArtifactError, validate_manifest, validate_schema
+from .validation import ArtifactError, business_meaning_gaps, validate_manifest, validate_schema
+
+
+def enrichment_progress(manifest, limit=20):
+    validate_manifest(manifest)
+    if not 1 <= limit <= 100:
+        raise ArtifactError("Enrichment progress limit must be between 1 and 100")
+    active = sorted((item for item in manifest["features"]
+                     if item["status"] in {"discovered", "confirmed", "needs-review"}), key=lambda item: item["id"])
+    pending = []
+    blocked = []
+    for feature in active:
+        gaps = business_meaning_gaps(feature)
+        if not gaps:
+            continue
+        analysis = feature.get("semanticAnalysis", {})
+        item = {"featureId": feature["id"], "reasons": gaps,
+                "unresolvedQuestions": list(analysis.get("unresolvedQuestions", []))}
+        (blocked if analysis.get("status") == "unresolved" else pending).append(item)
+    state = "continue" if pending else "blocked" if blocked else "ready" if active else "empty"
+    result = {
+        "schemaVersion": "1.0", "manifestDigest": digest(manifest),
+        "completionState": state,
+        "statistics": {
+            "activeCount": len(active), "businessReadyCount": len(active) - len(pending) - len(blocked),
+            "pendingCount": len(pending), "blockedCount": len(blocked),
+        },
+        "nextFeatureIds": [item["featureId"] for item in pending[:limit]],
+        "pending": pending, "blocked": blocked,
+        "nextAction": {
+            "continue": "Prepare the next pending batch from this manifest, analyze source, import, and repeat; do not finalize yet.",
+            "blocked": "Investigate recorded blockers using related source; retry explicit feature IDs. Do not fabricate meaning or render a final report.",
+            "ready": "Run validate --require-business-meaning, then render the business report from this manifest.",
+            "empty": "No active candidates; disclose discovery limitations. An empty inventory is not business-ready.",
+        }[state],
+    }
+    validate_schema(result, "feature-enrichment-progress-schema.json")
+    return result
 
 
 def select_features(manifest, feature_ids=None, offset=0, limit=None):
@@ -105,4 +142,5 @@ def import_enrichment(manifest, enrichment):
     }
     validate_schema(log, "feature-enrichment-log-schema.json")
     return {"feature-manifest.json": result, "enrichment-proposals.json": copy.deepcopy(enrichment),
-            "review-queue.json": result["reviewQueue"], "enrichment-log.json": log}
+            "review-queue.json": result["reviewQueue"], "enrichment-log.json": log,
+            "enrichment-progress.json": enrichment_progress(result)}

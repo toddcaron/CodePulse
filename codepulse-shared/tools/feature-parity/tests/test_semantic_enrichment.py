@@ -12,7 +12,7 @@ from test_enrichment import enrichment_batch
 from test_validation import manifest
 from feature_parity.cli import main
 from feature_parity.comparison import compare_manifests
-from feature_parity.enrichment import enrichment_template, import_enrichment
+from feature_parity.enrichment import enrichment_progress, enrichment_template, import_enrichment
 from feature_parity.finder import find_repository
 from feature_parity.identity import digest
 from feature_parity.identity_mappings import identity_mappings_template
@@ -336,3 +336,135 @@ class SourcePreparationTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
             self.assertEqual(main(bad_output), 5)
         self.assertFalse((self.source / "invalid-output").exists())
+
+    def test_pending_selection_skips_ready_candidates_after_arbitrary_domain_batch(self):
+        source_text = "class Operations {\n" + "\n".join(
+            f"[HttpPost]\npublic void Action{index}() {{}}" for index in range(45)
+        ) + "\n}"
+        (self.source / "PromotionController.cs").write_text(source_text, encoding="utf-8")
+        scan = find_repository(self.source)
+        document = scan["feature-manifest.json"]
+        selected = [feature["id"] for feature in document["features"][10:30]]
+        first = prepare_enrichment(document, scan["repository-inventory.json"], self.source, feature_ids=selected)
+        self.assertEqual(len(selected), 20)
+        latest = self.complete_business_batch(first)
+        progress = enrichment_progress(latest)
+        self.assertEqual(progress["statistics"]["businessReadyCount"], 20)
+        self.assertEqual(progress["statistics"]["pendingCount"], 25)
+        self.assertEqual(progress["completionState"], "continue")
+        self.assertTrue(set(progress["nextFeatureIds"]).isdisjoint(selected))
+        visited = set(selected)
+        while progress["completionState"] == "continue":
+            prepared = prepare_enrichment(latest, scan["repository-inventory.json"], self.source, pending=True)
+            batch_ids = prepared["source-context.json"]["featureIds"]
+            self.assertTrue(set(batch_ids).isdisjoint(visited))
+            self.assertLessEqual(len(batch_ids), 20)
+            visited.update(batch_ids)
+            before = {item["id"]: item for item in latest["features"]}
+            latest = self.complete_business_batch(prepared)
+            for feature in latest["features"]:
+                if feature["id"] not in batch_ids:
+                    self.assertEqual(feature, before[feature["id"]])
+            progress = enrichment_progress(latest)
+        self.assertEqual(len(visited), 45)
+        self.assertEqual(progress["completionState"], "ready")
+        validate_business_meaning(latest)
+        self.assertEqual(build_report(latest)["discoveryMode"], "business")
+        with self.assertRaisesRegex(ArtifactError, "No pending candidates"):
+            prepare_enrichment(latest, scan["repository-inventory.json"], self.source, pending=True)
+
+    def complete_business_batch(self, prepared):
+        batch = copy.deepcopy(prepared["enrichment-proposals.json"])
+        batch["provenance"] = {"agent": "Fixture", "model": "Synthetic", "version": "1"}
+        evidence = {item["id"]: item for item in prepared["feature-manifest.json"]["evidence"]}
+        for proposal in batch["proposals"]:
+            context_id = next(item["id"] for item in proposal["evidence"]
+                              if evidence[item["id"]]["type"] == "source-context")
+            proposal["rationale"] = "Synthetic business interpretation for multi-batch workflow verification"
+            proposal["updates"] = {
+                "name": "Assign promotion to a location", "domain": "Promotions",
+                "semanticAnalysis": analysis(context_id),
+                "behaviors": [{
+                    "id": "assignment", "description": "Assign promotion to an eligible location",
+                    "mandatory": True, "evidenceRefs": [context_id],
+                }],
+            }
+        return import_enrichment(prepared["feature-manifest.json"], batch)["feature-manifest.json"]
+
+    def test_pending_cli_resumes_without_offset_and_status_does_not_fail_on_remaining_work(self):
+        manifest_path = self.root / "manifest.json"
+        manifest_path.write_text(json.dumps(self.document), encoding="utf-8")
+        inventory_path = self.root / "inventory.json"
+        inventory_path.write_text(json.dumps(self.inventory), encoding="utf-8")
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            self.assertEqual(main(["parity", "enrichment-status", "--manifest", str(manifest_path)]), 0)
+        summary = json.loads(stdout.getvalue())
+        self.assertEqual(summary["completionState"], "continue")
+        self.assertEqual(summary["statistics"]["pendingCount"], 1)
+        self.assertEqual(len(summary["nextFeatureIds"]), 1)
+        self.assertNotIn("pending", summary)
+        arguments = ["parity", "prepare-enrichment", "--manifest", str(manifest_path),
+                     "--inventory", str(inventory_path), "--source", str(self.source),
+                     "--pending", "--output", str(self.root / "pending-batch")]
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(main(arguments + ["--dry-run"]), 0)
+            self.assertFalse((self.root / "pending-batch").exists())
+            self.assertEqual(main(arguments), 0)
+        persisted = json.loads((self.root / "pending-batch" / "enrichment-progress.json").read_text(encoding="utf-8"))
+        self.assertEqual(persisted["completionState"], "continue")
+        self.assertEqual(persisted["pending"][0]["featureId"], summary["nextFeatureIds"][0])
+
+
+class EnrichmentProgressTests(unittest.TestCase):
+    def test_actual_size_first_twenty_leaves_548_to_process(self):
+        document = manifest()
+        base = document["features"][0]
+        document["features"] = [dict(copy.deepcopy(base), id=f"feature-{index:04}") for index in range(568)]
+        for feature in document["features"][50:70]:
+            feature["semanticAnalysis"] = analysis()
+        progress = enrichment_progress(document)
+        self.assertEqual(progress["statistics"], {
+            "activeCount": 568, "businessReadyCount": 20, "pendingCount": 548, "blockedCount": 0,
+        })
+        self.assertEqual(progress["completionState"], "continue")
+        self.assertEqual(progress["nextFeatureIds"], [f"feature-{index:04}" for index in range(20)])
+        self.assertEqual(progress, enrichment_progress(copy.deepcopy(document)))
+        with self.assertRaisesRegex(ArtifactError, "continue"):
+            validate_business_meaning(document)
+
+    def test_blocked_candidate_cannot_starve_unstarted_work(self):
+        document = manifest()
+        document["features"][0]["semanticAnalysis"] = analysis()
+        document["features"][0]["semanticAnalysis"].update(
+            status="unresolved", unresolvedQuestions=["Dynamic policy source unavailable"],
+        )
+        pending = copy.deepcopy(document["features"][0])
+        pending["id"] = "other.pending"
+        pending.pop("semanticAnalysis")
+        inactive = copy.deepcopy(pending)
+        inactive.update(id="other.deprecated", status="deprecated")
+        document["features"].extend([pending, inactive])
+        progress = enrichment_progress(document)
+        self.assertEqual(progress["completionState"], "continue")
+        self.assertEqual(progress["nextFeatureIds"], ["other.pending"])
+        self.assertEqual(progress["statistics"]["blockedCount"], 1)
+        self.assertEqual(progress["blocked"][0]["unresolvedQuestions"], ["Dynamic policy source unavailable"])
+        pending["semanticAnalysis"] = analysis()
+        progress = enrichment_progress(document)
+        self.assertEqual(progress["completionState"], "blocked")
+        self.assertEqual(progress["nextFeatureIds"], [])
+        self.assertEqual(progress["statistics"]["activeCount"], 2)
+
+    def test_legacy_or_naming_only_enrichment_remains_pending_not_blocked(self):
+        document = manifest()
+        document["features"][0]["semanticAnalysis"] = analysis()
+        document["features"][0]["semanticAnalysis"].pop("businessMeaning")
+        progress = enrichment_progress(document)
+        self.assertEqual(progress["completionState"], "continue")
+        self.assertIn("Structured business meaning is missing", progress["pending"][0]["reasons"])
+        document["features"] = []
+        self.assertEqual(enrichment_progress(document)["completionState"], "empty")
+        for limit in (0, 101, -1):
+            with self.subTest(limit=limit), self.assertRaises(ArtifactError):
+                enrichment_progress(document, limit)

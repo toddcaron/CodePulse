@@ -9,7 +9,7 @@ from pathlib import Path
 from . import __version__
 from .comparison import compare_manifests, gate_failed
 from .config import ConfigurationError, resolve_policy
-from .enrichment import enrichment_template, import_enrichment
+from .enrichment import enrichment_progress, enrichment_template, import_enrichment
 from .identity import digest
 from .identity_mappings import identity_mappings_template, identity_suggestions, reconcile_identity_aliases
 from .finder import find_repository
@@ -75,6 +75,9 @@ def parser():
     enrichment_export.add_argument("--manifest", required=True)
     enrichment_export.add_argument("--output", required=True)
     enrichment_export.add_argument("--dry-run", action="store_true")
+    progress = commands.add_parser("enrichment-status", help="Show business readiness and the next pending batch; unfinished work is not a command failure")
+    progress.add_argument("--manifest", required=True)
+    progress.add_argument("--limit", type=int, default=20, help="Maximum next batch size, 1-100")
     prepare = commands.add_parser("prepare-enrichment", help="Prepare hash-checked source context and model proposal placeholders")
     prepare.add_argument("--manifest", required=True)
     prepare.add_argument("--inventory", required=True)
@@ -82,6 +85,7 @@ def parser():
     prepare.add_argument("--context-file", action="append", default=[], help="Additional eligible source-relative POSIX path")
     prepare.add_argument("--output", required=True)
     prepare.add_argument("--dry-run", action="store_true")
+    prepare.add_argument("--pending", action="store_true", help="Select the next business-incomplete candidates, skipping already ready and explicitly unresolved features")
     for selection in (enrichment_export, prepare):
         selection.add_argument("--feature-id", action="append", help="Repeat for each active feature in the batch")
         selection.add_argument("--offset", type=int, default=0, help="Offset in active features sorted by ID")
@@ -151,6 +155,10 @@ def _input(path):
     resolved, document = _json_input(path)
     validate_manifest(document)
     return resolved, document
+
+
+def _progress_summary(progress):
+    return {key: value for key, value in progress.items() if key not in {"pending", "blocked"}}
 
 
 def _output(path, inputs):
@@ -246,6 +254,10 @@ def main(argv=None):
             _write_artifacts(output, artifacts)
             print(json.dumps(artifacts["requirements-log.json"]["statistics"], sort_keys=True))
             return 0
+        if arguments.command == "enrichment-status":
+            _, manifest = _input(arguments.manifest)
+            print(json.dumps(_progress_summary(enrichment_progress(manifest, arguments.limit)), sort_keys=True))
+            return 0
         if arguments.command in {"enrichment-template", "prepare-enrichment", "import-enrichment"}:
             manifest_path, manifest = _input(arguments.manifest)
             inputs = [manifest_path]
@@ -262,7 +274,7 @@ def main(argv=None):
                     raise PolicyError("Enrichment output must be outside the assessed source")
                 artifacts = prepare_enrichment(
                     manifest, inventory, source, arguments.feature_id, arguments.offset, arguments.limit,
-                    arguments.context_file,
+                    arguments.context_file, pending=arguments.pending,
                 )
             else:
                 artifacts = {"enrichment-proposals.json": enrichment_template(
@@ -274,7 +286,12 @@ def main(argv=None):
                 return 0
             _write_artifacts(output, artifacts)
             if arguments.command == "import-enrichment":
-                print(json.dumps(artifacts["enrichment-log.json"]["statistics"], sort_keys=True))
+                print(json.dumps({
+                    **artifacts["enrichment-log.json"]["statistics"],
+                    "businessAnalysis": _progress_summary(artifacts["enrichment-progress.json"]),
+                }, sort_keys=True))
+            elif arguments.command == "prepare-enrichment":
+                print(json.dumps(_progress_summary(artifacts["enrichment-progress.json"]), sort_keys=True))
             else:
                 print("Unapproved enrichment placeholders exported; complete provenance, rationale and proposed updates")
             return 0

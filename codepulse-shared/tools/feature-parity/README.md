@@ -109,7 +109,8 @@ Prepare source-grounded batches and import completed proposals using fresh
 external output directories (all paths below are placeholders):
 
 ```text
-python <installed-cli> parity prepare-enrichment --manifest <latest-manifest> --inventory <scan>/repository-inventory.json --source <source-root> --offset 0 --limit 20 --output <new-context-directory>
+python <installed-cli> parity enrichment-status --manifest <latest-manifest>
+python <installed-cli> parity prepare-enrichment --manifest <latest-manifest> --inventory <scan>/repository-inventory.json --source <source-root> --pending --limit 20 --output <new-context-directory>
 python <installed-cli> parity import-enrichment --manifest <new-context-directory>/feature-manifest.json --enrichment <completed-proposals.json> --output <new-enriched-directory>
 ```
 
@@ -119,7 +120,7 @@ stale hashes, path escapes, more than 100 files, or more than 2 MiB of source pe
 batch. Use a smaller batch on a limit failure; no source is silently truncated.
 It exports the prepared `feature-manifest.json`, `evidence-index.json`,
 `review-queue.json`, `source-context.json` (raw UTF-8 file content), and incomplete
-`enrichment-proposals.json`. Source context evidence spans each whole file; those
+`enrichment-proposals.json`, plus `enrichment-progress.json`. Source context evidence spans each whole file; those
 citations do not assert precise rule-level line locations or runtime verification.
 
 Repeat `--context-file <source-relative-POSIX-path>` to include relevant services,
@@ -140,16 +141,44 @@ python codepulse-shared/tools/feature-parity/cli.py parity enrichment-template -
 python codepulse-shared/tools/feature-parity/cli.py parity import-enrichment --manifest /path/to/feature-manifest.json --enrichment /path/to/completed-proposals.json --output /path/to/new-enriched-results
 ```
 
-All enrichment commands accept `--dry-run`. The template is intentionally incomplete and cannot be
+Preparation, template export and import accept `--dry-run`; `enrichment-status`
+is read-only and writes nothing. The template is intentionally incomplete and cannot be
 imported unchanged. Supply agent/model/version provenance, a rationale and at least
 one permitted update per retained proposal; remove unused proposals. Import accepts
 at most 100 proposals, with one proposal per existing active feature.
 `enrichment-template` and `prepare-enrichment` support repeated `--feature-id`
 or `--offset`/`--limit` (1-100), ordered by active feature ID. Without selection,
-1-100 active features are required. For larger manifests, process batches sequentially:
-use the latest imported manifest and original inventory for each next batch, advance
-the offset, and regenerate templates after every import. No stale parallel batch
-can be imported. Preserve each batch's proposal and import log for provenance.
+1-100 active features are required. Normal Finder preparation uses `--pending`
+instead: select the next unfinished business candidates, default batch size 20,
+and skip business-ready candidates. Explicit unresolved candidates are deferred
+until other pending work is processed. Do not combine pending selection with IDs or
+a nonzero offset. It works after arbitrary domain-based batches, without guessing
+an offset that could skip or repeat candidates.
+
+**A batch is not a run.** After every import, use the new manifest as latest and
+read `businessAnalysis` in stdout or the persisted `enrichment-progress.json`.
+Run `enrichment-status` against that latest manifest to recompute progress when
+resuming. Progress records active/businessReady/pending/blocked counts, next IDs,
+completionState and nextAction. The persisted artifact also contains all pending
+and blocker reasons/questions; stdout is a bounded summary.
+
+- `continue`: prepare the next `--pending` batch, read source, author interpretations,
+  import, then repeat without another user opt-in. Do not invoke the final gate or
+  stop after the first 20 candidates.
+- `blocked`: no pending candidates remain, but specific explicitly unresolved
+  candidates do. Investigate related source and retry by feature ID where feasible.
+- `ready`: run the full business-meaning gate and render from this manifest.
+- `empty`: no active candidates; disclose limitations, not business completeness.
+
+Partial analyses with substantive business context can meet readiness; unanswered
+review questions do not force repetition of already-ready work. Not-started
+candidates are pending, not blocked. An early exit code 3 from the delivery gate
+while pending work remains means continue analysis, not end the assessment.
+Keep the original inventory unchanged and regenerate templates after each import.
+No stale parallel batch can be imported. Preserve each batch's proposal/import log
+and progress for provenance and resume. Python never performs the model interpretation;
+the host skill must perform each cycle. If interrupted, resume from the latest
+manifest and original inventory/source without discarding the completed context.
 
 Intermediate updates may include `semanticAnalysis`: `status` (`complete`, `partial`, `unresolved`),
 a plain-language `summary`, supporting `evidenceRefs`, `businessRules` and
@@ -181,7 +210,7 @@ Readable business naming and interpretation quality require model/human review;
 schema validation cannot prove semantic correctness.
 
 Import writes `feature-manifest.json`, `enrichment-proposals.json`,
-`review-queue.json` and `enrichment-log.json`. It validates manifest/inventory/contract
+`review-queue.json`, `enrichment-log.json` and `enrichment-progress.json`. It validates manifest/inventory/contract
 digests and exact current/proposed evidence citations with content hashes and record
 digests. It creates no evidence or new features. Touched features become `needs-review`
 and lose any previous approval, even for name-only edits. Evidence verification,

@@ -4,7 +4,7 @@ import copy
 import hashlib
 from pathlib import PurePosixPath, PureWindowsPath
 
-from .enrichment import enrichment_template, select_features
+from .enrichment import enrichment_progress, enrichment_template, select_features
 from .identity import digest
 from .inventory import EXCLUDED_DIRECTORIES, is_link, is_sensitive, source_root
 from .validation import ArtifactError, validate_manifest, validate_schema
@@ -14,7 +14,17 @@ MAX_CONTEXT_BYTES = 2 * 1024 * 1024
 MAX_CONTEXT_FILES = 100
 
 
-def prepare_enrichment(manifest, inventory, source, feature_ids=None, offset=0, limit=None, context_files=()):
+def prepare_enrichment(manifest, inventory, source, feature_ids=None, offset=0, limit=None, context_files=(), pending=False):
+    if pending:
+        if feature_ids is not None or offset:
+            raise ArtifactError("Pending selection cannot be combined with feature IDs or a nonzero offset")
+        progress = enrichment_progress(manifest, 20 if limit is None else limit)
+        feature_ids = progress["nextFeatureIds"]
+        if not feature_ids:
+            raise ArtifactError(
+                f"No pending candidates: enrichment is {progress['completionState']}. {progress['nextAction']}"
+            )
+        limit = None
     selected = select_features(manifest, feature_ids, offset, limit)
     validate_schema(inventory, "feature-repository-inventory-schema.json")
     if digest(inventory) != manifest["scan"]["inventoryDigest"]:
@@ -117,4 +127,5 @@ def prepare_enrichment(manifest, inventory, source, feature_ids=None, offset=0, 
             "featureIds": sorted(selected_ids), "sourceBytes": total_bytes, "files": files,
         },
         "enrichment-proposals.json": template,
+        "enrichment-progress.json": enrichment_progress(result),
     }
